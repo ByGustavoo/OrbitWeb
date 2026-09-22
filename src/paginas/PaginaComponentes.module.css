@@ -1,0 +1,185 @@
+.secoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-10);
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.cabecalhoSecao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
+.cabecalhoSecao h2 {
+  font-size: var(--tamanho-lg);
+}
+
+.cabecalhoSecao p {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--espaco-3);
+}
+
+.amostra {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  min-width: 0;
+}
+
+.cor {
+  height: 56px;
+  margin-bottom: var(--espaco-1);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-md);
+}
+
+.nomeCor {
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.token {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--texto-terciario);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-xs);
+  white-space: nowrap;
+}
+
+.linhaSelos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.linhaSelos + .linhaSelos {
+  margin-top: var(--espaco-3);
+}
+
+.tipografia {
+  display: flex;
+  flex-direction: column;
+}
+
+.linhaTipografia {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--espaco-4);
+  padding-block: var(--espaco-3);
+  border-bottom: 1px solid var(--borda);
+}
+
+.linhaTipografia:last-child {
+  border-bottom: none;
+}
+
+.usoTipografia {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.cronometro {
+  font-size: var(--tamanho-destaque);
+  font-weight: var(--peso-medio);
+  line-height: 1;
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.linha + .linha {
+  margin-top: var(--espaco-4);
+}
+
+.formulario {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--espaco-5) var(--espaco-4);
+}
+
+.campoLargo {
+  grid-column: 1 / -1;
+}
+
+.colunas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--espaco-6);
+}
+
+.pilha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+}
+
+.pilha > * {
+  width: 100%;
+}
+
+.pilha > [role='radiogroup'] {
+  width: auto;
+  margin-top: var(--espaco-2);
+}
+
+.gradeCartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--espaco-4);
+}
+
+.textoCartao {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.giratorio {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-5);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.formularioModal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.duasColunas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-4);
+}
+
+@media (max-width: 599px) {
+  .linhaTipografia {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espaco-1);
+  }
+
+  .duasColunas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

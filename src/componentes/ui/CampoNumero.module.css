@@ -1,0 +1,57 @@
+.controle {
+  padding-right: 3px;
+}
+
+.sufixo {
+  flex-shrink: 0;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+.botoes {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: calc(100% - 6px);
+  margin-left: var(--espaco-1);
+  border-radius: calc(var(--raio-md) - 3px);
+  background-color: var(--superficie-suave);
+}
+
+.botao {
+  display: grid;
+  place-items: center;
+  width: calc(var(--altura-controle) - 8px);
+  height: 100%;
+  border-radius: calc(var(--raio-md) - 3px);
+  color: var(--texto-secundario);
+  touch-action: manipulation;
+  user-select: none;
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida),
+    transform var(--duracao-rapida) var(--curva-saida);
+}
+
+.botao:active:not(:disabled) {
+  transform: scale(0.9);
+  background-color: var(--borda);
+}
+
+.botao:disabled {
+  color: var(--texto-desabilitado);
+  cursor: not-allowed;
+}
+
+.divisor {
+  width: 1px;
+  height: 50%;
+  background-color: var(--borda-forte);
+}
+
+@media (hover: hover) {
+  .botao:hover:not(:disabled) {
+    background-color: var(--borda);
+    color: var(--texto);
+  }
+}

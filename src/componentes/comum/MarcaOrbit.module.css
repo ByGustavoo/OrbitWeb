@@ -1,0 +1,49 @@
+.marca {
+  flex-shrink: 0;
+}
+
+.fundo {
+  fill: var(--marca-fundo);
+}
+
+.orbita {
+  stroke: var(--marca-traco);
+  opacity: 0.5;
+}
+
+.nucleo {
+  fill: var(--marca-traco);
+}
+
+.satelite {
+  transform-origin: 16px 16px;
+  transition: transform var(--duracao-lenta) var(--curva-mola);
+}
+
+@media (hover: hover) {
+  a:hover .satelite {
+    transform: rotate(-24deg);
+  }
+}
+
+.entrando .orbita {
+  stroke-dasharray: 60;
+  animation: tracarOrbitaDaMarca 900ms var(--curva-saida) 420ms backwards;
+}
+
+.entrando .satelite {
+  animation: lancarSatelite 1.1s var(--curva-mola) 520ms backwards;
+}
+
+@keyframes tracarOrbitaDaMarca {
+  from {
+    stroke-dashoffset: 60;
+  }
+}
+
+@keyframes lancarSatelite {
+  from {
+    opacity: 0;
+    transform: rotate(-220deg) scale(0.4);
+  }
+}

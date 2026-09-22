@@ -1,0 +1,415 @@
+.tela {
+  --curva-desenho: cubic-bezier(0.65, 0, 0.35, 1);
+
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: calc(var(--espaco-12) + env(safe-area-inset-top, 0px)) var(--espaco-6)
+    calc(var(--espaco-12) + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  background-color: var(--fundo);
+}
+
+.tela:focus {
+  outline: none;
+}
+
+.orbitas {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.9) 30%, transparent 75%);
+}
+
+.orbitas svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1200px;
+  max-width: none;
+  height: 800px;
+  margin: -400px 0 0 -600px;
+  overflow: visible;
+}
+
+.linhaOrbita {
+  fill: none;
+  stroke: var(--borda-forte);
+  stroke-width: 1;
+  stroke-dasharray: 1;
+  animation: desenharOrbita 1.6s var(--curva-desenho) backwards;
+  animation-delay: calc(var(--i, 0) * 160ms);
+}
+
+.satelite {
+  transition: opacity var(--duracao-base) var(--curva-saida);
+  animation: surgirSatelite var(--duracao-expressiva) var(--curva-saida) 1.5s backwards;
+}
+
+.haloSatelite {
+  fill: var(--destaque-suave);
+  stroke: none;
+}
+
+.nucleoSatelite {
+  fill: var(--destaque);
+  stroke: none;
+}
+
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 34rem;
+  text-align: center;
+}
+
+.marca {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-8);
+}
+
+.marca::before {
+  content: '';
+  position: absolute;
+  inset: -2.5rem -4rem;
+  z-index: -1;
+  background: radial-gradient(closest-side, var(--fundo) 62%, transparent 100%);
+}
+
+.simbolo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  animation: logoSurgir 900ms var(--curva-mola) 80ms backwards;
+}
+
+.simbolo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--destaque);
+  border-radius: 28%;
+  opacity: 0;
+  pointer-events: none;
+  animation: onda 1.3s var(--curva-saida) 420ms;
+}
+
+.nome {
+  position: relative;
+  display: inline-flex;
+  font-size: var(--tamanho-xl);
+  font-weight: var(--peso-forte);
+  letter-spacing: var(--letras-titulo);
+}
+
+.letra {
+  --dx: -3rem;
+
+  display: inline-block;
+  white-space: pre;
+  text-box: trim-both cap alphabetic;
+  animation: letraEmergir 760ms var(--curva-saida) backwards;
+  animation-delay: calc(480ms + var(--i, 0) * 65ms);
+}
+
+.titulo {
+  font-size: var(--tamanho-destaque);
+  line-height: var(--altura-linha-justa);
+}
+
+.palavra {
+  display: inline-block;
+  overflow: clip;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+  vertical-align: top;
+}
+
+.palavraInterna {
+  display: inline-block;
+  animation: palavraSubir 820ms var(--curva-saida) backwards;
+  animation-delay: calc(640ms + var(--i, 0) * 70ms);
+}
+
+.descricao {
+  margin-top: var(--espaco-4);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-md);
+  line-height: var(--altura-linha-normal);
+}
+
+.entra {
+  animation: blocoEntrar 760ms var(--curva-saida) backwards;
+  animation-delay: var(--atraso, 0ms);
+}
+
+.recursos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  width: 100%;
+  margin-top: var(--espaco-8);
+  text-align: left;
+}
+
+.recurso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-4);
+  padding: var(--espaco-4);
+  background-color: color-mix(in srgb, var(--superficie) 88%, transparent);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-lg);
+  backdrop-filter: blur(6px);
+}
+
+.iconeRecurso {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--raio-md);
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.textosRecurso {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tituloRecurso {
+  font-weight: var(--peso-forte);
+}
+
+.descricaoRecurso {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  line-height: var(--altura-linha-compacta);
+}
+
+.acoes {
+  margin-top: var(--espaco-8);
+}
+
+.comecar {
+  min-width: 11rem;
+  height: 44px;
+  font-size: var(--tamanho-base);
+}
+
+.comecar svg {
+  transition: transform var(--duracao-base) var(--curva-mola);
+}
+
+@media (hover: hover) {
+  .comecar:hover svg {
+    transform: translateX(3px);
+  }
+}
+
+.saindo {
+  pointer-events: none;
+}
+
+.saindo .etapa {
+  animation: blocoSair 340ms var(--curva-entrada) forwards;
+  animation-delay: calc(var(--ordem-saida, 0) * 30ms);
+}
+
+.saindo .palavraInterna {
+  animation: palavraSair 380ms var(--curva-entrada) forwards;
+  animation-delay: calc(90ms + var(--i, 0) * 40ms);
+}
+
+.saindo .nomeAbsorvido .letra {
+  animation: letraAbsorver 440ms var(--curva-entrada) forwards;
+  animation-delay: calc(140ms + var(--i, 0) * 45ms);
+}
+
+.saindo .simbolo {
+  animation: antecipar var(--duracao-expressiva) var(--curva-mola) 220ms forwards;
+}
+
+.saindo .simbolo::after {
+  animation: ondaSaida 700ms var(--curva-saida) 380ms;
+}
+
+.saindo .orbitas svg {
+  animation: expandirOrbitas 760ms var(--curva-saida) forwards;
+}
+
+.saindo .satelite {
+  opacity: 0;
+}
+
+.saindo .comecar svg {
+  animation: flechaPartir 380ms var(--curva-entrada) forwards;
+}
+
+@keyframes desenharOrbita {
+  from {
+    stroke-dashoffset: 1;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+}
+
+@keyframes surgirSatelite {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes logoSurgir {
+  from {
+    opacity: 0;
+    transform: scale(0.35) rotate(-45deg);
+  }
+  60% {
+    opacity: 1;
+  }
+}
+
+@keyframes onda {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes ondaSaida {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+@keyframes letraEmergir {
+  from {
+    opacity: 0;
+    transform: translate(var(--dx), 0) scale(0.2);
+  }
+  55% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.3), -10px) scale(0.92);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes letraAbsorver {
+  45% {
+    opacity: 1;
+    transform: translate(calc(var(--dx) * 0.35), -12px) scale(0.85);
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--dx), 0) scale(0.1);
+  }
+}
+
+@keyframes palavraSubir {
+  from {
+    transform: translateY(110%);
+  }
+}
+
+@keyframes palavraSair {
+  to {
+    transform: translateY(-110%);
+  }
+}
+
+@keyframes blocoEntrar {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(4px);
+  }
+}
+
+@keyframes blocoSair {
+  to {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.98);
+    filter: blur(3px);
+  }
+}
+
+@keyframes expandirOrbitas {
+  to {
+    opacity: 0;
+    transform: scale(1.3) rotate(6deg);
+  }
+}
+
+@keyframes antecipar {
+  40% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes flechaPartir {
+  to {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+@media (max-width: 767px) {
+  .tela {
+    align-items: start;
+    padding-inline: var(--espaco-5);
+  }
+
+  .marca {
+    margin-bottom: var(--espaco-6);
+  }
+
+  .titulo {
+    font-size: var(--tamanho-2xl);
+  }
+
+  .descricao {
+    font-size: var(--tamanho-base);
+  }
+
+  .recursos {
+    margin-top: var(--espaco-6);
+  }
+
+  .acoes {
+    width: 100%;
+  }
+
+  .comecar {
+    width: 100%;
+  }
+}

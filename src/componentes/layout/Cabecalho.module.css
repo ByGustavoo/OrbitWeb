@@ -1,0 +1,83 @@
+.cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: var(--camada-cabecalho);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-inline: var(--respiro-conteudo);
+  background-color: color-mix(in srgb, var(--fundo) 86%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--borda);
+}
+
+.interno {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  width: 100%;
+  max-width: var(--largura-conteudo);
+  height: var(--altura-cabecalho);
+  margin-inline: auto;
+}
+
+.inicio {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  margin-left: calc(var(--espaco-2) * -1);
+}
+
+.marca {
+  display: grid;
+  place-items: center;
+  padding: var(--espaco-1);
+  border-radius: var(--raio-md);
+}
+
+.marca:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.data {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  font-size: var(--tamanho-sm);
+  white-space: nowrap;
+}
+
+.data time {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.diaSemana {
+  font-weight: var(--peso-forte);
+  color: var(--texto);
+}
+
+.separador {
+  color: var(--texto-desabilitado);
+}
+
+.diaMes {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--texto-secundario);
+}
+
+.acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  margin-left: auto;
+}
+
+@media (max-width: 560px) {
+  .separador,
+  .diaMes {
+    display: none;
+  }
+}

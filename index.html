@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Organize o que move o seu dia. Tarefas, agenda e tempo de estudo em um só lugar." />
+    <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d0f12" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" type="image/svg+xml" href="/icone.svg" />
+    <title>Orbit · Organize o que move o seu dia.</title>
+    <script>
+      (function () {
+        var tema = 'claro';
+        try {
+          var salvo = JSON.parse(localStorage.getItem('orbit:tema') || '"sistema"');
+          var escuroNoSistema = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          tema = salvo === 'claro' || salvo === 'escuro' ? salvo : escuroNoSistema ? 'escuro' : 'claro';
+        } catch (erro) {}
+        document.documentElement.dataset.tema = tema;
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="raiz"></div>
+    <script src="/config.js"></script>
+    <script type="module" src="/src/principal.tsx"></script>
+  </body>
+</html>
