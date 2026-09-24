@@ -1,0 +1,88 @@
+.agenda {
+  min-width: 0;
+}
+
+.distancia {
+  font-weight: var(--peso-medio);
+}
+
+.hoje {
+  color: var(--destaque);
+}
+
+.conteudo {
+  container: lista-tarefas / inline-size;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  transition: opacity var(--duracao-base) var(--curva-saida);
+}
+
+.estudos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  margin-top: var(--espaco-5);
+  padding-top: var(--espaco-4);
+  border-top: 1px solid var(--borda);
+}
+
+.tituloEstudos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-1) var(--espaco-3);
+  font-size: var(--tamanho-sm);
+  letter-spacing: 0;
+}
+
+.totalEstudos {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+.listaEstudos {
+  display: flex;
+  flex-direction: column;
+}
+
+.sessao {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--espaco-3);
+  padding-block: var(--espaco-2);
+  font-size: var(--tamanho-sm);
+}
+
+.corSessao {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--cor-atividade);
+}
+
+.nomeSessao {
+  overflow: hidden;
+  font-weight: var(--peso-medio);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.horarioSessao {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.duracaoSessao {
+  min-width: 4.5rem;
+  font-weight: var(--peso-forte);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}

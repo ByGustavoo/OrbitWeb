@@ -1,0 +1,33 @@
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.falha {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3) var(--espaco-4);
+  border-radius: var(--raio-md);
+  background-color: var(--erro-suave);
+  color: var(--erro);
+  font-size: var(--tamanho-sm);
+}
+
+.falha svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.observacao {
+  padding: var(--espaco-3) var(--espaco-4);
+  border-radius: var(--raio-md);
+  background-color: var(--superficie-suave);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.acaoSecundaria {
+  margin-right: auto;
+}

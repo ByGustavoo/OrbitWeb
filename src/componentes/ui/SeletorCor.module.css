@@ -1,0 +1,64 @@
+.grupo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-1);
+  margin-inline: -4px;
+}
+
+.grupo:focus {
+  outline: none;
+}
+
+.opcao {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: max(36px, var(--alvo-toque));
+  height: max(36px, var(--alvo-toque));
+  cursor: pointer;
+}
+
+.entrada {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.amostra {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--cor-amostra);
+  color: var(--superficie);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--texto) 12%, transparent);
+  transition:
+    transform var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-base) var(--curva-saida);
+}
+
+.selecionada {
+  box-shadow:
+    0 0 0 2px var(--superficie-elevada),
+    0 0 0 4px var(--cor-amostra);
+}
+
+.entrada:focus-visible + .amostra {
+  box-shadow:
+    0 0 0 2px var(--superficie-elevada),
+    0 0 0 4px var(--destaque);
+}
+
+@media (hover: hover) {
+  .opcao:hover .amostra:not(.selecionada) {
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .amostra {
+    transition: none;
+  }
+}

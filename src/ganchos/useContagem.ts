@@ -17,7 +17,7 @@ export function useContagem(alvo: number): number {
   useEffect(() => {
     const inicio = valorAtual.current;
     if (inicio === alvo) return;
-    if (prefereMovimentoReduzido()) {
+    if (prefereMovimentoReduzido() || document.hidden) {
       valorAtual.current = alvo;
       setValor(alvo);
       return;
@@ -32,8 +32,18 @@ export function useContagem(alvo: number): number {
       setValor(proximo);
       if (progresso < 1) quadro = requestAnimationFrame(passo);
     };
+    const concluirQuandoOculta = () => {
+      if (!document.hidden) return;
+      cancelAnimationFrame(quadro);
+      valorAtual.current = alvo;
+      setValor(alvo);
+    };
     quadro = requestAnimationFrame(passo);
-    return () => cancelAnimationFrame(quadro);
+    document.addEventListener('visibilitychange', concluirQuandoOculta);
+    return () => {
+      cancelAnimationFrame(quadro);
+      document.removeEventListener('visibilitychange', concluirQuandoOculta);
+    };
   }, [alvo]);
 
   return valor;

@@ -1,0 +1,20 @@
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  padding-top: var(--espaco-4);
+  border-top: 1px solid var(--borda);
+}
+
+.posicao {
+  color: var(--texto-secundario);
+  white-space: nowrap;
+  font-size: var(--tamanho-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.posicao strong {
+  color: var(--texto);
+  font-weight: var(--peso-forte);
+}

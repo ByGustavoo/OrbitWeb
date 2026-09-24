@@ -1,0 +1,42 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espaco-3);
+}
+
+.icone {
+  --tom-texto: var(--texto-secundario);
+  --tom-fundo: var(--neutro-suave);
+
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--tom-fundo);
+  color: var(--tom-texto);
+}
+
+.sucesso {
+  --tom-texto: var(--sucesso);
+  --tom-fundo: var(--sucesso-suave);
+}
+
+.texto {
+  padding-top: 3px;
+  color: var(--texto);
+  font-size: var(--tamanho-base);
+  line-height: var(--altura-linha-compacta);
+}
+
+.vazio {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}

@@ -1,0 +1,184 @@
+.celula {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  background-color: var(--superficie);
+  transition: background-color var(--duracao-base) var(--curva-saida);
+}
+
+.foraDoMes {
+  background-color: var(--superficie-suave);
+}
+
+.selecionada {
+  z-index: 1;
+  background-color: var(--destaque-suave);
+  box-shadow: inset 0 0 0 2px var(--destaque);
+}
+
+.botao {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--espaco-1);
+  min-width: 0;
+  min-height: 5.25rem;
+  padding: var(--espaco-2);
+  text-align: left;
+}
+
+.botao:focus-visible {
+  outline: none;
+  border-radius: 0;
+  box-shadow:
+    inset 0 0 0 2px var(--destaque),
+    inset 0 0 0 5px color-mix(in srgb, var(--destaque) 28%, transparent);
+}
+
+.numero {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding-inline: var(--espaco-1);
+  border-radius: var(--raio-pilula);
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+  align-self: flex-start;
+  transition:
+    background-color var(--duracao-base) var(--curva-saida),
+    color var(--duracao-base) var(--curva-saida),
+    transform var(--duracao-base) var(--curva-mola);
+}
+
+.foraDoMes .numero {
+  color: var(--texto-terciario);
+}
+
+.selecionada .numero {
+  color: var(--destaque);
+  font-weight: var(--peso-forte);
+}
+
+.numero.hoje,
+.selecionada .numero.hoje {
+  background-color: var(--destaque);
+  color: var(--destaque-contraste);
+  font-weight: var(--peso-forte);
+}
+
+.selecionada .numero {
+  animation: pulsar var(--duracao-lenta) var(--curva-mola);
+}
+
+.sinal {
+  position: absolute;
+  top: calc(var(--espaco-2) + 7px);
+  right: var(--espaco-2);
+}
+
+.sinalAtraso {
+  color: var(--erro);
+}
+
+.sinalUrgente {
+  color: var(--prioridade-urgente);
+}
+
+.sinalAlta {
+  color: var(--prioridade-alta);
+}
+
+.marcadores {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 0.5rem;
+}
+
+.ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.aFazer {
+  background-color: var(--destaque);
+}
+
+.atrasada {
+  background-color: var(--erro);
+}
+
+.naoRealizada {
+  background-color: var(--borda-controle);
+}
+
+.concluida {
+  border: 1.5px solid var(--sucesso);
+}
+
+.excedente {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+@keyframes pulsar {
+  from {
+    transform: scale(0.86);
+  }
+}
+
+@media (hover: hover) {
+  .celula:not(.selecionada):hover {
+    background-color: color-mix(in srgb, var(--destaque) 5%, var(--superficie));
+  }
+
+  .foraDoMes:not(.selecionada):hover {
+    background-color: color-mix(in srgb, var(--destaque) 5%, var(--superficie-suave));
+  }
+}
+
+@container calendario (max-width: 560px) {
+  .botao {
+    align-items: center;
+    justify-content: flex-start;
+    gap: 3px;
+    min-height: 3.25rem;
+    padding: var(--espaco-1) 2px var(--espaco-2);
+  }
+
+  .numero {
+    align-self: center;
+    min-width: 2rem;
+    height: 2rem;
+  }
+
+  .sinal,
+  .excedente {
+    display: none;
+  }
+
+  .marcadores {
+    justify-content: center;
+    gap: 3px;
+  }
+
+  .ponto {
+    width: 6px;
+    height: 6px;
+  }
+
+  .ponto:nth-child(n + 4) {
+    display: none;
+  }
+}

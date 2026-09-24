@@ -10,6 +10,11 @@
   background-color: var(--superficie);
 }
 
+.destaque {
+  --tom-texto: var(--destaque);
+  --tom-fundo: var(--destaque-suave);
+}
+
 .sucesso {
   --tom-texto: var(--sucesso);
   --tom-fundo: var(--sucesso-suave);

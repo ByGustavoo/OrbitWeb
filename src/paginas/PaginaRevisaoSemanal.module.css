@@ -1,0 +1,60 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  container: revisao / inline-size;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--espaco-5);
+}
+
+.inteiro {
+  grid-column: 1 / -1;
+}
+
+.metade {
+  grid-column: span 6;
+  align-self: stretch;
+}
+
+.maior {
+  grid-column: span 7;
+  align-self: stretch;
+}
+
+.menor {
+  grid-column: span 5;
+  align-self: stretch;
+}
+
+.topo {
+  align-self: start;
+}
+
+.graficos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-6) var(--espaco-8);
+}
+
+@container revisao (max-width: 980px) {
+  .metade,
+  .maior,
+  .menor {
+    grid-column: 1 / -1;
+  }
+}
+
+@container revisao (max-width: 680px) {
+  .grade {
+    gap: var(--espaco-4);
+  }
+
+  .graficos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

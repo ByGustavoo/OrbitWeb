@@ -1,0 +1,29 @@
+.painel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+}
+
+.resultado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+  scroll-margin-top: calc(var(--altura-cabecalho) + var(--espaco-4));
+}
+
+.total {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+.totalCarregando {
+  margin-block: 3px;
+}

@@ -51,7 +51,7 @@
   border-color: var(--sucesso);
 }
 
-.controle:has(:disabled) {
+.controle:has(.entrada:disabled) {
   background-color: var(--superficie-suave);
   border-color: var(--borda-forte);
   color: var(--texto-desabilitado);
@@ -153,7 +153,7 @@
 }
 
 @media (hover: hover) {
-  .controle:hover:not(:focus-within):not(:has(:disabled)) {
+  .controle:hover:not(:focus-within):not(:has(.entrada:disabled)) {
     border-color: var(--texto-terciario);
   }
 
@@ -198,6 +198,12 @@
   font-size: var(--fonte-controle);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.textoGatilho {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .textoVazio {

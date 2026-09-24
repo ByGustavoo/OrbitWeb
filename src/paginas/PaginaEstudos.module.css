@@ -1,0 +1,51 @@
+.painel {
+  container: estudos / inline-size;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: start;
+  gap: var(--espaco-5);
+}
+
+.colunaPrincipal,
+.colunaLateral {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  min-width: 0;
+}
+
+@container estudos (max-width: 860px) {
+  .grade {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .colunaPrincipal,
+  .colunaLateral {
+    display: contents;
+  }
+
+  .metricas {
+    order: 1;
+  }
+
+  .atividades {
+    order: 2;
+  }
+
+  .historico {
+    order: 3;
+  }
+}
+
+@container estudos (max-width: 680px) {
+  .grade,
+  .colunaPrincipal,
+  .colunaLateral {
+    gap: var(--espaco-4);
+  }
+}

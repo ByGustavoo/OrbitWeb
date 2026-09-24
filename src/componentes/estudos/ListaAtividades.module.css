@@ -1,0 +1,236 @@
+.painel {
+  container: atividades / inline-size;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1.1fr) minmax(12rem, 1.6fr) minmax(11rem, 1.3fr) auto;
+  align-items: center;
+  gap: var(--espaco-3) var(--espaco-6);
+  padding-block: var(--espaco-4);
+  border-top: 1px solid var(--borda);
+  animation: entrar var(--duracao-lenta) var(--curva-saida) both;
+}
+
+.item:first-child {
+  border-top: none;
+  padding-top: var(--espaco-1);
+}
+
+.identificacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-1) var(--espaco-2);
+  min-width: 0;
+}
+
+.cor {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--cor-atividade);
+}
+
+.nome {
+  min-width: 0;
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-forte);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.agora {
+  flex-basis: 100%;
+  padding-left: calc(10px + var(--espaco-2));
+  color: var(--sucesso);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.semana {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.linhaSemana {
+  max-width: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-1) var(--espaco-3);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.linhaSemana strong {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+}
+
+.semMeta,
+.falta {
+  color: var(--texto-terciario);
+}
+
+.batida {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+  color: var(--sucesso);
+  font-weight: var(--peso-medio);
+}
+
+.totais {
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.totais strong {
+  color: var(--texto-secundario);
+  font-weight: var(--peso-forte);
+}
+
+.editar {
+  justify-self: end;
+}
+
+.semAtivas {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.arquivadas {
+  margin-top: var(--espaco-3);
+  border-top: 1px solid var(--borda);
+  padding-top: var(--espaco-3);
+}
+
+.resumoArquivadas {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-height: var(--alvo-toque);
+  padding-right: var(--espaco-2);
+  border-radius: var(--raio-sm);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  list-style: none;
+  cursor: pointer;
+}
+
+.resumoArquivadas::-webkit-details-marker {
+  display: none;
+}
+
+.resumoArquivadas:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.seta {
+  transition: transform var(--duracao-base) var(--curva-saida);
+}
+
+.arquivadas[open] .seta {
+  transform: rotate(90deg);
+}
+
+.listaArquivadas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+  padding-top: var(--espaco-2);
+}
+
+.itemArquivado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2) var(--espaco-3);
+  padding: var(--espaco-2) 0;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+}
+
+.nomeArquivado {
+  font-weight: var(--peso-medio);
+}
+
+.totaisArquivado {
+  flex: 1;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+@media (hover: hover) {
+  .resumoArquivadas:hover {
+    color: var(--texto);
+  }
+}
+
+@container atividades (max-width: 720px) {
+  .item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'identificacao editar'
+      'semana semana'
+      'totais totais';
+    gap: var(--espaco-2) var(--espaco-3);
+  }
+
+  .identificacao {
+    grid-area: identificacao;
+  }
+
+  .semana {
+    grid-area: semana;
+  }
+
+  .totais {
+    grid-area: totais;
+  }
+
+  .editar {
+    grid-area: editar;
+  }
+
+  .agora {
+    flex-basis: auto;
+    padding-left: 0;
+  }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item {
+    animation: none;
+  }
+
+  .seta {
+    transition: none;
+  }
+}

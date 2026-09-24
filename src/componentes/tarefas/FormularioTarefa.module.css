@@ -1,0 +1,63 @@
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.falha {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-2);
+  padding: var(--espaco-3) var(--espaco-4);
+  border-radius: var(--raio-md);
+  background-color: var(--erro-suave);
+  color: var(--erro);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  animation: orbit-surgir var(--duracao-base) var(--curva-saida);
+}
+
+.falha svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+  padding-top: var(--espaco-5);
+  border-top: 1px solid var(--borda);
+}
+
+.tituloSecao {
+  float: left;
+  width: 100%;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-forte);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-4) var(--espaco-5);
+  align-items: start;
+}
+
+.interruptorAlinhado {
+  align-self: end;
+  min-height: var(--altura-controle);
+}
+
+@media (max-width: 767px) {
+  .grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .interruptorAlinhado {
+    align-self: stretch;
+  }
+}

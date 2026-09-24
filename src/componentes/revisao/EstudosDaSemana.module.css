@@ -1,0 +1,70 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--espaco-2) var(--espaco-3);
+}
+
+.nome {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-width: 0;
+  color: var(--texto);
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-medio);
+  overflow-wrap: anywhere;
+}
+
+.cor {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.valores {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--espaco-2);
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sessoes {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.trilho {
+  grid-column: 1 / -1;
+  display: block;
+  height: 8px;
+  border-radius: 0 4px 4px 0;
+  background-color: var(--superficie-suave);
+}
+
+.barra {
+  display: block;
+  width: calc(var(--proporcao) * 100%);
+  min-width: 4px;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background-color: var(--cor-barra);
+  transform-origin: left center;
+  animation: crescer var(--duracao-lenta) var(--curva-saida) backwards;
+}
+
+@keyframes crescer {
+  from {
+    transform: scaleX(0);
+  }
+}

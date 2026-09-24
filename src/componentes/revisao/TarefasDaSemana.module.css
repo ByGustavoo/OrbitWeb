@@ -1,0 +1,109 @@
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+}
+
+.distribuicao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.barra {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.fatia {
+  flex-basis: 0;
+  min-width: 4px;
+  animation: surgir var(--duracao-lenta) var(--curva-saida) backwards;
+}
+
+.legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2) var(--espaco-5);
+}
+
+.itemLegenda {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: var(--tamanho-sm);
+}
+
+.marca {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.rotuloLegenda {
+  color: var(--texto-secundario);
+}
+
+.quantidade {
+  color: var(--texto);
+  font-weight: var(--peso-forte);
+  font-variant-numeric: tabular-nums;
+}
+
+.pendentes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.cabecalhoPendentes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2) var(--espaco-3);
+  padding-bottom: var(--espaco-2);
+  border-bottom: 1px solid var(--borda);
+}
+
+.tituloPendentes {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: var(--tamanho-base);
+  letter-spacing: 0;
+}
+
+.contagem {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding-inline: 6px;
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-forte);
+  font-variant-numeric: tabular-nums;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  container: lista-tarefas / inline-size;
+}
+
+.semPendentes {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+  }
+}

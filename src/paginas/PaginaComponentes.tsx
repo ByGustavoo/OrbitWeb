@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { CalendarCheck, Inbox, Pencil, Plus, RotateCcw, Search, Trash2 } from 'lucide-react';
+import { CalendarCheck, Inbox, Pause, Pencil, Play, Plus, RotateCcw, Search, Trash2 } from 'lucide-react';
 import { CHAVE_BOAS_VINDAS_VISTA } from '@/configuracoes/aplicacao';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { SeloCategoria, SeloPrazo, SeloPrioridade, SeloSituacao } from '@/componentes/tarefas/SelosTarefa';
@@ -25,17 +25,19 @@ import {
   Interruptor,
   Modal,
   Painel,
+  SeletorCor,
   SeletorData,
   SeletorHorario,
 } from '@/componentes/ui';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { CORES, PRIORIDADES, SITUACOES } from '@/modelos/enumeracoes';
-import type { Prioridade } from '@/modelos/enumeracoes';
+import type { Cor, Prioridade } from '@/modelos/enumeracoes';
 import { rotuloCor, rotuloPrioridade } from '@/modelos/rotulos';
 import { useNotificacoes } from '@/provedores/ProvedorNotificacoes';
 import { coresDaPrioridade } from '@/modelos/cores';
 import type { OpcaoSelecao } from '@/componentes/ui';
 import { iconePrioridade } from '@/componentes/tarefas/iconesTarefa';
+import { caminhos } from '@/rotas/caminhos';
 import estilos from './PaginaComponentes.module.css';
 
 const CORES_BASE = [
@@ -71,7 +73,7 @@ const opcoesPrioridade: OpcaoSelecao<Prioridade>[] = PRIORIDADES.map((valor) => 
 }));
 
 const opcoesCategoria: OpcaoSelecao[] = [
-  { valor: '1', rotulo: 'Faculdade', descricao: 'Aulas, provas e trabalhos' },
+  { valor: '1', rotulo: 'Estudos', descricao: 'Cursos, provas e leituras' },
   { valor: '2', rotulo: 'Trabalho' },
   { valor: '3', rotulo: 'Pessoal' },
   { valor: '4', rotulo: 'Arquivada', desabilitada: true },
@@ -97,6 +99,7 @@ export default function PaginaComponentes() {
   const [excluindo, setExcluindo] = useState(false);
   const [busca, setBusca] = useState('');
   const [periodo, setPeriodo] = useState<'7' | '30'>('7');
+  const [cor, setCor] = useState<Cor>('LARANJA');
   const [prioridade, setPrioridade] = useState<Prioridade | null>('MEDIA');
   const [data, setData] = useState<string | null>('2026-09-22');
   const [horario, setHorario] = useState<string | null>('19:00');
@@ -171,7 +174,7 @@ export default function PaginaComponentes() {
           </Painel>
         </Secao>
 
-        <Secao id="botoes" titulo="Botões" descricao="Quatro variantes, dois tamanhos e os estados de carregamento e desabilitado.">
+        <Secao id="botoes" titulo="Botões" descricao="Quatro variantes, três tamanhos e os estados de carregamento e desabilitado. O grande é para os controles do cronômetro.">
           <Painel>
             <div className={estilos.linha}>
               <Botao icone={Plus}>Nova tarefa</Botao>
@@ -194,6 +197,14 @@ export default function PaginaComponentes() {
               </Botao>
             </div>
             <div className={estilos.linha}>
+              <Botao tamanho="lg" icone={Play}>
+                Iniciar
+              </Botao>
+              <Botao tamanho="lg" variante="secundario" icone={Pause}>
+                Pausar
+              </Botao>
+            </div>
+            <div className={estilos.linha}>
               <BotaoIcone icone={Pencil} rotulo="Editar tarefa" />
               <BotaoIcone icone={Trash2} rotulo="Excluir tarefa" variante="secundario" />
               <BotaoIcone icone={Search} rotulo="Buscar" tamanho="sm" />
@@ -206,7 +217,7 @@ export default function PaginaComponentes() {
         <Secao id="campos" titulo="Campos" descricao="Texto, número, data, horário, busca, área de texto e seleção.">
           <Painel>
             <div className={estilos.formulario}>
-              <CampoTexto rotulo="Título" placeholder="Ex.: Estudar Banco de Dados" required />
+              <CampoTexto rotulo="Título" placeholder="Ex.: Pagar a conta de luz" required />
               <CampoNumero
                 rotulo="Meta semanal"
                 valor={metaSemanal}
@@ -224,7 +235,7 @@ export default function PaginaComponentes() {
               <CampoBusca rotulo="Buscar tarefas" placeholder="Título ou descrição" valor={busca} aoMudar={setBusca} />
               <CampoSelecao rotulo="Prioridade" valor={prioridade} aoMudar={setPrioridade} opcoes={opcoesPrioridade} />
               <CampoTexto rotulo="Com erro" defaultValue="" erro="Informe o título da tarefa." required />
-              <CampoTexto rotulo="Com sucesso" defaultValue="Faculdade" sucesso="Nome disponível." />
+              <CampoTexto rotulo="Com sucesso" defaultValue="Casa e família" sucesso="Nome disponível." />
               <CampoTexto rotulo="Desabilitado" defaultValue="Não editável" disabled />
               <CampoTexto rotulo="Somente leitura" defaultValue="Criada em 21/09/2026" readOnly />
               <CampoSelecao
@@ -242,7 +253,7 @@ export default function PaginaComponentes() {
           </Painel>
         </Secao>
 
-        <Secao id="selecao" titulo="Seleção" descricao="Caixa de seleção, opções exclusivas, interruptor e grupo segmentado.">
+        <Secao id="selecao" titulo="Seleção" descricao="Caixa de seleção, opções exclusivas, interruptor, grupo segmentado e cor.">
           <Painel>
             <div className={estilos.colunas}>
               <div className={estilos.pilha}>
@@ -284,6 +295,7 @@ export default function PaginaComponentes() {
                     { valor: '30', rotulo: '30 dias' },
                   ]}
                 />
+                <SeletorCor rotulo="Cor da atividade" valor={cor} aoMudar={setCor} />
               </div>
             </div>
           </Painel>
@@ -379,7 +391,7 @@ export default function PaginaComponentes() {
                 icone={RotateCcw}
                 onClick={() => {
                   window.sessionStorage.removeItem(CHAVE_BOAS_VINDAS_VISTA);
-                  window.location.assign('/');
+                  window.location.assign(caminhos.dashboard);
                 }}
               >
                 Ver a tela de boas-vindas de novo
@@ -446,7 +458,7 @@ export default function PaginaComponentes() {
         }
       >
         <div className={estilos.formularioModal}>
-          <CampoTexto rotulo="Título" placeholder="Ex.: Estudar Banco de Dados" required />
+          <CampoTexto rotulo="Título" placeholder="Ex.: Pagar a conta de luz" required />
           <div className={estilos.duasColunas}>
             <SeletorData rotulo="Data" valor={dataModal} aoMudar={setDataModal} />
             <CampoSelecao rotulo="Prioridade" valor={prioridadeModal} aoMudar={setPrioridadeModal} opcoes={opcoesPrioridade} />

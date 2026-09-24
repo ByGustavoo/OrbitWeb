@@ -67,6 +67,7 @@ React), como no PrismaWeb:
 | `ProvedorPreferencias` | durações do Pomodoro, sidebar recolhida | `localStorage` |
 | `ProvedorConexao` | API disponível ou não | memória |
 | `ProvedorAlteracoes` | contador de versão por recurso (`tarefas`, `sessoes`, `atividades`, `categorias`) | memória |
+| `ProvedorAcoesTarefa` | formulário, detalhes e diálogos de tarefa abertos; ids em envio; última versão confirmada de cada tarefa alterada | memória |
 
 Dados do domínio (tarefas, sessões, atividades) **não** ficam em contexto global: cada página busca
 o que precisa com `useDadosAssincronos`. Para as telas se atualizarem umas às outras, quem altera
@@ -112,7 +113,8 @@ OrbitWeb/
     │   ├── enumeracoes.ts           Prioridade, Situacao, Prazo, Frequencia…
     │   ├── tarefas.ts               TarefaDTO, TarefaEnvioDTO, RecorrenciaDTO, filtros
     │   ├── estudos.ts               AtividadeEstudoDTO, SessaoEstudoDTO, SessaoEmAndamento
-    │   ├── painel.ts                ResumoDashboardDTO, MapaCalorDTO, SequenciaDTO, RevisaoSemanalDTO
+    │   ├── painel.ts                ResumoDashboardDTO, MapaCalorDTO, SequenciaDTO
+    │   ├── revisao.ts               RevisaoSemanalDTO, NotaSemanaDTO
     │   ├── comum.ts                 PaginaDTO, ProblemaDTO, CategoriaDTO, Cor
     │   ├── rotulos.ts               texto exibido para cada valor de enumeração
     │   └── cores.ts                 paleta fixa de cores de categoria e atividade
@@ -131,7 +133,8 @@ OrbitWeb/
     │   ├── servicoAtividades.ts
     │   ├── servicoSessoes.ts
     │   ├── servicoDashboard.ts
-    │   ├── servicoRevisao.ts
+    │   ├── servicoHistorico.ts
+    │   ├── servicoRevisaoSemanal.ts
     │   └── index.ts
     ├── dados/
     │   └── simulacao/
@@ -150,7 +153,7 @@ OrbitWeb/
     │   └── AgendadorLembretes.tsx
     ├── ganchos/
     │   ├── useDadosAssincronos.ts
-    │   ├── useParametrosUrl.ts      lê e grava filtros, mês e dia na URL
+    │   ├── useParametrosPagina.ts   lê e grava filtros, mês e dia no histórico do navegador
     │   ├── useConsultaMidia.ts
     │   ├── useArmazenamentoLocal.ts
     │   ├── useTravarRolagem.ts
@@ -172,7 +175,7 @@ OrbitWeb/
     │   ├── PaginaCalendario.tsx
     │   ├── PaginaTarefas.tsx
     │   ├── PaginaEstudos.tsx
-    │   ├── PaginaHistoricoEstudos.tsx
+    │   ├── PaginaHistorico.tsx
     │   ├── PaginaRevisaoSemanal.tsx
     │   ├── PaginaConfiguracoes.tsx
     │   └── PaginaNaoEncontrada.tsx  (cada uma com seu .module.css)
@@ -219,21 +222,29 @@ Importações usam o apelido `@/` para `src/`, como no PrismaWeb.
 
 | Caminho | Página | Parâmetros de URL |
 |---|---|---|
-| `/` | Dashboard (página inicial) | `periodo=7\|30` |
+| `/` | Redireciona para `/dashboard`, mantendo os parâmetros | — |
+| `/dashboard` | Dashboard (página inicial) | `periodo=7\|30` |
 | `/calendario` | Calendário | `mes=2026-09`, `dia=2026-09-22` |
 | `/tarefas` | Tarefas | `visao=todas\|sem-data\|atrasadas`, filtros, `pagina` |
 | `/estudos` | Estudos (cronômetro, atividades e metas) | `atividade=3` |
-| `/estudos/historico` | Histórico de estudos | `dataInicial`, `dataFinal`, `atividade` |
-| `/revisao` | Revisão semanal | `semana=2026-09-20` |
+| `/historico` | Histórico (tarefas e estudos) | `periodo=hoje\|ontem\|7-dias\|30-dias\|este-mes\|personalizado`, `de`, `ate`, `area=tarefas\|estudos`, `busca` |
+| `/estudos/historico` | Redireciona para `/historico` já filtrado em Estudos (Fase 07) | — |
+| `/revisao` | Revisão semanal | `semana=2026-09-20` (sempre um domingo; ausente = semana atual) |
 | `/configuracoes` | Configurações | `secao=aparencia\|pomodoro\|categorias` |
 | qualquer outro | Página não encontrada | — |
 
-O mês, o dia selecionado, os filtros e a semana vão para a URL. Assim o botão Voltar do navegador
-funciona, e recarregar a página mantém o que a pessoa estava vendo.
+O mês, o dia selecionado, os filtros e o período ficam no **estado do histórico do navegador**
+(`history.state`, via `useParametrosPagina`), e não na query string: a barra de endereços mostra só o
+caminho (`/calendario`, `/tarefas`), como pedido na Fase 05. O botão Voltar continua funcionando e
+recarregar a página mantém o que a pessoa estava vendo. Um link antigo com query string
+(`/tarefas?visao=atrasadas`) ainda funciona: os parâmetros vão para o estado e somem da barra.
+A tabela acima lista os parâmetros de cada tela, agora guardados nesse estado.
 
 As páginas são carregadas sob demanda (`React.lazy`): abrir o Dashboard não baixa o código do
 Histórico. Em produção, o Nginx redireciona qualquer caminho para `index.html`
 (`try_files $uri /index.html`), como no PrismaWeb.
+
+Cada tela tem o próprio caminho, inclusive o Dashboard; a raiz `/` só redireciona para ele.
 
 ### Sidebar
 
@@ -242,12 +253,12 @@ Orbit
 ────────────────
 Dashboard
 Planejamento
-   Calendário
    Tarefas
+   Calendário
 Estudos
    Cronômetro
-   Histórico
 Acompanhamento
+   Histórico
    Revisão semanal
 ────────────────
 Configurações
@@ -275,7 +286,7 @@ A gaveta prende o foco enquanto aberta e o devolve ao botão de menu ao fechar.
 ### Formulário de tarefa
 
 A criação e a edição de tarefa acontecem num **modal global**, aberto por
-`useFormularioTarefa().abrir({ tarefa?, dataPadrao? })` de qualquer lugar: cabeçalho, Dashboard,
+`useAcoesTarefa().abrirNovaTarefa({ data? })` ou `abrirEdicao(tarefa)` de qualquer lugar: cabeçalho, Dashboard,
 agenda do dia, lista de tarefas e paleta de comandos. No celular o modal ocupa a tela inteira. Não
 há rota própria para o formulário.
 
@@ -306,7 +317,7 @@ há rota própria para o formulário.
 - **Informações:** grade do mês com marcadores de tarefas por dia (cor da prioridade mais alta e
   quantidade); agenda do dia selecionado.
 - **Componentes:** `NavegacaoCalendario` (mês anterior/próximo, seletor de mês e ano, "Hoje"),
-  `GradeMes`, `CelulaDia`, `AgendaDia` (painel lateral ou folha inferior), `ItemTarefa`.
+  `GradeMes`, `CelulaDia`, `AgendaDia` (painel lateral ou lista abaixo da grade), `ItemTarefa`.
 - **Ações:** navegar entre meses e anos, voltar para hoje, selecionar dia, nova tarefa na data
   selecionada, abrir, editar e concluir tarefa.
 - **Dados:** `buscarResumoCalendario({ dataInicial, dataFinal })` para as seis semanas visíveis,
@@ -334,24 +345,31 @@ há rota própria para o formulário.
   sessão manual; criar, editar e arquivar atividade; definir meta.
 - **Dados:** `buscarAtividades`, `buscarProgressoSemanal`, `buscarSessoes({ data: hoje })`.
 
-### Histórico de estudos — `/estudos/historico`
+### Histórico — `/historico`
 
-- **Objetivo:** ver e corrigir o tempo estudado.
-- **Informações:** total do período, minutos por atividade, minutos por dia, lista de sessões.
-- **Componentes:** `SeletorIntervalo`, `GraficoBarras`, `GraficoRosca`, `ListaSessoes`,
-  `Paginacao`, `FormularioSessao`.
-- **Ações:** filtrar por período e atividade; editar e excluir sessão; lançar sessão manual.
-- **Dados:** `buscarSessoes(filtros)`, `buscarResumoEstudos(filtros)`.
+Substituiu o "Histórico de estudos" planejado aqui (decisão F7-1). Detalhes na seção 19.
+
+- **Objetivo:** consultar o que aconteceu ao longo do tempo: tarefas e estudos, dia a dia.
+- **Informações:** linha do tempo agrupada por dia (Hoje, Ontem, data por extenso) com tarefas
+  criadas, concluídas, canceladas, reabertas, não realizadas, prioridade e data alteradas, e as
+  sessões de estudo.
+- **Componentes:** `BarraFiltrosHistorico`, `LinhaDoTempoHistorico`, `DetalhesRegistroHistorico`
+  (modal), `FormularioSessao`.
+- **Ações:** filtrar por período, área e texto; abrir detalhes; abrir a tarefa; editar a sessão.
+- **Dados:** `buscarHistorico(filtros)`, `buscarDetalhesHistorico(id)`.
 
 ### Revisão semanal — `/revisao`
 
 - **Objetivo:** olhar a semana que passou e decidir o que fazer com o que ficou para trás.
-- **Informações:** concluídas (e quantas com atraso), atrasadas, não realizadas, canceladas,
-  horas por atividade, metas batidas, comparação com a semana anterior.
-- **Componentes:** `NavegacaoSemana`, `IndicadorNumerico`, `ListaTarefas`, `GraficoBarras`,
-  `ProgressoMetas`.
-- **Ações:** navegar entre semanas, reagendar atrasadas, abrir tarefa.
-- **Dados:** `buscarRevisaoSemanal({ inicioSemana })`.
+- **Informações:** resumo com comparação neutra à semana anterior, destaques, pontos de atenção,
+  tarefas concluídas e tempo de estudo por dia, estudo por atividade, metas, situação das tarefas
+  planejadas, o que continua em aberto, próxima semana e nota da semana. Detalhes na seção 20.
+- **Componentes:** `NavegacaoSemana`, `ResumoSemana` (com `IndicadorNumerico`), `FatosSemana`,
+  `BarrasDaSemana`, `EstudosDaSemana`, `ProgressoMetas`, `TarefasDaSemana`, `ProximaSemana`,
+  `NotaDaSemana`.
+- **Ações:** navegar entre semanas, voltar para a semana atual, concluir e abrir tarefa, mover as
+  atrasadas para hoje, salvar a nota, ir para o Histórico, o Calendário e os Estudos.
+- **Dados:** `buscarRevisaoSemanal(inicioSemana)`, `salvarNotaSemana(inicioSemana, texto)`.
 
 ### Configurações — `/configuracoes`
 
@@ -739,7 +757,8 @@ export const servicoTarefas = {
 | `servicoAtividades` | `buscarAtividades`, `criarAtividade`, `atualizarAtividade`, `arquivarAtividade`, `desarquivarAtividade`, `excluirAtividade` |
 | `servicoSessoes` | `buscarSessoes`, `criarSessao`, `atualizarSessao`, `excluirSessao`, `buscarResumoEstudos`, `buscarProgressoSemanal`, `buscarMapaCalor` |
 | `servicoDashboard` | `buscarResumoDashboard`, `buscarSequencia` |
-| `servicoRevisao` | `buscarRevisaoSemanal` |
+| `servicoHistorico` | `buscarHistorico(filtros)`, `buscarDetalhesHistorico(id)` |
+| `servicoRevisaoSemanal` | `buscarRevisaoSemanal(inicioSemana)`, `salvarNotaSemana(inicioSemana, texto)` |
 
 O **cronômetro** não é um serviço: é regra (`regras/cronometro.ts`, `regras/pomodoro.ts`) mais
 estado (`ProvedorCronometro`). Ele só fala com a API ao salvar, por `servicoSessoes.criarSessao`
@@ -805,7 +824,15 @@ Cada ocorrência é uma **tarefa de verdade** no banco, ligada às irmãs por `s
 |---|---|
 | Resumo | `GET /api/dashboard/resumo?dataInicial&dataFinal` |
 | Sequência de dias | `GET /api/dashboard/sequencia?data` |
-| Revisão semanal | `GET /api/revisao-semanal?inicioSemana` |
+| Revisão semanal | `GET /api/revisao-semanal?inicioSemana` (domingo, `AAAA-MM-DD`) |
+| Nota da semana | `PUT /api/revisao-semanal/{inicioSemana}/nota` com `{ texto }`; texto vazio apaga |
+
+### Histórico
+
+| Operação | Método e caminho |
+|---|---|
+| Linha do tempo (paginada) | `GET /api/historico?dataInicial&dataFinal&area&busca&pagina&tamanho` |
+| Detalhes de um registro | `GET /api/historico/{id}` |
 
 As "tarefas do dia" não têm endpoint próprio: são `GET /api/tarefas?data=2026-09-22`.
 
@@ -832,6 +859,9 @@ Só os filtros que alguma tela usa.
 
 `GET /api/sessoes`: `dataInicial`, `dataFinal`, `atividadeId`, `pagina`, `tamanho`.
 
+`GET /api/historico`: `dataInicial` e `dataFinal` (obrigatórios), `area` (`TAREFAS` ou `ESTUDOS`),
+`busca` (título, categoria ou atividade), `pagina`, `tamanho` (padrão 30, máximo 100).
+
 Consultas prontas, montadas pelo frontend com os filtros acima:
 
 | Consulta | Filtros |
@@ -850,7 +880,7 @@ Consultas prontas, montadas pelo frontend com os filtros acima:
 
 ```text
 Clique no dia 22
-  → PaginaCalendario grava ?dia=2026-09-22 na URL (useParametrosUrl)
+  → PaginaCalendario guarda dia=2026-09-22 no histórico (useParametrosPagina)
   → useDadosAssincronos chama servicoTarefas.buscarTarefas({ data }, signal)
   → clienteHttp monta GET /api/tarefas?data=2026-09-22 e envia pelo transporte configurado
   → transporte fetch (API) ou simulado (dados/simulacao)
@@ -993,7 +1023,7 @@ TypeScript (`useConsultaMidia`) e repetidos nas media queries.
 | Área | Estratégia |
 |---|---|
 | Sidebar | Fixa e recolhível no desktop; gaveta abaixo de 1100px |
-| Calendário | Desktop: grade do mês + agenda em painel lateral. Tablet: grade + agenda abaixo. Celular: grade compacta com pontos por dia + agenda em folha inferior (decisão 5) |
+| Calendário | Desktop: grade do mês + agenda em painel lateral. Tablet: grade + agenda abaixo. Celular: grade compacta com pontos por dia + agenda abaixo da grade (decisão 5, revisada na Fase 05) |
 | Cards | Grade com `auto-fill`/`minmax`, sem colunas fixas por largura |
 | Formulários | Modal centrado no desktop; tela cheia no celular; campos em uma coluna abaixo de 768px |
 | Gráficos | `ResponsiveContainer` do Recharts; menos rótulos no eixo em telas estreitas; dica ao tocar |
@@ -1047,8 +1077,8 @@ termina vazio; sem atualização otimista na primeira versão.
 
 ## Status
 
-Fase 02 aprovada. Fase 03 concluída. Fase 04 (Dashboard) concluída, aguardando aprovação.
-Próxima fase: **Fase 05 — Calendário e gerenciamento de tarefas**.
+Fases 01 a 08 concluídas. Fase 09 (Auditoria geral, integração e QA) concluída, com as correções e
+as decisões pendentes na seção 21. A Fase 10 aguarda autorização.
 
 ---
 
@@ -1159,8 +1189,8 @@ largura real do conteúdo (com ou sem menu lateral), e não à da janela.
 | Em aberto por prioridade | Pendentes + em andamento de qualquer data, por prioridade |
 | Produtividade | Tarefas concluídas por dia (pela data de conclusão) e minutos de estudo por dia, no período escolhido |
 
-O período 7/30 dias vale só para o painel de Produtividade (decisão 15) e fica na URL
-(`/?periodo=30`). Os contadores do resumo são sempre da semana atual.
+O período 7/30 dias vale só para o painel de Produtividade (decisão 15) e fica no estado do
+histórico (`periodo=30`), fora da barra de endereços. Os contadores do resumo são sempre da semana atual.
 
 ### Dados que o Dashboard espera da API
 
@@ -1178,8 +1208,9 @@ O período 7/30 dias vale só para o painel de Produtividade (decisão 15) e fic
 | Mover atrasadas e desfazer | `POST /api/tarefas/reagendamentos` | `TarefaDTO[]` reagendadas |
 
 Em `EventoRecenteDTO`, `descricao` é o **título** do item referenciado (a tarefa, ou o nome da
-atividade em `SESSAO_SALVA`); a frase ("Você concluiu …") é montada pelo front. Ao reabrir uma
-tarefa concluída, o evento de conclusão correspondente sai da lista.
+atividade em `SESSAO_SALVA`); a frase ("Você concluiu …") é montada pelo front. Desde a Fase 07, reabrir uma tarefa
+concluída ou cancelada mantém o evento anterior e acrescenta `TAREFA_REABERTA` ("Você reabriu").
+Os eventos recentes vêm da mesma linha do tempo do Histórico (seção 19).
 
 ### Interações
 
@@ -1223,3 +1254,466 @@ No console do navegador, com `VITE_FONTE_DADOS=simulada`:
 
 Recarregue a página depois de cada comando. Os dados simulados ficam em
 `localStorage['orbit:simulacao:banco']`.
+
+---
+
+## 17. Calendário e gerenciamento de tarefas (Fase 05)
+
+### Decisões desta fase
+
+| # | Tema | Decisão |
+|---|---|---|
+| F5.1 | Agenda do dia no celular | **Lista abaixo da grade**, na mesma rolagem, em vez da folha inferior (revisão aprovada da decisão 5): tocar num dia só atualiza a lista, sem abrir nem fechar nada |
+| F5.2 | Página Tarefas | Entra nesta fase: é onde ficam as tarefas sem data (decisão 2) e os filtros |
+| F5.3 | Ações de tarefa | Um único `ProvedorAcoesTarefa` (`useAcoesTarefa()`) concentra formulário, detalhes, concluir com "Desfazer", mudar situação, excluir com confirmação e mover atrasadas. Calendário, Tarefas, Dashboard e cabeçalho usam o mesmo código |
+| F5.4 | Lembretes | `AgendadorLembretes` busca as tarefas de hoje com lembrete e mostra um toast no momento certo (até 10 min depois, se o app abrir atrasado). Cada lembrete aparece uma vez; as chaves já exibidas ficam em `localStorage` (`orbit:lembretes-exibidos`) |
+
+### Calendário — `/calendario` (estado: `mes=2026-09`, `dia=2026-09-24`)
+
+```text
+Cabeçalho da página
+┌ Calendário ─────────────────────────────┐ ┌ Agenda do dia ──────────┐
+│ Setembro de 2026 ▾        [Hoje] ‹  ›   │ │ Quinta-feira, 24 de set. │
+│ Dom Seg Ter Qua Qui Sex Sáb              │ │ Hoje · 6 tarefas         │
+│ 6 semanas, 42 dias                       │ │ [+ Nova tarefa]          │
+│ Legenda: a fazer · atrasada · concluída  │ │ ItemTarefa…              │
+│          · não realizada                 │ └──────────────────────────┘
+└──────────────────────────────────────────┘
+```
+
+- **Navegação temporal:** setas de mês, botão "Hoje" e o título do mês, que abre o seletor de mês e
+  ano (setas de ano, 12 meses, Page Up/Page Down trocam o ano). Na grade, as setas mudam de dia,
+  Page Up/Page Down de mês e Shift + Page Up/Page Down de ano. A seleção acompanha o foco; ao cruzar
+  o mês, a grade troca de mês junto.
+- **Ao trocar de mês**, o dia selecionado passa a ser o mesmo número de dia no novo mês (31 vira o
+  último dia); no mês atual, volta para hoje. Troca de mês cria uma entrada no histórico do navegador;
+  troca de dia só substitui a atual.
+- **Hoje × selecionado:** hoje tem o número num círculo sólido; o dia selecionado tem fundo e contorno
+  na cor de destaque. Os dois sinais são independentes e podem aparecer juntos.
+- **Célula do dia:** até 4 pontos (atrasada em vermelho, a fazer em azul, não realizada em cinza,
+  concluída em círculo vazado verde) e "+N" para o excedente. Um sinal no canto indica atraso
+  (relógio), urgente (triângulo) ou alta prioridade (seta) em aberto. O rótulo acessível descreve tudo
+  por extenso ("5 tarefas: 1 concluída, 1 atrasada. Prioridade mais alta: urgente"). No celular
+  ficam só o número e até 3 pontos.
+- **Agenda do dia:** tarefas do dia com horário, título, situação, prazo, categoria, prioridade e
+  recorrência; canceladas vão para o fim. Clique no título abre os detalhes; o marcador conclui.
+- **Dados:** `buscarResumoCalendario` para as 6 semanas visíveis e `buscarTarefasPorData` para a
+  agenda. Enquanto o novo dia carrega, a lista anterior fica esmaecida em vez de piscar o esqueleto.
+- **Erros:** falha nos marcadores vira um aviso de uma linha acima da grade (os dias continuam
+  clicáveis); falha na agenda vira estado de erro com "Tentar novamente".
+
+| Largura do conteúdo | Layout |
+|---|---|
+| > 980px | Grade + agenda lateral fixa ao rolar |
+| ≤ 980px | Agenda abaixo da grade |
+| ≤ 560px (calendário) | Grade compacta: iniciais dos dias, número centralizado, pontos menores |
+
+### Tarefas — `/tarefas` (estado: `visao=todas|sem-data|atrasadas` e filtros)
+
+- Visões **Todas**, **Sem data** e **Atrasadas**, com a contagem nas duas últimas.
+- Filtros: busca (título e descrição, aplicada 300ms depois de parar de digitar), situação (padrão
+  "Em aberto" = pendente + em andamento; some na visão Atrasadas), prioridade, categoria e ordenação
+  (data e horário, prioridade, atualizadas recentemente). Tudo fica no estado do histórico; mudar filtro
+  volta para a página 1.
+- Ordenando por data, a lista agrupa por dia ("Hoje · Quinta-feira, 24 de setembro").
+- Paginação de 20 itens (`Paginacao`, novo componente de `ui/`).
+- Ao trocar visão, filtro, busca ou página, a lista vira na hora um esqueleto animado
+  (`EsqueletoLista` com `imediato`, sem os 300ms de espera padrão) até o resultado chegar. Quando
+  só os dados mudam (uma tarefa concluída, por exemplo), a lista fica e é atualizada no lugar. A
+  agenda do dia no Calendário segue a mesma regra ao trocar de dia.
+- Na visão Atrasadas, "Mover todas para hoje" reagenda todas as atrasadas (não só a página).
+
+### Formulário, detalhes e exclusão
+
+- **Formulário** (modal `lg`, folha inferior no celular): título, descrição, data (vazia = "Sem data"),
+  dia inteiro, início e fim, prioridade, situação, categoria, atividade de estudo, lembrete e
+  repetição. Sem data, os campos que dependem dela somem e uma dica explica onde a tarefa vai ficar.
+- **Validação** em `regras/validacaoTarefa.ts` (a mesma que o simulador usa): no blur do campo, depois
+  em tempo real; no envio, o foco vai para o primeiro campo com erro. Erros 400 da API com
+  `erros[campo]` aparecem no campo certo; outras falhas ficam num aviso no topo do formulário, sem
+  perder o que foi digitado. Fechar com alterações pede confirmação.
+- **Recorrência** (`regras/recorrencia.ts`): a primeira ocorrência é sempre a data escolhida; em "dias
+  da semana", as seguintes caem nos dias marcados. Um resumo mostra a regra por extenso ("Às terças e
+  quintas, até 24/11/2026").
+- **Editar uma ocorrência** pergunta "Só esta" ou "Esta e as próximas". Se a regra de repetição mudou,
+  "Só esta" fica indisponível, com o motivo.
+- **Detalhes** (modal `md`): selos, descrição, data por extenso, horário, repetição, categoria,
+  atividade, lembrete, troca de situação na hora e datas de criação, atualização e conclusão.
+  Rodapé: Excluir, Editar e Concluir/Reabrir.
+- **Excluir** sempre confirma e lembra que cancelar mantém a tarefa no histórico. Em recorrentes, pergunta
+  o escopo.
+
+### `Modal` empilhado
+
+O `Modal` mantém uma pilha dos modais abertos: só o de cima responde a `Esc` e prende o `Tab`. Assim
+o diálogo de escopo, o de descartar alterações e o de exclusão podem abrir por cima do formulário e
+dos detalhes sem disputar o foco.
+
+### Contrato usado pelo frontend
+
+| Operação | Rota |
+|---|---|
+| Tarefas de um dia | `GET /api/tarefas?data=2026-09-24&ordenacao=DATA&tamanho=100` |
+| Lista paginada e filtrada | `GET /api/tarefas?semData|prazo|situacao|prioridade|categoriaId|busca|ordenacao|pagina|tamanho` |
+| Uma tarefa (detalhes) | `GET /api/tarefas/{id}` |
+| Criar | `POST /api/tarefas` com `TarefaEnvioDTO` → `201` + `TarefaDTO` |
+| Editar | `PUT /api/tarefas/{id}?escopo=SOMENTE_ESTA\|ESTA_E_PROXIMAS` → `TarefaDTO` |
+| Situação | `PATCH /api/tarefas/{id}/situacao` com `{ situacao }` |
+| Excluir | `DELETE /api/tarefas/{id}?escopo=…` → `204` |
+| Marcadores do calendário | `GET /api/tarefas/resumo-calendario?dataInicial&dataFinal` |
+| Categorias e atividades (formulário e filtros) | `GET /api/categorias`, `GET /api/atividades` |
+
+Validação com `400` e `erros: [{ campo, mensagem }]`, com `campo` igual ao nome do DTO (`titulo`,
+`horarioFim`, `diasSemana`, `dataFim`, `categoriaId`…). Editar uma recorrente com `SOMENTE_ESTA`
+mudando a regra responde `400` no campo `frequencia`.
+
+### Simulador
+
+O banco simulado passou para a versão 3 (é gerado de novo na primeira abertura) e ganhou `series`:
+cada série guarda a regra, a data inicial e até onde já gerou ocorrências. A cada requisição, séries
+sem término a menos de 3 meses do fim da janela são estendidas até 12 meses à frente, como o backend
+fará. Os exemplos (versão 4 do banco) são situações do dia a dia, para qualquer pessoa se
+reconhecer: contas, mercado, consultas, trabalho e estudos; categorias Estudos, Trabalho, Casa e
+família e Saúde; atividades de estudo Inglês, Leitura, Matemática e Violão. As sementes trazem uma série diária com término ("Praticar inglês no aplicativo") e uma sem
+término, às segundas, quartas e sextas ("Academia").
+
+---
+
+## 18. Cronômetro e estudos (Fase 06)
+
+As decisões de produto desta fase estão em `REQUISITOS.md` (F6-1 a F6-7 e as sugestões aprovadas).
+
+### Página Estudos — `/estudos`
+
+```text
+Cabeçalho da página
+┌ Cronômetro (7/12) ─────────────────────┐ ┌ Métricas da semana (5/12) ─┐
+│ Parado: atividades em pílulas + modo    │ │ Hoje · Esta semana          │
+│ Livre/Pomodoro + tempo + [Iniciar]      │ │ Sessões · Média por sessão  │
+│ Em sessão: estado, ciclo, atividade,    │ └─────────────────────────────┘
+│ tempo, controles, início e pausas       │ ┌ Histórico recente ──────────┐
+└─────────────────────────────────────────┘ │ Últimos 7 dias, por dia     │
+┌ Atividades de estudo ───────────────────┐ │ [Lançar sessão]             │
+│ Semana × meta, total, sessões, último   │ │ Clique numa sessão: editar  │
+│ estudo · Arquivadas (recolhidas)        │ └─────────────────────────────┘
+└─────────────────────────────────────────┘
+```
+
+Abaixo de 860px de conteúdo a página vira uma coluna, na ordem cronômetro, métricas, atividades e
+histórico. No cronômetro, abaixo de 420px, os controles viram uma grade de botões de 48px.
+
+| Componente | Responsabilidade |
+|---|---|
+| `Cronometro` | Seleção de atividade e modo, tempo, controles e informações da sessão; lê o `ProvedorCronometro` |
+| `SeletorAtividade` | Pílulas de atividade (`radiogroup`, setas do teclado) e "Nova atividade" |
+| `ResumoSessao` | Modal de "Finalizar": duração, horário, ciclos ou pausas, "Corrigir a duração", observação |
+| `FormularioAtividade` | Criar e editar; arquivar (com sessões) ou excluir (sem sessões) |
+| `FormularioSessao` | Lançar sessão manual e editar ou excluir sessões salvas |
+| `ListaAtividades`, `ListaSessoes`, `MetricasEstudo` | Listas, histórico agrupado por dia e faixa de métricas |
+| `MiniCronometro` (layout) | Pílula no cabeçalho com estado, tempo e pausar/retomar; some na própria página Estudos |
+| `SeletorCor` (ui) | Nove cores da paleta como `radiogroup` |
+
+O `Botao` ganhou o tamanho `lg` (48px, token `--altura-controle-lg`) e o `IndicadorNumerico` aceita
+`formatar` (para durações) e o tom `destaque`.
+
+### Como o tempo é calculado
+
+O cronômetro nunca soma segundos num contador. `regras/cronometro.ts` guarda **marcos**: `retomadaEm`
+(início do trecho que está rodando) e os milissegundos já consolidados (`msEstudoAcumulados` e, no
+Pomodoro, `msFaseAcumulados`). A leitura é sempre `acumulado + (agora − retomadaEm)`, então aba em
+segundo plano, computador suspenso, lentidão do `setInterval` ou recarregar a página não alteram o
+resultado. A tela só pede um novo desenho a cada 250ms (`useAgora`), e também ao voltar o foco para a
+aba.
+
+- **Pausar** consolida o trecho e zera `retomadaEm`; **retomar** abre um novo trecho.
+- **Finalizar** consolida o trecho, marca `encerradaEm` e guarda se estava rodando
+  (`retomarAoContinuar`). O tempo com o resumo aberto não conta; "Continuar estudando" retoma de onde
+  estava.
+- **Pomodoro**: o trecho só conta até o fim da fase. Terminado o foco, o tempo para e a interface
+  espera a confirmação ("Iniciar pausa" ou "Pular pausa"); a pausa não conta como estudo. A cada 4
+  focos concluídos, a pausa é longa. O fim de cada fase gera um aviso dentro do app e muda o título da
+  aba (decisão 17).
+- A sessão fica em `localStorage` (`orbit:cronometro:sessao`) e é validada ao ler
+  (`lerSessaoSalva`); dados corrompidos são descartados sem quebrar a tela. O evento `storage` mantém
+  as abas abertas em sincronia. A atividade e o modo usados por último ficam em
+  `orbit:cronometro:preferencias`.
+- Se salvar falhar, a sessão continua em `localStorage`, ainda no estado "finalizando": o resumo
+  reaparece, mesmo depois de recarregar, até ela ser salva ou descartada.
+
+`SessaoEmAndamento` ficou um pouco diferente do rascunho da seção 6: guarda o resumo da atividade e da
+tarefa (para o cabeçalho não precisar buscar nada), milissegundos em vez de segundos (sem erro de
+arredondamento a cada pausa) e `encerradaEm`/`retomarAoContinuar`. A fase aguardando confirmação é
+calculada, não guardada.
+
+### Integrações
+
+- **Tarefas**: nos detalhes de uma tarefa com atividade, "Iniciar estudo" começa a sessão ligada à
+  tarefa, muda uma tarefa pendente para "em andamento" e leva a `/estudos`. Com outra sessão rodando,
+  aparece "Ver cronômetro".
+- **Dashboard**: sem bloco novo. Salvar, editar ou excluir sessão chama `notificarAlteracao('sessoes')`,
+  e gráficos, mapa de calor, metas, sequência e eventos recentes buscam de novo.
+- **Calendário**: a agenda do dia lista "Estudo neste dia" (atividade, horário e duração), somente
+  leitura.
+- **Título da aba**: `utilitarios/tituloDocumento.ts` compõe o título da página com o destaque do
+  cronômetro (`00:24:18 · Inglês`, `Foco 18:32 · Inglês`, `Pausado · …`, `Foco concluído · …`).
+
+### Contrato usado pelo frontend
+
+| Operação | Rota |
+|---|---|
+| Listar atividades | `GET /api/atividades` → `AtividadeEstudoDTO[]` (inclui arquivadas) |
+| Criar / editar atividade | `POST /api/atividades`, `PUT /api/atividades/{id}` com `{ nome, cor, metaSemanalMinutos }` |
+| Arquivar / desarquivar | `PATCH /api/atividades/{id}/arquivamento` com `{ arquivada }` |
+| Excluir atividade | `DELETE /api/atividades/{id}` → `204`; `409` se tiver sessões |
+| Sessões por período | `GET /api/sessoes?dataInicial&dataFinal&atividadeId&pagina&tamanho` → `PaginaDTO<SessaoEstudoDTO>`, mais recentes primeiro |
+| Salvar sessão (cronômetro ou manual) | `POST /api/sessoes` com `SessaoEnvioDTO` → `201` |
+| Corrigir / excluir sessão | `PUT /api/sessoes/{id}`, `DELETE /api/sessoes/{id}` |
+| Resumo | `GET /api/estudos/resumo?dataInicial&dataFinal&atividadeId` → `ResumoEstudosDTO`; sem datas, desde o início |
+
+`ResumoEstudosDTO` traz `totalSegundos`, `totalSessoes`, `mediaSegundosPorSessao`, `porDia`
+(`{ data, segundos, sessoes }`, um item por dia do período) e `porAtividade`
+(`{ atividade, segundos, sessoes, ultimaSessaoEm }`). A página pede a semana atual (métricas e
+metas) e o total geral (tempo, sessões e último estudo de cada atividade).
+
+Regras que o backend deve repetir (`regras/validacaoAtividade.ts` e `regras/validacaoSessao.ts`):
+nome obrigatório, até 40 caracteres e único entre as não arquivadas, sem diferenciar maiúsculas e
+espaços extras (`409` com `erros: [{ campo: 'nome' }]`); meta opcional, até 100 h; sessão com
+atividade não arquivada, pelo menos 1 minuto, no máximo 24 horas, `duracaoSegundos ≤ fim − inicio`,
+sem terminar no futuro e com observação de até 500 caracteres. A sessão conta no dia do `inicio`.
+
+### Simulador
+
+O banco simulado passou para a versão 5: as sessões ganharam `ciclosConcluidos` e `observacao`, e só
+as sessões do cronômetro usam Pomodoro.
+
+---
+
+## 19. Histórico (Fase 07)
+
+### Decisões desta fase
+
+| # | Tema | Decisão |
+|---|------|---------|
+| F7-1 | Onde fica | **`/historico` geral** (tarefas e estudos), na seção **Acompanhamento** do menu, ao lado da Revisão semanal. O item "Histórico" saiu de Estudos; `/estudos/historico` redireciona para `/historico` já filtrado em Estudos. |
+| F7-2 | Alterações registradas | **Prioridade alterada, data alterada** (inclusive no "Mover todas para hoje"), **cancelada** e **reaberta**. Título, descrição e categoria não geram evento. |
+| F7-3 | Reabrir | **Mantém** "Tarefa concluída" e acrescenta "Tarefa reaberta". Gráficos e sequência continuam lendo `dataConclusao`, então não contam em dobro. |
+| F7-4 | Filtros | **Tudo · Tarefas · Estudos**, período e busca por texto. Sem filtro de situação ou categoria, que repetiriam a página Tarefas. |
+| F7-5 | Detalhes | **Somente leitura**, com "Abrir tarefa" (abre os detalhes da tarefa) ou "Editar sessão" (abre o `FormularioSessao`). |
+| F7-6 | Não realizadas | Ocorrências **não realizadas** (regra R4) aparecem no dia em que venceram. |
+
+Decisões padrão, sem objeção: período padrão de 7 dias; filtros no `history.state`; "Mostrar mais
+registros" em vez de páginas numeradas; busca no serviço, com 300 ms de espera; o título mostrado é
+o do momento do evento, e os detalhes avisam quando a tarefa mudou de nome; tarefa excluída some do
+histórico junto com os eventos dela (decisão 16).
+
+### Composição
+
+```text
+Histórico
+O que você concluiu, mudou e estudou, dia a dia.
+┌──────────────────────────────────────────────────────────────┐
+│ [ Tudo | Tarefas | Estudos ]                 Limpar filtros  │
+│ Buscar no histórico ___________________   Período [7 dias ▾] │
+│ 48 registros de 18 de set. a 24 de set.                      │
+│ Hoje  quinta-feira, 24 de setembro           (fixo ao rolar) │
+│ (✓) Tarefa concluída                                   13:50 │
+│     Estudar inglês: lição 12                                 │
+│     ● Estudos                                                │
+│ (⚑) Prioridade alterada                                13:35 │
+│     Levar o carro para a revisão                             │
+│     Baixa → Média                                            │
+│ Ontem  quarta-feira, 23 de setembro                          │
+│ (⏱) Sessão de estudo                                   19:00 │
+│     Matemática                                               │
+│     ● 45 min de estudo                                       │
+│                 [ Mostrar mais registros ]                   │
+│                    Mostrando 30 de 160                       │
+└──────────────────────────────────────────────────────────────┘
+```
+
+- **Período:** Hoje, Ontem, Últimos 7 dias, Últimos 30 dias, Este mês e Personalizado. O
+  personalizado mostra dois `SeletorData` (De e Até), começa com o intervalo que estava na tela e
+  nunca fica invertido: se a data inicial passar da final, a final acompanha, e vice-versa
+  (`regras/periodoHistorico.ts`, com testes).
+- **"Limpar filtros"** fica na linha de cima, ao lado das áreas, para os campos não mudarem de lugar
+  quando ele aparece.
+- **Cada tipo** tem ícone e texto próprios; a cor só reforça: concluída em verde, criada em azul,
+  reaberta em âmbar, não realizada em vermelho, sessão em azul-claro, alterações e cancelamentos em
+  cinza. Cancelada aparece riscada.
+- **Estados:** esqueleto enquanto carrega (imediato ao trocar filtro), "Nenhuma atividade
+  registrada." sem filtros, "Nenhum resultado encontrado." com filtros (com "Limpar filtros"), erro
+  com "Tentar novamente" e toast ao salvar ou excluir uma sessão.
+- **Celular:** filtros empilhados, De e Até lado a lado, modal de detalhes como folha inferior.
+
+### Modelo de dados
+
+`RegistroHistoricoDTO`: `id` (texto: `evento-12`, `sessao-45`, `nao-realizada-67`), `tipo`
+(`TAREFA_CRIADA`, `TAREFA_CONCLUIDA`, `TAREFA_CANCELADA`, `TAREFA_REABERTA`,
+`TAREFA_NAO_REALIZADA`, `PRIORIDADE_ALTERADA`, `DATA_ALTERADA`, `SESSAO_ESTUDO`), `area`, `ocorridoEm`,
+`comHorario`, `titulo`, `tarefaId`, `sessaoId`, `categoria`, `atividade`, `alteracao`
+(`{ anterior, novo }` em prioridade, data e reabertura) e `duracaoSegundos` (sessões).
+
+`DetalheHistoricoDTO`: `{ registro, tarefa: TarefaDTO | null, sessao: SessaoEstudoDTO | null }`,
+com a tarefa e a sessão **como estão agora**.
+
+A linha do tempo não é uma fonte de dados própria:
+
+- **Eventos de tarefa** vêm do registro de eventos, gravado pelas mesmas operações de `/tarefas`
+  (criar, alterar situação, editar, reagendar) e apagado junto com a tarefa.
+- **Sessões** vêm das próprias sessões, então editar ou excluir uma sessão já aparece no Histórico.
+- **Não realizadas** são calculadas pelo prazo, como no resto do app.
+
+O Dashboard ("Atividade recente") lê a mesma linha do tempo, limitado aos seis mais recentes.
+
+### Integrações
+
+- Concluir, reabrir, cancelar, reagendar ou mudar a prioridade de uma tarefa em qualquer tela
+  aparece no Histórico na hora (`ProvedorAlteracoes`).
+- Dashboard: "Ver histórico" no painel "Atividade recente".
+- Estudos: "Ver histórico completo" no fim do "Histórico recente", abrindo já em Estudos.
+
+### Simulador
+
+O banco simulado passou para a versão 6. Os eventos ganharam `id`, `tarefaId`, `titulo`, `anterior` e
+`novo`; as sessões saíram do registro de eventos, porque vêm direto das sessões. As sementes cobrem
+60 dias de eventos e trazem exemplos de prioridade alterada, data alterada e tarefa reaberta.
+
+---
+
+## 20. Revisão semanal (Fase 08)
+
+### Decisões desta fase
+
+| # | Tema | Decisão |
+|---|------|---------|
+| F8-1 | Base dos números | **Duas bases, cada uma com nome.** "Tarefas concluídas" conta pela data de conclusão, como o Dashboard. "Tarefas planejadas para a semana" são as tarefas com data na semana, separadas em concluídas, a fazer, atrasadas, não realizadas e canceladas. Taxa de conclusão = planejadas concluídas ÷ planejadas não canceladas; na semana em andamento, só as planejadas **até hoje**. |
+| F8-2 | Semana inicial | **A semana atual**, com o aviso "Semana em andamento · dados até hoje" e os dias que ainda não chegaram hachurados. |
+| F8-3 | Semanas futuras | A navegação vai **até a semana atual**; o futuro aparece em "Próxima semana". |
+| F8-4 | Próxima semana | Bloco completo **só na semana atual**; nas semanas passadas vira o atalho "Semana seguinte". |
+| F8-5 | Comparação | **Neutra**, abaixo de cada número do resumo ("3 a mais que na semana anterior"), sem cor de melhor ou pior. A taxa compara em pontos percentuais. |
+| F8-6 | Metas | Cada atividade com meta mostra o tempo da semana contra a meta; nas semanas encerradas, "Faltaram" em vez de "Faltam". |
+| F8-7 | Atrasadas | Lista do que continua em aberto com **"Mover as atrasadas para hoje"**, o mesmo fluxo com confirmação e "Desfazer". |
+| F8-8 | Gráfico | **Dois gráficos de barras horizontais lado a lado** (tarefas concluídas por dia e tempo de estudo por dia), empilhados no celular. Cada um nomeia a métrica e escreve o valor ao lado da barra. |
+| F8-9 | Nota da semana | Sugestão aprovada: texto livre por semana, até 1.000 caracteres, salvo pelo botão "Salvar nota"; editável em qualquer semana; texto vazio apaga a nota. |
+
+Decisões padrão, sem objeção: semana de domingo a sábado; "dia com atividade" segue a regra S1 da
+sequência; "importantes" = prioridade alta ou urgente; "tarefas criadas" vem do registro de eventos
+do Histórico; destaques e pontos de atenção só aparecem com número maior que zero e usam frases
+factuais (`regras/revisaoSemanal.ts`, com testes).
+
+### Composição
+
+```text
+Revisão semanal                                   [Ver histórico da semana]
+┌ ‹   20 — 26 de setembro de 2026   ›  [Esta semana] ┐
+│     Semana em andamento · dados até hoje           │
+└────────────────────────────────────────────────────┘
+┌ Concluídas ┬ Criadas ┬ Atrasadas ┬ Taxa de conclusão ┐   comparação neutra
+├ Tempo de estudo (largo) ┬ Sessões ┬ Dias com atividade ┤   abaixo de cada número
+└──────────────────────────────────────────────────────────┘
+┌ Destaques da semana ┐ ┌ Pontos de atenção ┐
+┌ Atividades da semana: tarefas por dia | estudo por dia ┐
+┌ Estudos (por atividade) ┐ ┌ Metas da semana ┐
+┌ Tarefas planejadas: barra de situação + legenda · Continuam em aberto ┐
+┌ Próxima semana (ou Semana seguinte) ┐ ┌ Nota da semana ┐
+```
+
+- **Estados:** esqueleto por bloco; semana sem nenhum registro mostra "Nenhuma atividade registrada
+  nesta semana." com "Ver a semana anterior", mantendo a próxima semana e a nota; erro com "Tentar
+  novamente".
+- **Resumo:** 4 colunas, e 2 colunas quando a área útil tem menos de 820px.
+- **Acessibilidade:** barras com texto completo para leitor de tela ("segunda-feira, 21 de
+  setembro: 3 tarefas concluídas"), legenda sempre visível na barra de situação, nada comunicado só
+  por cor.
+
+### Contrato
+
+`RevisaoSemanalDTO`: `inicioSemana`, `fimSemana`, `emAndamento`, `diasDecorridos`, `resumo` e
+`semanaAnterior` (`ResumoSemanaDTO`: `concluidas`, `criadas`, `atrasadas`, `planejadas`,
+`planejadasConcluidas`, `taxaConclusao`, `minutosEstudo`, `sessoes`, `diasComAtividade`), `porDia`
+(7 itens com `tarefasConcluidas` e `minutosEstudo`), `estudos` (`minutos`, `sessoes`,
+`porAtividade`, `metas`), `tarefas` (contagens por situação, `pendentes`, `importantesPendentes`),
+`proximaSemana` (`agendadas`, `altaPrioridade`, `atrasadasEmAberto`, até 10 `tarefas`) e `nota`.
+
+Uma chamada só, calculada a partir das mesmas tarefas, sessões e eventos do resto do app: concluir,
+reagendar ou salvar uma sessão em qualquer tela muda a revisão na hora (`ProvedorAlteracoes`).
+
+### Outras mudanças
+
+- `CabecalhoPainel`: a ação desce para a linha de baixo quando o título ficaria com menos de 14rem.
+- `useContagem`: com a aba oculta, os números vão direto ao valor final, sem animação presa.
+- `ProgressoMetas` aceita `semanaEncerrada`.
+- Banco simulado na versão 7, com `notasSemana`.
+
+---
+
+## 21. Auditoria geral (Fase 09)
+
+A aplicação foi usada no navegador de ponta a ponta — criar, editar, concluir, reagendar e excluir
+tarefas; cronometrar, pausar, retomar e salvar sessões; navegar entre meses e semanas — nos temas
+claro e escuro e em 360, 390, 768, 820, 1024, 1280, 1440 e 1920px. Os estados de carregamento, vazio
+e erro foram conferidos com `orbitSimulacao.latencia`, `esvaziar` e `falhar`.
+
+### Regra esclarecida: atrasada de hoje × de dias anteriores
+
+Uma tarefa de hoje cujo horário já passou é **atrasada** (decisão 1), mas não precisa de outra
+data. Só as atrasadas de **dias anteriores** mudam com "Mover para hoje"
+(`regras/prazo.ts` → `precisaDeNovaData`, com testes).
+
+- **Dashboard:** o grupo virou "Atrasadas de dias anteriores"; as atrasadas de hoje ficam só em
+  "Hoje", com o selo de atraso. Antes elas apareciam duas vezes no mesmo painel e a saudação contava
+  as mesmas tarefas em "para hoje" e em "atrasadas". O indicador "Atrasadas" continua contando todas,
+  agora com o texto "já passaram do prazo".
+- **"Mover todas para hoje"** (Dashboard, Tarefas e Revisão semanal): confirma e move só as de dias
+  anteriores, e o aviso informa a quantidade que de fato mudou. Na página Tarefas, o botão só aparece
+  quando existe alguma, consultando `prazo=ATRASADA&dataFinal=<ontem>`.
+
+### Mesmo instante para a sessão em todas as telas
+
+"Atividade recente" usava o fim da sessão ("Ontem, às 20:30"), e o Histórico, o início ("19:00"). As
+duas passam a usar o **início**, que também é a ordem da linha do tempo. O backend deve preencher
+`EventoRecenteDTO.ocorridoEm` de uma sessão com o início dela.
+
+### Outras correções
+
+- Revisão semanal no celular: "Continuam em aberto" e "Próxima semana" não declaravam o contêiner
+  `lista-tarefas`, então o `ItemTarefa` usava o layout largo e quebrava os títulos no meio das
+  palavras.
+- Calendário: o cabeçalho quebra para a linha de baixo quando mês, "Hoje" e as setas não cabem
+  (antes o título invadia o botão em 360px).
+- Mapa de calor: 6 meses numa linha quando cabem e 3 por linha no resto (antes ficava 5 + 1).
+- `CampoSelecao`: valor longo termina em reticências; `Paginacao`: "Página 1 de 9" numa linha só;
+  `ListaSessoes`: o ícone não fica sozinho quando a descrição quebra.
+- Aba "Pausada · …" (antes "Pausado", diferente do selo); atividade com sessão pausada mostra
+  "Sessão pausada" em vez de "Estudando agora".
+- Filtro de categoria da página Tarefas não fica preso em "Carregando…" depois de um erro.
+- Semântica: grupos de dia da lista de tarefas são `h2` (a página saltava de `h1` para `h3`), e a
+  página não encontrada ganhou `h1`.
+- Removido o gancho sem uso `useEhCelular`.
+
+### Melhorias aplicadas depois do relatório
+
+- **Horário digitável:** o `SeletorHorario` aceita dígitos. "1030" escolhe 10:30 e fecha; um dígito
+  de 3 a 9 já define a hora; ":" confirma a hora e passa para os minutos; digitar com o campo fechado
+  abre o painel já com o dígito. A janela entre dígitos é de 1,5 s. O rodapé mostra "Digite a hora,
+  como 0930." em telas com mouse.
+- **Datas por extenso fora dos campos:** texto de leitura usa o mês escrito ("30 de novembro de
+  2026", "18 de set. de 2026 às 12:49", "Dom., 27 de set."). O formato numérico (`dd/mm/aaaa`) fica
+  só no `SeletorData` e nas mensagens de validação que citam o valor desse campo. Novo
+  `formatarDataLonga` em `utilitarios/formatacao.ts`.
+- **Validação no `blur` só depois de editar:** título e descrição da tarefa, nome da atividade e
+  observação da sessão só mostram erro ao sair do campo se o valor mudou. Campo intocado continua
+  sendo validado ao enviar.
+- **Catálogo fora da produção:** `PaginaComponentes` só é importada quando
+  `ambiente.desenvolvimento` é verdadeiro, e o build de produção não gera mais o chunk dela.
+
+### Decisões pendentes (dependem do dono do produto)
+
+1. **Regra R4 × "Mover para hoje".** Ao mover a ocorrência atrasada mais recente de uma recorrente,
+   a ocorrência anterior, que era "não realizada", passa a ser a mais recente em atraso e volta a
+   aparecer como atrasada. Hoje há ainda duas ocorrências da mesma série no dia. Sugestão: considerar
+   "não realizada" toda ocorrência que tenha outra da mesma série com data até hoje.
+2. **"Em aberto por prioridade"** conta ocorrências futuras de tarefas recorrentes (a série é gerada
+   12 meses à frente), e só "Academia", três vezes por semana, soma mais de 150 tarefas "Baixa". Sugestão:
+   contar só até o fim da próxima semana, ou contar cada série uma vez.
+

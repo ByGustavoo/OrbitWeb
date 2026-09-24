@@ -36,11 +36,13 @@
 
 ## 📌 Status do Projeto
 
-O projeto está na **Fase 04 — Dashboard**, concluída. Além da base visual, do layout, da tela de
-boas-vindas, dos temas e dos componentes da Fase 03, já existem o Dashboard completo e a camada de
-dados (cliente HTTP, serviços e simulador da API). As demais telas de domínio (Calendário, Tarefas,
-Estudos, Histórico, Revisão semanal e Configurações) ainda são provisórias e serão construídas nas
-próximas fases, a começar pela **Fase 05 — Calendário e gerenciamento de tarefas**.
+O projeto está na **Fase 09 — Auditoria geral, integração e QA**, concluída. A aplicação foi usada
+no navegador de ponta a ponta, nos dois temas e de 360 a 1920px, e os problemas encontrados foram
+corrigidos: atrasadas de hoje duplicadas no Dashboard, "Mover todas para hoje" contando tarefas que
+não mudavam de data, listas da Revisão semanal espremidas no celular, cabeçalho do calendário em
+telas estreitas, horário da sessão diferente entre Dashboard e Histórico, entre outros. O relatório
+e as duas decisões que ficaram para o dono do produto estão na seção 21 do `ARQUITETURA.md`. As
+Configurações ainda são provisórias; a **Fase 10** aguarda autorização.
 
 Os requisitos do produto estão em [`REQUISITOS.md`](REQUISITOS.md) e as decisões técnicas em
 [`ARQUITETURA.md`](ARQUITETURA.md). Os dois são a fonte de verdade: uma mudança de regra passa por
@@ -55,6 +57,12 @@ eles antes de chegar ao código.
 <br>
 
 🔹 **Prontas**
+* **Calendário**: grade do mês com hoje e dia selecionado bem distintos, marcadores de carga (a fazer, atrasada, concluída, não realizada) e sinais de atraso e prioridade; navegação por mês, seletor de mês e ano, botão "Hoje" e teclado completo (setas, Page Up/Down, Shift para ano); agenda do dia ao lado no desktop e abaixo da grade no tablet e no celular.
+* **Tarefas**: visões Todas, Sem data e Atrasadas; busca, filtros de situação, prioridade e categoria, ordenação, agrupamento por dia e paginação; filtros e mês guardados no histórico do navegador, com a barra de endereços limpa; "Mover todas para hoje".
+* **Gerenciamento de tarefas**: formulário com validação em português, recorrência (diária, dias da semana, semanal, mensal e anual, com término), escolha "só esta / esta e as próximas", detalhes, troca de situação, conclusão com "Desfazer", exclusão com confirmação e lembretes dentro do app. Tudo reflete no Dashboard sem recarregar.
+* **Revisão semanal**: navegação entre semanas até a atual, com "Esta semana"; resumo (concluídas, criadas, atrasadas, taxa de conclusão, tempo de estudo, sessões e dias com atividade) comparado à semana anterior em tom neutro; destaques e pontos de atenção factuais; tarefas concluídas e tempo de estudo por dia; estudo por atividade e metas; situação das tarefas planejadas e o que continua em aberto, com "Mover as atrasadas para hoje"; próxima semana; nota da semana; atalhos para Histórico, Calendário e Estudos.
+* **Histórico**: linha do tempo agrupada por dia (Hoje, Ontem, data por extenso) com tarefas criadas, concluídas, canceladas, reabertas e não realizadas, prioridade e data alteradas e sessões de estudo; filtros Tudo, Tarefas e Estudos, período (hoje, ontem, 7 e 30 dias, este mês ou personalizado) e busca por tarefa, categoria ou atividade; detalhes de cada registro com atalho para abrir a tarefa ou editar a sessão; "Mostrar mais registros".
+* **Estudos**: cronômetro livre e Pomodoro que continua ao trocar de tela, atividades com meta semanal, sessões manuais editáveis, histórico recente e métricas da semana.
 * **Dashboard**: saudação com o que falta hoje; resumo da semana (concluídas, pendentes, atrasadas, urgentes e sequência de dias); tarefas de hoje com conclusão e "Desfazer"; atrasadas com "Mover todas para hoje"; próximas atividades com a carga de tarefas da semana; tarefas em aberto por prioridade; produtividade (tarefas concluídas e tempo de estudo por dia, em 7 ou 30 dias); atividade recente; mapa de calor de estudo dos últimos 6 meses; metas da semana.
 * Camada de dados: cliente HTTP único com tempo limite, erros tipados e fuso no cabeçalho; serviços por recurso; simulador que responde às mesmas rotas da API e guarda os dados no navegador.
 * Tela de boas-vindas com a frase de efeito, exibida ao abrir o Orbit numa nova aba ou janela, com saída em cascata e o logo viajando até o menu lateral.
@@ -66,10 +74,7 @@ eles antes de chegar ao código.
 * Catálogo de todos os componentes e estados em `/componentes`, só no ambiente de desenvolvimento.
 
 🔹 **Planejadas** (definidas em `REQUISITOS.md`)
-* **Calendário**: grade do mês, agenda do dia, navegação por mês e ano e criação de tarefa na data escolhida.
-* **Tarefas**: título, descrição, data opcional, horário de início e fim, prioridade, situação, categoria com cor, recorrência (diária, dias da semana, semanal, mensal e anual) e reagendamento de atrasadas em lote.
-* **Estudos**: cronômetro livre e Pomodoro que continua ao trocar de tela, atividades com meta semanal, sessões manuais e histórico.
-* **Revisão semanal**, **paleta de comandos** (`Ctrl+K`) e **lembretes** dentro do app.
+* **Paleta de comandos** (`Ctrl+K`) e **Configurações** (tema, Pomodoro e cadastro de categorias).
 
 
 <br>
@@ -133,7 +138,7 @@ $ npm run typecheck
 
 🔹 test
 ```bash
-# Testes das regras de negócio (prazo, sequência, escala do mapa de calor)
+# Testes das regras de negócio (prazo, recorrência, validações, lembrete, sequência, mapa de calor, revisão semanal)
 $ npm run test
 ```
 
@@ -186,7 +191,8 @@ src/
 │   │                CampoSelecao, SeletorData, SeletorHorario, CaixaSelecao, GrupoRadio,
 │   │                Interruptor, GrupoOpcoes, Selo, Painel, Modal, DialogoConfirmacao,
 │   │                Flutuante, Notificacao, Esqueleto, IndicadorGiratorio, EstadoVazio,
-│   │                EstadoErro, BarraProgresso, ConteudoAssincrono
+│   │                EstadoErro, BarraProgresso, ConteudoAssincrono, Paginacao
+│   ├── calendario/  NavegacaoCalendario (com seletor de mês e ano), GradeMes, CelulaDia, AgendaDia
 │   ├── layout/      MenuLateral, Cabecalho, CabecalhoPagina, BotaoTema
 │   ├── boasVindas/  TelaBoasVindas e a transição para a aplicação
 │   ├── dashboard/   ResumoIndicadores, TarefasDeHoje, ProximasAtividades, CargaSemana,
@@ -194,7 +200,8 @@ src/
 │   │                ListaEventosRecentes
 │   ├── estudos/     ProgressoMetas
 │   ├── graficos/    GraficoBarras (Recharts)
-│   ├── tarefas/     ItemTarefa e selos de prioridade, situação, prazo e categoria
+│   ├── tarefas/     ItemTarefa, ListaTarefas, FormularioTarefa, CamposRecorrencia,
+│   │                EscolhaEscopoAlteracao, DetalhesTarefa, BarraFiltrosTarefas e selos
 │   └── comum/       MarcaOrbit
 ├── configuracoes/   ambiente, aplicacao, navegacao
 ├── dados/simulacao/ simulador da API: banco no localStorage, sementes e manipuladores
@@ -203,12 +210,14 @@ src/
 │                    useConsultaMidia, useTravarRolagem, useTituloDocumento
 ├── layouts/         LayoutAplicacao (casca: menu lateral + cabeçalho + conteúdo)
 ├── modelos/         DTOs (tarefas, estudos, painel, comum), enumeracoes, rotulos, cores
-├── paginas/         PaginaDashboard, páginas provisórias, PaginaComponentes,
-│                    PaginaNaoEncontrada
-├── provedores/      ProvedorTema, ProvedorNotificacoes, ProvedorAlteracoes
-├── regras/          prazo, sequencia, escalaCalor (com testes)
+├── paginas/         PaginaDashboard, PaginaCalendario, PaginaTarefas, páginas provisórias,
+│                    PaginaComponentes, PaginaNaoEncontrada
+├── provedores/      ProvedorTema, ProvedorNotificacoes, ProvedorAlteracoes,
+│                    ProvedorAcoesTarefa, AgendadorLembretes
+├── regras/          prazo, recorrencia, validacaoTarefa, lembrete, sequencia, escalaCalor (com testes)
 ├── rotas/           RotasAplicacao, caminhos (única fonte de rotas)
-├── servicos/        servicoTarefas, servicoSessoes, servicoDashboard
+├── servicos/        servicoTarefas, servicoCategorias, servicoAtividades, servicoSessoes,
+│                    servicoDashboard
 └── utilitarios/     datas, formatacao, foco, juntarClasses
 ```
 
@@ -259,7 +268,8 @@ kebab-case sem acento (`/tarefas/resumo-calendario`), campo e query param em cam
 
 O backend precisa liberar **CORS** para a origem do dev server (`http://localhost:5173`).
 
-Os dados que o Dashboard espera de cada rota estão na seção 16 do `ARQUITETURA.md`.
+Os dados que o Dashboard espera de cada rota estão na seção 16 do `ARQUITETURA.md`; as rotas de
+tarefas usadas pelo Calendário e pela página Tarefas, na seção 17.
 
 <br>
 
@@ -299,6 +309,8 @@ orbitSimulacao.latencia(8000)              // latência fixa, para ver os esquel
 
 * 🪟 **Abaixo de 600px**: modais viram folhas que sobem da base da tela.
 
+* 📅 **Calendário**: agenda ao lado da grade quando há espaço; abaixo dela no tablet e no celular, onde a grade fica compacta (iniciais dos dias e pontos menores).
+
 * 👆 Alvos de toque e texto de campo crescem em `@media (pointer: coarse)`: 44px de alvo e 16px de texto, o mínimo que evita o zoom automático do Safari no iOS.
 
 * 🎬 `prefers-reduced-motion` respeitado globalmente.
@@ -309,7 +321,7 @@ orbitSimulacao.latencia(8000)              // latência fixa, para ver os esquel
 
 ## 🗺️ Próximas Etapas
 
-* 📅 **Fase 05 — Calendário e gerenciamento de tarefas**, seguida de Estudos e Revisão semanal.
+* 🔌 **Fase 10**, com as Configurações e a preparação final do contrato da API.
 
 * ☕ OrbitAPI em Java / Spring Boot, e depois Docker e esteira de publicação no mesmo modelo do PrismaWeb.
 

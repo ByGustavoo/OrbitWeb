@@ -1,0 +1,60 @@
+.numeros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+}
+
+.numero {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: var(--espaco-3);
+  border-radius: var(--raio-md);
+  background-color: var(--superficie-suave);
+}
+
+.valor {
+  color: var(--texto);
+  font-size: var(--tamanho-xl);
+  font-weight: var(--peso-forte);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.rotulo {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-compacta);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  container: lista-tarefas / inline-size;
+}
+
+.restantes {
+  margin-top: var(--espaco-2);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+}
+
+@media (max-width: 479px) {
+  .numeros {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .numero {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: var(--espaco-2);
+    padding: var(--espaco-2) var(--espaco-3);
+  }
+
+  .valor {
+    font-size: var(--tamanho-lg);
+  }
+}

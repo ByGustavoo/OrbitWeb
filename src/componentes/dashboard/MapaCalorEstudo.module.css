@@ -25,12 +25,19 @@
   grid-template-columns: minmax(0, 1fr) minmax(190px, 236px);
   gap: var(--espaco-8);
   align-items: start;
+  container: mapa-calor / inline-size;
 }
 
 .calendario {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--espaco-5) var(--espaco-4);
+}
+
+@container mapa-calor (min-width: 1000px) {
+  .calendario {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }
 
 .mes {

@@ -52,6 +52,7 @@
 
   --altura-controle: 38px;
   --altura-controle-sm: 32px;
+  --altura-controle-lg: 48px;
   --fonte-controle: var(--tamanho-base);
   --alvo-toque: 36px;
   --altura-item-menu: 38px;

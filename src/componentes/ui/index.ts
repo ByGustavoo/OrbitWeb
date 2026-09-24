@@ -21,6 +21,8 @@ export { IndicadorGiratorio } from './IndicadorGiratorio';
 export { Interruptor } from './Interruptor';
 export { Modal } from './Modal';
 export { CabecalhoPainel, Painel } from './Painel';
+export { Paginacao } from './Paginacao';
+export { SeletorCor } from './SeletorCor';
 export { SeletorData } from './SeletorData';
 export { SeletorHorario } from './SeletorHorario';
 export { Selo } from './Selo';

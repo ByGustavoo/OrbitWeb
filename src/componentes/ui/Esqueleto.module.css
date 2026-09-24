@@ -30,6 +30,10 @@
   flex-direction: column;
 }
 
+.imediato .esqueleto {
+  animation-delay: 0ms;
+}
+
 .linha {
   display: flex;
   align-items: center;

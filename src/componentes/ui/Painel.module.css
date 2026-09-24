@@ -52,14 +52,16 @@
 
 .cabecalho {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--espaco-4);
+  gap: var(--espaco-2) var(--espaco-4);
   margin-bottom: var(--espaco-4);
 }
 
 .textosCabecalho {
   display: flex;
+  flex: 1 1 14rem;
   flex-direction: column;
   gap: var(--espaco-1);
   min-width: 0;

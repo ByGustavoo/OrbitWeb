@@ -1,9 +1,16 @@
 import type { CategoriaDTO } from '@/modelos/comum';
-import type { Prioridade, Situacao } from '@/modelos/enumeracoes';
-import type { EventoRecenteDTO } from '@/modelos/painel';
-import type { RecorrenciaDTO } from '@/modelos/tarefas';
-import { adicionarDias, dataIsoLocal } from '@/utilitarios/datas';
-import type { AtividadeArmazenada, BancoSimulado, SessaoArmazenada, TarefaArmazenada } from './bancoSimulado';
+import type { Prioridade, Situacao, TipoEventoTarefa } from '@/modelos/enumeracoes';
+import type { MinutosLembrete, RecorrenciaDTO } from '@/modelos/tarefas';
+import { gerarDatasOcorrencias } from '@/regras/recorrencia';
+import { adicionarDias, adicionarMesesIso, dataIsoLocal, deDataIso, diasEntre } from '@/utilitarios/datas';
+import type {
+  AtividadeArmazenada,
+  BancoSimulado,
+  EventoArmazenado,
+  SerieArmazenada,
+  SessaoArmazenada,
+  TarefaArmazenada,
+} from './bancoSimulado';
 
 function criarAleatorio(semente: number): () => number {
   let estado = semente;
@@ -27,17 +34,17 @@ function somarMinutos(horario: string, minutos: number): string {
 }
 
 const categorias: CategoriaDTO[] = [
-  { id: 1, nome: 'Faculdade', cor: 'ROXO' },
+  { id: 1, nome: 'Estudos', cor: 'ROXO' },
   { id: 2, nome: 'Trabalho', cor: 'AZUL' },
-  { id: 3, nome: 'Pessoal', cor: 'VERDE' },
+  { id: 3, nome: 'Casa e família', cor: 'VERDE' },
   { id: 4, nome: 'Saúde', cor: 'ROSA' },
 ];
 
 const atividades: AtividadeArmazenada[] = [
-  { id: 1, nome: 'Banco de Dados', cor: 'AZUL', metaSemanalMinutos: 300, arquivada: false },
-  { id: 2, nome: 'Java e Spring Boot', cor: 'LARANJA', metaSemanalMinutos: 360, arquivada: false },
-  { id: 3, nome: 'Inglês', cor: 'VERDE', metaSemanalMinutos: 120, arquivada: false },
-  { id: 4, nome: 'Algoritmos', cor: 'ROXO', metaSemanalMinutos: null, arquivada: false },
+  { id: 1, nome: 'Inglês', cor: 'AZUL', metaSemanalMinutos: 300, arquivada: false },
+  { id: 2, nome: 'Leitura', cor: 'LARANJA', metaSemanalMinutos: 240, arquivada: false },
+  { id: 3, nome: 'Matemática', cor: 'VERDE', metaSemanalMinutos: 120, arquivada: false },
+  { id: 4, nome: 'Violão', cor: 'ROXO', metaSemanalMinutos: null, arquivada: false },
 ];
 
 interface ModeloTarefa {
@@ -51,45 +58,48 @@ interface ModeloTarefa {
   atividadeId?: number;
   concluidaHaMinutos?: number;
   criadaHaDias?: number;
+  descricao?: string;
+  lembrete?: MinutosLembrete;
 }
 
 const modelosFixos: ModeloTarefa[] = [
-  { titulo: 'Estudar Java: coleções e streams', dias: 0, inicio: '08:00', duracao: 90, prioridade: 'ALTA', situacao: 'CONCLUIDA', categoriaId: 1, atividadeId: 2, concluidaHaMinutos: 25 },
-  { titulo: 'Reunião do projeto Orbit', dias: 0, inicio: '10:30', duracao: 60, prioridade: 'MEDIA', situacao: 'EM_ANDAMENTO', categoriaId: 2 },
-  { titulo: 'Revisar a documentação da API', dias: 0, inicio: '14:00', duracao: 60, prioridade: 'BAIXA', categoriaId: 2, criadaHaDias: 0 },
-  { titulo: 'Entregar o trabalho de Banco de Dados', dias: 0, inicio: '16:30', duracao: 30, prioridade: 'URGENTE', categoriaId: 1, atividadeId: 1 },
+  { titulo: 'Estudar inglês: lição 12', dias: 0, inicio: '08:00', duracao: 90, prioridade: 'ALTA', situacao: 'CONCLUIDA', categoriaId: 1, atividadeId: 1, concluidaHaMinutos: 25 },
+  { titulo: 'Reunião com a equipe', dias: 0, inicio: '10:30', duracao: 60, prioridade: 'MEDIA', situacao: 'EM_ANDAMENTO', categoriaId: 2, descricao: 'Alinhar as entregas da semana e dividir o que ficou pendente.' },
+  { titulo: 'Responder os e-mails dos clientes', dias: 0, inicio: '14:00', duracao: 60, prioridade: 'BAIXA', categoriaId: 2, criadaHaDias: 0 },
+  { titulo: 'Entregar a declaração do imposto de renda', dias: 0, inicio: '16:30', duracao: 30, prioridade: 'URGENTE', categoriaId: 3, lembrete: 30, descricao: 'Separar os informes de rendimento, os recibos médicos e os comprovantes de despesas com educação.' },
   { titulo: 'Pagar a conta de luz', dias: 0, prioridade: 'ALTA', categoriaId: 3 },
-  { titulo: 'Enviar o relatório semanal', dias: -2, inicio: '17:00', duracao: 60, prioridade: 'ALTA', categoriaId: 2 },
+  { titulo: 'Enviar o relatório do mês', dias: -2, inicio: '17:00', duracao: 60, prioridade: 'ALTA', categoriaId: 2 },
   { titulo: 'Marcar consulta no dentista', dias: -3, prioridade: 'BAIXA', categoriaId: 4 },
-  { titulo: 'Prova de Banco de Dados', dias: 1, inicio: '09:00', duracao: 120, prioridade: 'URGENTE', categoriaId: 1, atividadeId: 1 },
-  { titulo: 'Code review do módulo de tarefas', dias: 1, inicio: '15:00', duracao: 45, prioridade: 'MEDIA', categoriaId: 2, criadaHaDias: 0 },
-  { titulo: 'Academia', dias: 2, inicio: '07:00', duracao: 60, prioridade: 'BAIXA', categoriaId: 4 },
-  { titulo: 'Planejar a próxima semana', dias: 3, prioridade: 'MEDIA', categoriaId: 3 },
-  { titulo: 'Apresentação do TCC', dias: 5, inicio: '19:30', duracao: 40, prioridade: 'ALTA', categoriaId: 1 },
-  { titulo: 'Renovar a matrícula', dias: 9, prioridade: 'MEDIA', categoriaId: 1 },
+  { titulo: 'Exame de sangue em jejum', dias: 1, inicio: '07:30', duracao: 60, prioridade: 'URGENTE', categoriaId: 4, lembrete: 60, descricao: 'Jejum de 8 horas. Levar o pedido médico, um documento com foto e a carteirinha do plano.' },
+  { titulo: 'Levar o carro para a revisão', dias: 1, inicio: '15:00', duracao: 45, prioridade: 'MEDIA', categoriaId: 3, criadaHaDias: 0 },
+  { titulo: 'Planejar as compras da semana', dias: 3, prioridade: 'MEDIA', categoriaId: 3 },
+  { titulo: 'Jantar de aniversário da Ana', dias: 5, inicio: '19:30', duracao: 120, prioridade: 'ALTA', categoriaId: 3, descricao: 'Reserva no restaurante às 19h30. Não esquecer o presente.' },
+  { titulo: 'Renovar o seguro do carro', dias: 9, prioridade: 'MEDIA', categoriaId: 3 },
 ];
 
 const titulosHistorico = [
-  'Resolver lista de exercícios de SQL',
-  'Ler capítulo de Arquitetura Limpa',
-  'Implementar o endpoint de tarefas',
-  'Revisar pull request',
-  'Estudar normalização',
-  'Fazer compras do mês',
-  'Atualizar o currículo',
-  'Corrigir bug no formulário',
-  'Assistir aula de Spring Security',
-  'Escrever testes do serviço de sessões',
-  'Organizar os arquivos da faculdade',
-  'Responder e-mails pendentes',
+  'Fazer compras no mercado',
+  'Lavar a roupa',
+  'Pagar o boleto da internet',
+  'Ler 20 páginas do livro',
+  'Limpar a geladeira',
+  'Responder as mensagens do trabalho',
+  'Levar o lixo reciclável',
+  'Estudar para a prova',
+  'Regar as plantas',
+  'Passear com o cachorro',
+  'Atualizar a planilha de gastos',
+  'Ligar para a família',
 ];
 
 const semTitulo: ModeloTarefa[] = [
-  { titulo: 'Ler Código Limpo', dias: 0, prioridade: 'BAIXA', categoriaId: 3 },
-  { titulo: 'Organizar a mesa de estudos', dias: 0, prioridade: 'BAIXA', categoriaId: 3 },
+  { titulo: 'Ler o livro do clube de leitura', dias: 0, prioridade: 'BAIXA', categoriaId: 1 },
+  { titulo: 'Organizar as fotos do celular', dias: 0, prioridade: 'BAIXA', categoriaId: 3 },
 ];
 
-export const VERSAO_BANCO = 2;
+export const VERSAO_BANCO = 7;
+
+const DIAS_REGISTRO_EVENTOS = 60;
 
 export function gerarSementes(agora: Date): BancoSimulado {
   const aleatorio = criarAleatorio(20260922);
@@ -122,7 +132,7 @@ export function gerarSementes(agora: Date): BancoSimulado {
     return {
       id: proximoId,
       titulo: modelo.titulo,
-      descricao: null,
+      descricao: modelo.descricao ?? null,
       data: extras.semData ? null : dataIsoLocal(dia),
       diaInteiro: !modelo.inicio,
       horarioInicio: modelo.inicio ?? null,
@@ -131,7 +141,7 @@ export function gerarSementes(agora: Date): BancoSimulado {
       situacao,
       categoria: categoria ? { ...categoria } : null,
       atividade: atividade ? { id: atividade.id, nome: atividade.nome, cor: atividade.cor } : null,
-      lembreteMinutosAntes: null,
+      lembreteMinutosAntes: modelo.lembrete ?? null,
       serieId: null,
       recorrencia: null,
       dataConclusao: conclusao ? conclusao.toISOString() : null,
@@ -144,18 +154,45 @@ export function gerarSementes(agora: Date): BancoSimulado {
   modelosFixos.forEach((modelo) => tarefas.push(criarTarefa(modelo)));
   semTitulo.forEach((modelo) => tarefas.push(criarTarefa(modelo, { semData: true })));
 
-  const recorrencia: RecorrenciaDTO = { frequencia: 'DIARIA', diasSemana: null, dataFim: null };
+  const hojeIso = dataIsoLocal(hoje);
+  const series: SerieArmazenada[] = [];
+  const recorrencia: RecorrenciaDTO = { frequencia: 'DIARIA', diasSemana: null, dataFim: dataIsoLocal(adicionarDias(hoje, 6)) };
+  series.push({ id: 1, dataInicial: dataIsoLocal(adicionarDias(hoje, -6)), recorrencia, geradaAte: recorrencia.dataFim ?? hojeIso });
   for (let dias = -6; dias <= 6; dias += 1) {
     const naoFeita = dias === -1 || dias === -4;
     const concluida = dias < 0 && !naoFeita;
     const dia = adicionarDias(hoje, dias);
     const tarefa = criarTarefa(
-      { titulo: 'Revisar flashcards de inglês', dias, inicio: '21:00', duracao: 20, prioridade: 'MEDIA', categoriaId: 3, atividadeId: 3 },
+      { titulo: 'Praticar inglês no aplicativo', dias, inicio: '21:00', duracao: 20, prioridade: 'MEDIA', categoriaId: 1, atividadeId: 1 },
       { serieId: 1, recorrencia },
     );
     if (concluida) {
       tarefa.situacao = 'CONCLUIDA';
       tarefa.dataConclusao = instante(dia, dias === -2 ? '22:10' : '21:15').toISOString();
+      tarefa.atualizadoEm = tarefa.dataConclusao;
+    }
+    tarefas.push(tarefa);
+  }
+
+  let inicioAcademia = adicionarDias(hoje, -14);
+  while (inicioAcademia.getDay() !== 1) inicioAcademia = adicionarDias(inicioAcademia, 1);
+  const recorrenciaAcademia: RecorrenciaDTO = { frequencia: 'DIAS_DA_SEMANA', diasSemana: ['SEGUNDA', 'QUARTA', 'SEXTA'], dataFim: null };
+  const serieAcademia: SerieArmazenada = {
+    id: 2,
+    dataInicial: dataIsoLocal(inicioAcademia),
+    recorrencia: recorrenciaAcademia,
+    geradaAte: adicionarMesesIso(hojeIso, 12),
+  };
+  series.push(serieAcademia);
+  for (const data of gerarDatasOcorrencias(recorrenciaAcademia, serieAcademia.dataInicial, serieAcademia.dataInicial, serieAcademia.geradaAte)) {
+    const dias = diasEntre(hojeIso, data);
+    const tarefa = criarTarefa(
+      { titulo: 'Academia', dias, inicio: '07:00', duracao: 60, prioridade: 'BAIXA', categoriaId: 4, criadaHaDias: 16 },
+      { serieId: 2, recorrencia: recorrenciaAcademia },
+    );
+    if (dias < 0) {
+      tarefa.situacao = 'CONCLUIDA';
+      tarefa.dataConclusao = instante(adicionarDias(hoje, dias), '08:05').toISOString();
       tarefa.atualizadoEm = tarefa.dataConclusao;
     }
     tarefas.push(tarefa);
@@ -201,44 +238,83 @@ export function gerarSementes(agora: Date): BancoSimulado {
       const inicio = instante(dia, horario);
       const fim = new Date(inicio.getTime() + minutos * 60000);
       proximoId += 1;
+      const origem = aleatorio() > 0.85 ? 'MANUAL' : 'CRONOMETRO';
+      const modo = origem === 'CRONOMETRO' && aleatorio() > 0.5 ? 'POMODORO' : 'LIVRE';
       sessoes.push({
         id: proximoId,
         atividadeId: escolher(pesosAtividades),
         tarefaId: null,
-        modo: aleatorio() > 0.5 ? 'POMODORO' : 'LIVRE',
-        origem: aleatorio() > 0.85 ? 'MANUAL' : 'CRONOMETRO',
+        modo,
+        origem,
         inicio: inicio.toISOString(),
         fim: fim.toISOString(),
         duracaoSegundos: minutos * 60,
+        ciclosConcluidos: modo === 'POMODORO' ? Math.floor(minutos / 25) : null,
+        observacao: null,
       });
       horario = somarMinutos(horario, minutos + 15);
     }
   }
 
-  const limiteEventos = agora.getTime() - 4 * 86400000;
-  const eventos: EventoRecenteDTO[] = [];
+  const eventos: EventoArmazenado[] = [];
+  const registrar = (
+    tarefa: TarefaArmazenada | undefined,
+    tipo: TipoEventoTarefa,
+    momento: Date,
+    anterior: string | null = null,
+    novo: string | null = null,
+  ) => {
+    if (!tarefa || momento.getTime() > agora.getTime()) return;
+    if (momento.toISOString() > tarefa.atualizadoEm) tarefa.atualizadoEm = momento.toISOString();
+    proximoId += 1;
+    eventos.push({ id: proximoId, tipo, tarefaId: tarefa.id, titulo: tarefa.titulo, ocorridoEm: momento.toISOString(), anterior, novo });
+  };
+
+  const limiteEventos = agora.getTime() - DIAS_REGISTRO_EVENTOS * 86400000;
+  const primeiraDaSerie = new Map<number, TarefaArmazenada>();
+  for (const tarefa of tarefas) {
+    if (tarefa.serieId === null) continue;
+    const atual = primeiraDaSerie.get(tarefa.serieId);
+    if (!atual || (tarefa.data ?? '') < (atual.data ?? '')) primeiraDaSerie.set(tarefa.serieId, tarefa);
+  }
+
+  const cronologicas = [...tarefas].sort((a, b) => a.criadoEm.localeCompare(b.criadoEm));
+  for (const tarefa of cronologicas) {
+    const criadaNoPeriodo = new Date(tarefa.criadoEm).getTime() >= limiteEventos;
+    const representaSerie = tarefa.serieId === null || primeiraDaSerie.get(tarefa.serieId) === tarefa;
+    if (criadaNoPeriodo && representaSerie) registrar(tarefa, 'TAREFA_CRIADA', new Date(tarefa.criadoEm));
+  }
   for (const tarefa of tarefas) {
     if (tarefa.dataConclusao && new Date(tarefa.dataConclusao).getTime() >= limiteEventos) {
-      eventos.push({ tipo: 'TAREFA_CONCLUIDA', descricao: tarefa.titulo, ocorridoEm: tarefa.dataConclusao, referenciaId: tarefa.id });
+      registrar(tarefa, 'TAREFA_CONCLUIDA', new Date(tarefa.dataConclusao));
     }
-    if (new Date(tarefa.criadoEm).getTime() >= agora.getTime() - 86400000 * 1.5) {
-      eventos.push({ tipo: 'TAREFA_CRIADA', descricao: tarefa.titulo, ocorridoEm: tarefa.criadoEm, referenciaId: tarefa.id });
+    if (tarefa.situacao === 'CANCELADA' && tarefa.data) {
+      const momento = instante(deDataIso(tarefa.data), somarMinutos(tarefa.horarioInicio ?? '12:00', -90));
+      if (momento.getTime() >= limiteEventos) {
+        tarefa.atualizadoEm = momento.toISOString();
+        registrar(tarefa, 'TAREFA_CANCELADA', momento);
+      }
     }
   }
-  for (const sessao of sessoes) {
-    if (new Date(sessao.fim).getTime() < limiteEventos) continue;
-    const atividade = atividades.find((item) => item.id === sessao.atividadeId);
-    eventos.push({ tipo: 'SESSAO_SALVA', descricao: atividade?.nome ?? 'Estudo', ocorridoEm: sessao.fim, referenciaId: sessao.id });
-  }
-  const cancelada = tarefas.find((tarefa) => tarefa.situacao === 'CANCELADA');
-  if (cancelada) {
-    eventos.push({
-      tipo: 'TAREFA_CANCELADA',
-      descricao: cancelada.titulo,
-      ocorridoEm: new Date(agora.getTime() - 26 * 3600000).toISOString(),
-      referenciaId: cancelada.id,
-    });
-  }
+
+  const porTitulo = (titulo: string) => tarefas.find((tarefa) => tarefa.titulo === titulo && tarefa.serieId === null);
+  const ontem = adicionarDias(hoje, -1);
+
+  const imposto = porTitulo('Entregar a declaração do imposto de renda');
+  registrar(imposto, 'PRIORIDADE_ALTERADA', instante(ontem, '20:10'), 'ALTA', 'URGENTE');
+
+  const revisao = porTitulo('Levar o carro para a revisão');
+  registrar(revisao, 'PRIORIDADE_ALTERADA', new Date(agora.getTime() - 40 * 60000), 'BAIXA', 'MEDIA');
+
+  const relatorio = porTitulo('Enviar o relatório do mês');
+  registrar(relatorio, 'DATA_ALTERADA', instante(adicionarDias(hoje, -4), '11:20'), dataIsoLocal(adicionarDias(hoje, -4)), relatorio?.data ?? null);
+
+  const compras = porTitulo('Planejar as compras da semana');
+  registrar(compras, 'DATA_ALTERADA', instante(ontem, '09:40'), null, compras?.data ?? null);
+
+  const contaLuz = porTitulo('Pagar a conta de luz');
+  registrar(contaLuz, 'TAREFA_CONCLUIDA', instante(ontem, '18:05'));
+  registrar(contaLuz, 'TAREFA_REABERTA', instante(ontem, '18:12'), 'CONCLUIDA', 'PENDENTE');
 
   return {
     versao: VERSAO_BANCO,
@@ -246,7 +322,9 @@ export function gerarSementes(agora: Date): BancoSimulado {
     categorias: categorias.map((categoria) => ({ ...categoria })),
     atividades: atividades.map((atividade) => ({ ...atividade })),
     tarefas,
+    series,
     sessoes,
     eventos,
+    notasSemana: {},
   };
 }

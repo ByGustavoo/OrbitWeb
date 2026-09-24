@@ -20,6 +20,10 @@ export interface SeletorHorarioProps extends PropriedadesMensagensCampo {
 }
 
 const dois = (numero: number) => String(numero).padStart(2, '0');
+const ehDigito = (tecla: string) => /^\d$/.test(tecla);
+const INTERVALO_DIGITACAO_MS = 1500;
+
+type ColunaHorario = 'horas' | 'minutos';
 
 export function SeletorHorario({
   rotulo,
@@ -39,6 +43,7 @@ export function SeletorHorario({
   const gatilhoRef = useRef<HTMLButtonElement>(null);
   const idPainel = useId();
   const [aberto, setAberto] = useState(false);
+  const [digitoInicial, setDigitoInicial] = useState<string | null>(null);
 
   const fechar = useCallback((devolverFoco: boolean) => {
     setAberto(false);
@@ -68,10 +73,15 @@ export function SeletorHorario({
             aria-describedby={idDescricao}
             aria-invalid={erro ? true : undefined}
             disabled={desabilitado}
-            onClick={() => setAberto((atual) => !atual)}
+            onClick={() => {
+              setDigitoInicial(null);
+              setAberto((atual) => !atual);
+            }}
             onKeyDown={(evento) => {
-              if (evento.key === 'ArrowDown' && !aberto) {
+              if (aberto) return;
+              if (evento.key === 'ArrowDown' || ehDigito(evento.key)) {
                 evento.preventDefault();
+                setDigitoInicial(ehDigito(evento.key) ? evento.key : null);
                 setAberto(true);
               }
             }}
@@ -92,6 +102,7 @@ export function SeletorHorario({
           >
             <PainelHorario
               valor={valor}
+              digitoInicial={digitoInicial}
               passoMinutos={passoMinutos}
               aoMudar={aoMudar}
               aoConcluir={() => fechar(true)}
@@ -113,13 +124,14 @@ export function SeletorHorario({
 
 interface PainelHorarioProps {
   valor: string | null;
+  digitoInicial: string | null;
   passoMinutos: number;
   aoMudar: (valor: string) => void;
   aoConcluir: () => void;
   aoLimpar?: () => void;
 }
 
-function PainelHorario({ valor, passoMinutos, aoMudar, aoConcluir, aoLimpar }: PainelHorarioProps) {
+function PainelHorario({ valor, digitoInicial, passoMinutos, aoMudar, aoConcluir, aoLimpar }: PainelHorarioProps) {
   const [horaAtual, minutoAtual] = (valor ?? '').split(':').map(Number);
   const horaSelecionada = valor ? horaAtual ?? null : null;
   const minutoSelecionado = valor ? minutoAtual ?? null : null;
@@ -137,17 +149,9 @@ function PainelHorario({ valor, passoMinutos, aoMudar, aoConcluir, aoLimpar }: P
   );
   const colunaHorasRef = useRef<HTMLDivElement>(null);
   const colunaMinutosRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const quadro = requestAnimationFrame(() => {
-      for (const coluna of [colunaHorasRef.current, colunaMinutosRef.current]) {
-        const alvo = coluna?.querySelector<HTMLElement>('[tabindex="0"]');
-        if (coluna && alvo) coluna.scrollTop = alvo.offsetTop - coluna.clientHeight / 2 + alvo.offsetHeight / 2;
-      }
-      colunaHorasRef.current?.querySelector<HTMLElement>('[tabindex="0"]')?.focus({ preventScroll: true });
-    });
-    return () => cancelAnimationFrame(quadro);
-  }, []);
+  const colunaAtivaRef = useRef<ColunaHorario>('horas');
+  const digitadoRef = useRef({ coluna: 'horas' as ColunaHorario, texto: '', instante: 0 });
+  const horaEscolhidaRef = useRef<number | null>(null);
 
   const focarEm = (coluna: HTMLDivElement | null) => {
     requestAnimationFrame(() => {
@@ -159,15 +163,84 @@ function PainelHorario({ valor, passoMinutos, aoMudar, aoConcluir, aoLimpar }: P
 
   const escolherHora = (hora: number) => {
     setHoraFocada(hora);
+    horaEscolhidaRef.current = hora;
+    colunaAtivaRef.current = 'minutos';
     aoMudar(`${dois(hora)}:${dois(minutoSelecionado ?? minutoFocado)}`);
     focarEm(colunaMinutosRef.current);
+    requestAnimationFrame(() => colunaHorasRef.current?.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' }));
   };
 
   const escolherMinuto = (minuto: number) => {
     setMinutoFocado(minuto);
-    aoMudar(`${dois(horaSelecionada ?? horaFocada)}:${dois(minuto)}`);
+    aoMudar(`${dois(horaEscolhidaRef.current ?? horaSelecionada ?? horaFocada)}:${dois(minuto)}`);
     aoConcluir();
   };
+
+  const lembrarDigito = (coluna: ColunaHorario, texto: string) => {
+    digitadoRef.current = { coluna, texto, instante: performance.now() };
+  };
+
+  const digitar = (tecla: string) => {
+    const coluna = colunaAtivaRef.current;
+    const anterior = digitadoRef.current;
+    const continua =
+      anterior.coluna === coluna && anterior.texto.length === 1 && performance.now() - anterior.instante < INTERVALO_DIGITACAO_MS;
+    const numero = Number(continua ? anterior.texto + tecla : tecla);
+    const digito = Number(tecla);
+
+    if (coluna === 'horas') {
+      if (continua && numero <= 23) {
+        lembrarDigito(coluna, '');
+        escolherHora(numero);
+      } else if (digito > 2) {
+        lembrarDigito(coluna, '');
+        escolherHora(digito);
+      } else {
+        lembrarDigito(coluna, tecla);
+        setHoraFocada(digito);
+        focarEm(colunaHorasRef.current);
+      }
+      return;
+    }
+
+    if (continua && numero <= 59) {
+      lembrarDigito(coluna, '');
+      escolherMinuto(numero);
+      return;
+    }
+    if (digito > 5) {
+      lembrarDigito(coluna, '');
+      return;
+    }
+    lembrarDigito(coluna, tecla);
+    const candidato = minutos.find((minuto) => dois(minuto).startsWith(tecla));
+    if (candidato !== undefined) {
+      setMinutoFocado(candidato);
+      focarEm(colunaMinutosRef.current);
+    }
+  };
+
+  const teclarPainel = (evento: KeyboardEvent<HTMLDivElement>) => {
+    if (ehDigito(evento.key)) {
+      evento.preventDefault();
+      digitar(evento.key);
+    } else if (evento.key === ':' && colunaAtivaRef.current === 'horas') {
+      evento.preventDefault();
+      escolherHora(horaFocada);
+    }
+  };
+
+  useEffect(() => {
+    const quadro = requestAnimationFrame(() => {
+      for (const coluna of [colunaHorasRef.current, colunaMinutosRef.current]) {
+        const alvo = coluna?.querySelector<HTMLElement>('[tabindex="0"]');
+        if (coluna && alvo) coluna.scrollTop = alvo.offsetTop - coluna.clientHeight / 2 + alvo.offsetHeight / 2;
+      }
+      colunaHorasRef.current?.querySelector<HTMLElement>('[tabindex="0"]')?.focus({ preventScroll: true });
+      if (digitoInicial) digitar(digitoInicial);
+    });
+    return () => cancelAnimationFrame(quadro);
+  }, []);
 
   const teclarColuna = (
     evento: KeyboardEvent<HTMLDivElement>,
@@ -199,7 +272,7 @@ function PainelHorario({ valor, passoMinutos, aoMudar, aoConcluir, aoLimpar }: P
   };
 
   return (
-    <div className={estilos.painel}>
+    <div className={estilos.painel} onKeyDown={teclarPainel}>
       <div className={estilos.titulos} aria-hidden="true">
         <span>Hora</span>
         <span>Minuto</span>
@@ -212,6 +285,9 @@ function PainelHorario({ valor, passoMinutos, aoMudar, aoConcluir, aoLimpar }: P
           selecionado={horaSelecionada}
           focado={horaFocada}
           aoEscolher={escolherHora}
+          aoFocar={() => {
+            colunaAtivaRef.current = 'horas';
+          }}
           aoTeclar={(evento) =>
             teclarColuna(evento, horas, horaFocada, setHoraFocada, colunaHorasRef.current, colunaMinutosRef.current)
           }
@@ -226,18 +302,22 @@ function PainelHorario({ valor, passoMinutos, aoMudar, aoConcluir, aoLimpar }: P
           selecionado={minutoSelecionado}
           focado={minutoFocado}
           aoEscolher={escolherMinuto}
+          aoFocar={() => {
+            colunaAtivaRef.current = 'minutos';
+          }}
           aoTeclar={(evento) =>
             teclarColuna(evento, minutos, minutoFocado, setMinutoFocado, colunaMinutosRef.current, colunaHorasRef.current)
           }
         />
       </div>
-      {aoLimpar ? (
-        <div className={estilos.rodape}>
+      <div className={juntarClasses(estilos.rodape, !aoLimpar && estilos.rodapeSoDica)}>
+        <p className={estilos.dica}>Digite a hora, como 0930.</p>
+        {aoLimpar ? (
           <button type="button" className={estilos.limpar} onClick={aoLimpar}>
             Limpar
           </button>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -249,12 +329,13 @@ interface ColunaProps {
   selecionado: number | null;
   focado: number;
   aoEscolher: (valor: number) => void;
+  aoFocar: () => void;
   aoTeclar: (evento: KeyboardEvent<HTMLDivElement>) => void;
 }
 
-function Coluna({ referencia, rotulo, itens, selecionado, focado, aoEscolher, aoTeclar }: ColunaProps) {
+function Coluna({ referencia, rotulo, itens, selecionado, focado, aoEscolher, aoFocar, aoTeclar }: ColunaProps) {
   return (
-    <div ref={referencia} role="listbox" aria-label={rotulo} className={estilos.coluna} onKeyDown={aoTeclar}>
+    <div ref={referencia} role="listbox" aria-label={rotulo} className={estilos.coluna} onKeyDown={aoTeclar} onFocus={aoFocar}>
       {itens.map((item) => (
         <button
           key={item}

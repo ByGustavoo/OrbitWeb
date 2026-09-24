@@ -1,0 +1,33 @@
+.secao {
+  container: resumo-semana / inline-size;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  background-color: var(--borda);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-lg);
+  box-shadow: var(--sombra-cartao);
+}
+
+.largo {
+  grid-column: span 2;
+}
+
+.fato,
+.comparacao {
+  display: block;
+}
+
+.fato {
+  color: var(--texto-secundario);
+}
+
+@container resumo-semana (max-width: 820px) {
+  .grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

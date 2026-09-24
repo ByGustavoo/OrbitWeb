@@ -180,7 +180,7 @@ export function CampoSelecao<T extends string>({
                   style={{ color: selecionada?.cor, flexShrink: 0 }}
                 />
               ) : null}
-              {selecionada?.rotulo ?? textoVazio}
+              <span className={estilosCampo.textoGatilho}>{selecionada?.rotulo ?? textoVazio}</span>
             </span>
             <ChevronDown className={estilosCampo.setaGatilho} size={16} strokeWidth={2} aria-hidden="true" />
           </button>

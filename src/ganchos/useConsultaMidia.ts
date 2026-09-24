@@ -17,4 +17,3 @@ export function useConsultaMidia(consulta: string): boolean {
 }
 
 export const useMenuEmGaveta = () => useConsultaMidia(`(max-width: ${PONTOS_QUEBRA.gaveta}px)`);
-export const useEhCelular = () => useConsultaMidia(`(max-width: ${PONTOS_QUEBRA.celular}px)`);

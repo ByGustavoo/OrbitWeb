@@ -120,3 +120,29 @@ export function intervaloDeDias(inicioIso: string, fimIso: string): string[] {
 export function hojeIso(): string {
   return dataIsoLocal(hoje());
 }
+
+export function mesIso(data: Date): string {
+  return dataIsoLocal(data).slice(0, 7);
+}
+
+export function deMesIso(iso: string): Date | null {
+  const correspondencia = /^(\d{4})-(\d{2})$/.exec(iso);
+  if (!correspondencia) return null;
+  const mes = Number(correspondencia[2]);
+  if (mes < 1 || mes > 12) return null;
+  return new Date(Number(correspondencia[1]), mes - 1, 1);
+}
+
+export function ehDataIsoValida(iso: string): boolean {
+  const correspondencia = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!correspondencia) return false;
+  return dataIsoLocal(deDataIso(iso)) === iso;
+}
+
+export function ehHorarioValido(horario: string): boolean {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(horario);
+}
+
+export function adicionarMesesIso(iso: string, meses: number): string {
+  return dataIsoLocal(adicionarMeses(deDataIso(iso), meses));
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calcularPrazo, marcarNaoRealizadas } from './prazo';
+import { calcularPrazo, marcarNaoRealizadas, precisaDeNovaData } from './prazo';
 import type { DadosPrazo } from './prazo';
 
 const base: DadosPrazo = {
@@ -69,5 +69,18 @@ describe('marcarNaoRealizadas', () => {
       [3, 'NO_PRAZO'],
       [4, 'ATRASADA'],
     ]);
+  });
+});
+
+describe('precisaDeNovaData', () => {
+  it('só vale para atrasadas de dias anteriores', () => {
+    expect(precisaDeNovaData({ prazo: 'ATRASADA', data: '2026-09-23' }, '2026-09-24')).toBe(true);
+    expect(precisaDeNovaData({ prazo: 'ATRASADA', data: '2026-09-24' }, '2026-09-24')).toBe(false);
+  });
+
+  it('ignora tarefas no prazo, não realizadas e sem data', () => {
+    expect(precisaDeNovaData({ prazo: 'NO_PRAZO', data: '2026-09-20' }, '2026-09-24')).toBe(false);
+    expect(precisaDeNovaData({ prazo: 'NAO_REALIZADA', data: '2026-09-20' }, '2026-09-24')).toBe(false);
+    expect(precisaDeNovaData({ prazo: 'ATRASADA', data: null }, '2026-09-24')).toBe(false);
   });
 });

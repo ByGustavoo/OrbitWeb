@@ -110,7 +110,7 @@ export function ResumoIndicadores({ resumo, sequencia }: ResumoIndicadoresProps)
                 icone={Clock}
                 rotulo="Atrasadas"
                 valor={resumo.dados.contagens.atrasadas}
-                contexto={resumo.dados.contagens.atrasadas > 0 ? 'precisam de uma nova data' : 'nada ficou para trás'}
+                contexto={resumo.dados.contagens.atrasadas > 0 ? 'já passaram do prazo' : 'nada ficou para trás'}
                 tom={resumo.dados.contagens.atrasadas > 0 ? 'erro' : 'neutro'}
               />
               <IndicadorNumerico

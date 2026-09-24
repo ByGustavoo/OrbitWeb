@@ -1,0 +1,59 @@
+.barra {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2) var(--espaco-3);
+  min-height: var(--altura-controle-sm);
+}
+
+.campos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espaco-3) var(--espaco-4);
+}
+
+.busca {
+  flex: 2 1 18rem;
+}
+
+.periodo {
+  flex: 1 1 11rem;
+  max-width: 15rem;
+}
+
+.intervalo {
+  display: flex;
+  flex: 2 1 19rem;
+  gap: var(--espaco-3);
+  max-width: 23rem;
+}
+
+.data {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.limpar {
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .busca,
+  .periodo {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .intervalo {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}

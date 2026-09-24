@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
-import { CircleCheck, CircleSlash, History, Plus, Timer } from 'lucide-react';
+import { ArrowRight, CircleCheck, CircleSlash, History, Plus, RotateCcw, Timer } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { CabecalhoPainel, ConteudoAssincrono, EsqueletoLista, EstadoVazio, Painel } from '@/componentes/ui';
+import { Botao, CabecalhoPainel, ConteudoAssincrono, EsqueletoLista, EstadoVazio, Painel } from '@/componentes/ui';
 import type { ResultadoAssincrono } from '@/ganchos/useDadosAssincronos';
 import type { TipoEventoRecente } from '@/modelos/enumeracoes';
 import type { ResumoDashboardDTO } from '@/modelos/painel';
@@ -12,19 +12,29 @@ const aparencia: Record<TipoEventoRecente, { icone: LucideIcon; verbo: string; t
   TAREFA_CONCLUIDA: { icone: CircleCheck, verbo: 'Você concluiu', tom: 'sucesso' },
   TAREFA_CRIADA: { icone: Plus, verbo: 'Você criou', tom: 'destaque' },
   TAREFA_CANCELADA: { icone: CircleSlash, verbo: 'Você cancelou', tom: 'neutro' },
+  TAREFA_REABERTA: { icone: RotateCcw, verbo: 'Você reabriu', tom: 'aviso' },
   SESSAO_SALVA: { icone: Timer, verbo: 'Você estudou', tom: 'info' },
 };
 
 export interface ListaEventosRecentesProps {
   resultado: ResultadoAssincrono<ResumoDashboardDTO>;
   agora: Date;
+  aoVerHistorico: () => void;
   className?: string;
 }
 
-export function ListaEventosRecentes({ resultado, agora, className }: ListaEventosRecentesProps) {
+export function ListaEventosRecentes({ resultado, agora, aoVerHistorico, className }: ListaEventosRecentesProps) {
   return (
     <Painel className={className} aria-labelledby="titulo-recentes">
-      <CabecalhoPainel titulo={<span id="titulo-recentes">Atividade recente</span>} descricao="O que mudou nos últimos dias" />
+      <CabecalhoPainel
+        titulo={<span id="titulo-recentes">Atividade recente</span>}
+        descricao="O que mudou nos últimos dias"
+        acao={
+          <Botao variante="terciario" tamanho="sm" iconeDireita={ArrowRight} onClick={aoVerHistorico}>
+            Ver histórico
+          </Botao>
+        }
+      />
 
       <ConteudoAssincrono
         resultado={resultado}

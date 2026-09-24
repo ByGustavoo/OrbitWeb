@@ -1,0 +1,111 @@
+.grafico {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  min-width: 0;
+}
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-1) var(--espaco-3);
+}
+
+.titulo {
+  font-size: var(--tamanho-base);
+  letter-spacing: 0;
+}
+
+.total {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: 3.75rem minmax(0, 1fr) 4.5rem;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-height: 36px;
+  padding-inline: var(--espaco-2);
+  margin-inline: calc(var(--espaco-2) * -1);
+  border-radius: var(--raio-sm);
+  transition: background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.dia {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.hoje .dia {
+  color: var(--texto);
+  font-weight: var(--peso-forte);
+}
+
+.trilho {
+  display: block;
+  height: 12px;
+  border-radius: 0 4px 4px 0;
+  background-color: var(--superficie-suave);
+}
+
+.barra {
+  display: block;
+  width: calc(var(--proporcao) * 100%);
+  min-width: 4px;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background-color: var(--grafico-1);
+  transform-origin: left center;
+  animation: crescer var(--duracao-lenta) var(--curva-saida) backwards;
+}
+
+.futuro .trilho {
+  background-color: transparent;
+  background-image: repeating-linear-gradient(135deg, var(--borda) 0 1px, transparent 1px 6px);
+}
+
+.futuro .dia,
+.futuro .valor {
+  color: var(--texto-terciario);
+}
+
+.valor {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .linha:hover {
+    background-color: var(--superficie-suave);
+  }
+
+  .linha:hover .trilho {
+    background-color: var(--superficie);
+  }
+
+  .futuro:hover .trilho {
+    background-color: transparent;
+  }
+}
+
+@keyframes crescer {
+  from {
+    transform: scaleX(0);
+  }
+}

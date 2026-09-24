@@ -20,20 +20,20 @@ export const navegacaoPrincipal: SecaoNavegacao[] = [
   {
     titulo: 'Planejamento',
     itens: [
-      { rotulo: 'Calendário', icone: CalendarDays, destino: caminhos.calendario },
       { rotulo: 'Tarefas', icone: ListChecks, destino: caminhos.tarefas },
+      { rotulo: 'Calendário', icone: CalendarDays, destino: caminhos.calendario },
     ],
   },
   {
     titulo: 'Estudos',
-    itens: [
-      { rotulo: 'Cronômetro', icone: Timer, destino: caminhos.estudos },
-      { rotulo: 'Histórico', icone: History, destino: caminhos.historicoEstudos },
-    ],
+    itens: [{ rotulo: 'Cronômetro', icone: Timer, destino: caminhos.estudos }],
   },
   {
     titulo: 'Acompanhamento',
-    itens: [{ rotulo: 'Revisão semanal', icone: ClipboardCheck, destino: caminhos.revisao }],
+    itens: [
+      { rotulo: 'Histórico', icone: History, destino: caminhos.historico },
+      { rotulo: 'Revisão semanal', icone: ClipboardCheck, destino: caminhos.revisao },
+    ],
   },
 ];
 

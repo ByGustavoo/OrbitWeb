@@ -1,0 +1,320 @@
+.cronometro {
+  --cor-atividade: var(--destaque);
+
+  container: cronometro / inline-size;
+  gap: var(--espaco-6);
+  padding: var(--espaco-6) var(--espaco-8) var(--espaco-6);
+  transition: box-shadow var(--duracao-lenta) var(--curva-saida);
+}
+
+.ativo {
+  box-shadow:
+    inset 0 3px 0 var(--cor-atividade),
+    var(--sombra-cartao);
+}
+
+.preparacao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.linhaPreparacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+}
+
+.rotuloSecao {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+}
+
+.esqueletoSeletor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.barraSessao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2) var(--espaco-4);
+  min-height: var(--altura-controle-sm);
+}
+
+.selos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2) var(--espaco-4);
+}
+
+.seloAoVivo {
+  animation: aparecer var(--duracao-base) var(--curva-saida);
+}
+
+.pulso {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: pulsar 2s ease-in-out infinite;
+}
+
+.ciclo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.pontosCiclo {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.pontoCiclo {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--borda-controle);
+  transition:
+    background-color var(--duracao-base) var(--curva-saida),
+    border-color var(--duracao-base) var(--curva-saida);
+}
+
+.pontoCicloFeito {
+  border-color: var(--destaque);
+  background-color: var(--destaque);
+}
+
+.modoAtual {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.palco {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-1);
+  padding-block: var(--espaco-4) var(--espaco-2);
+  text-align: center;
+}
+
+.legenda {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+}
+
+.atividadeAtual {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  max-width: 100%;
+  color: var(--texto);
+  font-size: var(--tamanho-lg);
+  font-weight: var(--peso-forte);
+  letter-spacing: var(--letras-titulo);
+  overflow-wrap: anywhere;
+}
+
+.semAtividade {
+  color: var(--texto-terciario);
+  font-weight: var(--peso-medio);
+}
+
+.corAtividade {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--cor-atividade);
+  transition: background-color var(--duracao-base) var(--curva-saida);
+}
+
+.tarefa {
+  max-width: 44ch;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  overflow-wrap: anywhere;
+}
+
+.tempo {
+  margin-top: var(--espaco-3);
+  color: var(--texto);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-cronometro);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  transition:
+    color var(--duracao-lenta) var(--curva-saida),
+    opacity var(--duracao-lenta) var(--curva-saida);
+}
+
+[data-estado='parado'] .tempo {
+  color: var(--texto-secundario);
+}
+
+[data-estado='pausada'] .tempo,
+[data-estado='encerrando'] .tempo {
+  color: var(--texto-terciario);
+}
+
+[data-estado='faseConcluida'] .tempo {
+  color: var(--info);
+}
+
+[data-estado='intervalo'] .tempo {
+  color: var(--sucesso);
+}
+
+.progressoFase {
+  width: min(100%, 22rem);
+  margin-top: var(--espaco-4);
+}
+
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espaco-3);
+  animation: trocarControles var(--duracao-base) var(--curva-saida);
+}
+
+.botaoPrincipal,
+.botaoSecundario {
+  min-width: 10rem;
+}
+
+.dica {
+  max-width: 52ch;
+  margin-inline: auto;
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-sm);
+  text-align: center;
+}
+
+.rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  padding-top: var(--espaco-4);
+  border-top: 1px solid var(--borda);
+}
+
+.informacoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2) var(--espaco-8);
+}
+
+.informacoes > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.informacoes dt {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.informacoes dd {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+.descartar {
+  margin-right: calc(var(--espaco-2) * -1);
+}
+
+.vazio {
+  padding-block: var(--espaco-8);
+}
+
+@container cronometro (max-width: 420px) {
+  .tempo {
+    font-size: 3.25rem;
+  }
+
+  .controles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .controles > :only-child,
+  .controles > :nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .controles:has(> :nth-child(3)) > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .controles:has(> :nth-child(3)) > :nth-child(3) {
+    grid-column: auto;
+  }
+
+  .botaoPrincipal,
+  .botaoSecundario {
+    min-width: 0;
+    padding-inline: var(--espaco-3);
+  }
+}
+
+@media (max-width: 767px) {
+  .cronometro {
+    padding: var(--espaco-5) var(--espaco-4);
+    gap: var(--espaco-5);
+  }
+}
+
+@keyframes pulsar {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@keyframes trocarControles {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulso,
+  .seloAoVivo,
+  .controles {
+    animation: none;
+  }
+
+  .tempo,
+  .cronometro {
+    transition: none;
+  }
+}

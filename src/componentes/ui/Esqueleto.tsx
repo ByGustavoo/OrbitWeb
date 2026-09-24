@@ -17,11 +17,12 @@ export function Esqueleto({ largura = '100%', altura = 14, raio, className }: Es
 export interface EsqueletoListaProps {
   linhas?: number;
   rotulo?: string;
+  imediato?: boolean;
 }
 
-export function EsqueletoLista({ linhas = 4, rotulo = 'Carregando…' }: EsqueletoListaProps) {
+export function EsqueletoLista({ linhas = 4, rotulo = 'Carregando…', imediato = false }: EsqueletoListaProps) {
   return (
-    <div className={estilos.lista} role="status" aria-label={rotulo}>
+    <div className={juntarClasses(estilos.lista, imediato && estilos.imediato)} role="status" aria-label={rotulo}>
       {Array.from({ length: linhas }, (_, indice) => (
         <div key={indice} className={estilos.linha} style={{ opacity: 1 - indice * (0.6 / linhas) }}>
           <Esqueleto largura={20} altura={20} raio="var(--raio-sm)" />

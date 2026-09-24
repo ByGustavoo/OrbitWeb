@@ -30,6 +30,10 @@ export function calcularPrazo(tarefa: DadosPrazo, agora: Date): Prazo {
   return agora.getTime() >= limite.getTime() ? 'ATRASADA' : 'NO_PRAZO';
 }
 
+export function precisaDeNovaData(tarefa: { prazo: Prazo; data: string | null }, hojeIso: string): boolean {
+  return tarefa.prazo === 'ATRASADA' && tarefa.data !== null && tarefa.data < hojeIso;
+}
+
 export interface TarefaComSerie {
   serieId: number | null;
   data: string | null;

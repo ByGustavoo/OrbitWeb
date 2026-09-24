@@ -1,0 +1,139 @@
+.painel {
+  min-width: 0;
+}
+
+.dias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.verHistorico {
+  align-self: flex-start;
+}
+
+.dia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
+.tituloDia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-1) var(--espaco-3);
+  padding-bottom: var(--espaco-2);
+  border-bottom: 1px solid var(--borda);
+  font-size: var(--tamanho-sm);
+  letter-spacing: 0;
+}
+
+.totalDia {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  border-radius: var(--raio-md);
+}
+
+.destacada {
+  animation: destacar 2.4s var(--curva-saida);
+}
+
+.botao {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--espaco-3);
+  padding: var(--espaco-3) var(--espaco-2);
+  margin-inline: calc(var(--espaco-2) * -1);
+  width: calc(100% + var(--espaco-4));
+  border-radius: var(--raio-md);
+  text-align: left;
+  transition: background-color var(--duracao-rapida) var(--curva-saida);
+}
+
+.botao:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.cor {
+  align-self: stretch;
+  width: 3px;
+  min-height: 2.25rem;
+  border-radius: var(--raio-pilula);
+  background-color: var(--cor-atividade);
+}
+
+.textos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nome {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+  overflow-wrap: anywhere;
+}
+
+.detalhes {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaco-1);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.iconeDetalhes {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.extra {
+  overflow: hidden;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.duracao {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .botao:hover {
+    background-color: var(--superficie-suave);
+  }
+}
+
+@keyframes destacar {
+  from {
+    background-color: var(--sucesso-suave);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .destacada {
+    animation: none;
+  }
+}

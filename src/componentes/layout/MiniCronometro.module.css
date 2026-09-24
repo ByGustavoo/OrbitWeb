@@ -1,0 +1,149 @@
+.mini {
+  display: inline-flex;
+  align-items: stretch;
+  min-width: 0;
+  height: var(--altura-controle-sm);
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-pilula);
+  background-color: var(--superficie);
+  animation: entrar var(--duracao-lenta) var(--curva-saida);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-width: 0;
+  padding-inline: var(--espaco-3) var(--espaco-3);
+  border-radius: var(--raio-pilula);
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  white-space: nowrap;
+}
+
+.link:focus-visible,
+.alternar:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.ponto {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--texto-terciario);
+}
+
+.pontoAoVivo {
+  background-color: var(--sucesso);
+  animation: pulsar 2s ease-in-out infinite;
+}
+
+.icone {
+  flex-shrink: 0;
+  color: var(--info);
+}
+
+.situacao {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.tempo {
+  font-family: var(--fonte-numeros);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+.atividade {
+  overflow: hidden;
+  max-width: 10rem;
+  color: var(--texto-secundario);
+  text-overflow: ellipsis;
+}
+
+.alternar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: calc(var(--altura-controle-sm) - 2px);
+  border-left: 1px solid var(--borda);
+  border-radius: 0 var(--raio-pilula) var(--raio-pilula) 0;
+  color: var(--texto-secundario);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida);
+}
+
+.pausada .tempo {
+  color: var(--texto-secundario);
+}
+
+.atencao {
+  border-color: color-mix(in srgb, var(--info) 45%, var(--borda-forte));
+}
+
+@media (hover: hover) {
+  .link:hover {
+    background-color: var(--superficie-suave);
+  }
+
+  .alternar:hover {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+}
+
+@media (max-width: 900px) {
+  .atividade {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .situacao {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .alternar {
+    width: var(--altura-controle-sm);
+  }
+}
+
+@keyframes pulsar {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mini,
+  .pontoAoVivo {
+    animation: none;
+  }
+}
+
+.mini:has(.alternar) .link {
+  border-radius: var(--raio-pilula) 0 0 var(--raio-pilula);
+}
+
+@media (max-width: 380px) {
+  .alternar {
+    display: none;
+  }
+
+  .mini:has(.alternar) .link {
+    border-radius: var(--raio-pilula);
+  }
+}

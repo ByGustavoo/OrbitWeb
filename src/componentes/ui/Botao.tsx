@@ -6,7 +6,7 @@ import { IndicadorGiratorio } from './IndicadorGiratorio';
 import estilos from './Botao.module.css';
 
 export type VarianteBotao = 'primario' | 'secundario' | 'terciario' | 'perigo';
-export type TamanhoBotao = 'sm' | 'md';
+export type TamanhoBotao = 'sm' | 'md' | 'lg';
 
 export interface BotaoProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variante?: VarianteBotao;
@@ -34,6 +34,8 @@ export const Botao = forwardRef<HTMLButtonElement, BotaoProps>(function Botao(
   },
   ref,
 ) {
+  const tamanhoIcone = tamanho === 'lg' ? 18 : 16;
+
   return (
     <button
       ref={ref}
@@ -51,12 +53,12 @@ export const Botao = forwardRef<HTMLButtonElement, BotaoProps>(function Botao(
       {...resto}
     >
       {carregando ? (
-        <IndicadorGiratorio tamanho={16} />
+        <IndicadorGiratorio tamanho={tamanhoIcone} />
       ) : Icone ? (
-        <Icone size={16} strokeWidth={2} aria-hidden="true" />
+        <Icone size={tamanhoIcone} strokeWidth={2} aria-hidden="true" />
       ) : null}
       {children}
-      {IconeDireita && !carregando ? <IconeDireita size={16} strokeWidth={2} aria-hidden="true" /> : null}
+      {IconeDireita && !carregando ? <IconeDireita size={tamanhoIcone} strokeWidth={2} aria-hidden="true" /> : null}
     </button>
   );
 });

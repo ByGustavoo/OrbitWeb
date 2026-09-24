@@ -46,6 +46,11 @@
   --tom-fundo: var(--destaque-suave);
 }
 
+.aviso {
+  --tom-texto: var(--aviso);
+  --tom-fundo: var(--aviso-suave);
+}
+
 .info {
   --tom-texto: var(--info);
   --tom-fundo: var(--info-suave);

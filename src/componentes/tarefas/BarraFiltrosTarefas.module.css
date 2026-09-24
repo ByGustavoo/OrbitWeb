@@ -1,0 +1,30 @@
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espaco-3) var(--espaco-4);
+}
+
+.busca {
+  flex: 2 1 16rem;
+}
+
+.filtro {
+  flex: 1 1 10rem;
+  max-width: 14rem;
+}
+
+.limpar {
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .busca {
+    flex-basis: 100%;
+  }
+
+  .filtro {
+    flex: 1 1 calc(50% - var(--espaco-4));
+    max-width: none;
+  }
+}

@@ -21,6 +21,7 @@
 
 .inicio {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: var(--espaco-1);
   margin-left: calc(var(--espaco-2) * -1);
@@ -71,13 +72,29 @@
 .acoes {
   display: flex;
   align-items: center;
-  gap: var(--espaco-1);
+  gap: var(--espaco-2);
   margin-left: auto;
+}
+
+.novaTarefaCompacta {
+  display: none;
 }
 
 @media (max-width: 560px) {
   .separador,
   .diaMes {
+    display: none;
+  }
+
+  button.novaTarefa {
+    display: none;
+  }
+
+  button.novaTarefaCompacta {
+    display: inline-grid;
+  }
+
+  .interno:has([data-mini-cronometro]) .data {
     display: none;
   }
 }

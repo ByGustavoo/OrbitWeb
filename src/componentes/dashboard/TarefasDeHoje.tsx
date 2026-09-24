@@ -3,6 +3,7 @@ import { ItemTarefa } from '@/componentes/tarefas/ItemTarefa';
 import { BarraProgresso, Botao, CabecalhoPainel, ConteudoAssincrono, EsqueletoLista, EstadoVazio, Painel } from '@/componentes/ui';
 import type { ResultadoAssincrono } from '@/ganchos/useDadosAssincronos';
 import type { TarefaDTO } from '@/modelos/tarefas';
+import { precisaDeNovaData } from '@/regras/prazo';
 import { formatarDiaCompleto } from '@/utilitarios/formatacao';
 import estilos from './TarefasDeHoje.module.css';
 
@@ -17,6 +18,7 @@ export interface TarefasDeHojeProps {
   idsEnviando: ReadonlySet<number>;
   movendoAtrasadas: boolean;
   aoAlternarConclusao: (tarefa: TarefaDTO) => void;
+  aoAbrirTarefa: (tarefa: TarefaDTO) => void;
   aoMoverAtrasadas: (tarefas: TarefaDTO[]) => void;
   aoAbrirCalendario: () => void;
   className?: string;
@@ -52,6 +54,7 @@ export function TarefasDeHoje({
   idsEnviando,
   movendoAtrasadas,
   aoAlternarConclusao,
+  aoAbrirTarefa,
   aoMoverAtrasadas,
   aoAbrirCalendario,
   className,
@@ -71,7 +74,8 @@ export function TarefasDeHoje({
         tituloErro="Não foi possível carregar as tarefas de hoje"
         esqueleto={<EsqueletoLista linhas={5} rotulo="Carregando as tarefas de hoje…" />}
       >
-        {({ atrasadas }) => {
+        {(dados) => {
+          const atrasadas = dados.atrasadas.filter((tarefa) => precisaDeNovaData(tarefa, hojeIso));
           const todasConcluidas = hoje.length > 0 && hoje.every((tarefa) => tarefa.situacao === 'CONCLUIDA');
 
           return (
@@ -81,7 +85,7 @@ export function TarefasDeHoje({
                   <header className={estilos.cabecalhoGrupo}>
                     <h3 id="titulo-atrasadas" className={estilos.tituloGrupo}>
                       <CalendarClock size={15} strokeWidth={2} aria-hidden="true" className={estilos.iconeAtraso} />
-                      Atrasadas
+                      Atrasadas de dias anteriores
                       <span className={estilos.contagem}>{atrasadas.length}</span>
                     </h3>
                     <Botao
@@ -104,6 +108,7 @@ export function TarefasDeHoje({
                         indice={indice}
                         enviando={idsEnviando.has(tarefa.id)}
                         aoAlternarConclusao={aoAlternarConclusao}
+                        aoAbrir={aoAbrirTarefa}
                       />
                     ))}
                   </ul>
@@ -142,6 +147,7 @@ export function TarefasDeHoje({
                         indice={indice + atrasadas.length}
                         enviando={idsEnviando.has(tarefa.id)}
                         aoAlternarConclusao={aoAlternarConclusao}
+                        aoAbrir={aoAbrirTarefa}
                       />
                     ))}
                   </ul>

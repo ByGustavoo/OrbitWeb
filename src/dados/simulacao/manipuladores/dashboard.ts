@@ -7,6 +7,7 @@ import type { BancoSimulado } from '../bancoSimulado';
 import { diaDoInstante, emAberto, tarefasComPrazo, texto } from '../consultas';
 import { ok, requisicaoInvalida } from '../resposta';
 import { minutosPorAtividade, minutosPorDia } from './estudos';
+import { eventosRecentes } from './historico';
 
 const LIMITE_EVENTOS = 6;
 
@@ -48,10 +49,7 @@ export function buscarResumo(banco: BancoSimulado, requisicao: RequisicaoTranspo
       quantidade: tarefas.filter((tarefa) => tarefa.prioridade === prioridade && emAberto(tarefa)).length,
     })),
     minutosPorAtividade: minutosPorAtividade(banco, dataInicial, dataFinal),
-    eventosRecentes: [...banco.eventos]
-      .filter((evento) => evento.ocorridoEm <= agora.toISOString())
-      .sort((a, b) => b.ocorridoEm.localeCompare(a.ocorridoEm))
-      .slice(0, LIMITE_EVENTOS),
+    eventosRecentes: eventosRecentes(banco, agora, LIMITE_EVENTOS),
   };
   return ok(resposta);
 }

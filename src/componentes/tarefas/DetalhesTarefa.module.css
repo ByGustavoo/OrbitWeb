@@ -1,0 +1,130 @@
+.detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+}
+
+.selos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.descricao {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--texto);
+}
+
+.semDescricao {
+  color: var(--texto-terciario);
+  font-style: italic;
+}
+
+.dados {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-4) var(--espaco-5);
+  padding-block: var(--espaco-4);
+  border-block: 1px solid var(--borda);
+}
+
+.dado {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rotulo {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.valor,
+.valorVazio {
+  margin: 0;
+  font-size: var(--tamanho-sm);
+  overflow-wrap: anywhere;
+}
+
+.valor {
+  color: var(--texto);
+  font-weight: var(--peso-medio);
+}
+
+.valorVazio {
+  color: var(--texto-terciario);
+}
+
+.atividade {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-1);
+}
+
+.linhaAtividade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-2) var(--espaco-3);
+}
+
+.estudoEmAndamento {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaco-1) var(--espaco-2);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.situacao {
+  max-width: 18rem;
+}
+
+.historico {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-1) var(--espaco-5);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.historico div {
+  display: flex;
+  gap: var(--espaco-1);
+}
+
+.historico dd {
+  margin: 0;
+  color: var(--texto-secundario);
+  font-variant-numeric: tabular-nums;
+}
+
+button.excluir {
+  margin-right: auto;
+  color: var(--erro);
+}
+
+@media (hover: hover) {
+  button.excluir:hover:not(:disabled) {
+    background-color: var(--erro-suave);
+    color: var(--erro);
+  }
+}
+
+@media (max-width: 599px) {
+  .dados {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .situacao {
+    max-width: none;
+  }
+
+  button.excluir {
+    margin-right: 0;
+  }
+}

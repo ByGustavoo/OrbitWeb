@@ -10,6 +10,7 @@ export default function PaginaNaoEncontrada() {
 
   return (
     <Painel espacamento="nenhum">
+      <h1 className="visualmente-oculto">Página não encontrada</h1>
       <EstadoVazio
         icone={Compass}
         titulo="Página não encontrada"

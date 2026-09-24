@@ -1,7 +1,7 @@
 import type { CategoriaDTO } from '@/modelos/comum';
-import type { Cor, ModoCronometro, OrigemSessao } from '@/modelos/enumeracoes';
-import type { EventoRecenteDTO } from '@/modelos/painel';
-import type { TarefaDTO } from '@/modelos/tarefas';
+import type { Cor, ModoCronometro, OrigemSessao, TipoEventoTarefa } from '@/modelos/enumeracoes';
+import type { NotaSemanaDTO } from '@/modelos/revisao';
+import type { RecorrenciaDTO, TarefaDTO } from '@/modelos/tarefas';
 import { VERSAO_BANCO, gerarSementes } from './sementes';
 
 export type TarefaArmazenada = Omit<TarefaDTO, 'prazo'>;
@@ -23,6 +23,25 @@ export interface SessaoArmazenada {
   inicio: string;
   fim: string;
   duracaoSegundos: number;
+  ciclosConcluidos: number | null;
+  observacao: string | null;
+}
+
+export interface SerieArmazenada {
+  id: number;
+  dataInicial: string;
+  recorrencia: RecorrenciaDTO;
+  geradaAte: string;
+}
+
+export interface EventoArmazenado {
+  id: number;
+  tipo: TipoEventoTarefa;
+  tarefaId: number;
+  titulo: string;
+  ocorridoEm: string;
+  anterior: string | null;
+  novo: string | null;
 }
 
 export interface BancoSimulado {
@@ -31,8 +50,10 @@ export interface BancoSimulado {
   categorias: CategoriaDTO[];
   atividades: AtividadeArmazenada[];
   tarefas: TarefaArmazenada[];
+  series: SerieArmazenada[];
   sessoes: SessaoArmazenada[];
-  eventos: EventoRecenteDTO[];
+  eventos: EventoArmazenado[];
+  notasSemana: Record<string, NotaSemanaDTO>;
 }
 
 const CHAVE_BANCO = 'orbit:simulacao:banco';
@@ -83,8 +104,10 @@ export function esvaziarBanco(): void {
     categorias: [],
     atividades: [],
     tarefas: [],
+    series: [],
     sessoes: [],
     eventos: [],
+    notasSemana: {},
   };
   salvarBanco();
 }

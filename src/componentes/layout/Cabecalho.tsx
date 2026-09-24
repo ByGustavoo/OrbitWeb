@@ -1,12 +1,14 @@
 import { forwardRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Menu, Plus } from 'lucide-react';
 import { MarcaOrbit } from '@/componentes/comum/MarcaOrbit';
-import { BotaoIcone } from '@/componentes/ui';
+import { Botao, BotaoIcone } from '@/componentes/ui';
 import { NOME_APLICACAO } from '@/configuracoes/aplicacao';
+import { useAcoesTarefa } from '@/provedores/ProvedorAcoesTarefa';
 import { caminhos } from '@/rotas/caminhos';
 import { dataIsoLocal, formatarDiaMes, formatarDiaSemana } from '@/utilitarios/datas';
 import { BotaoTema } from './BotaoTema';
+import { MiniCronometro } from './MiniCronometro';
 import estilos from './Cabecalho.module.css';
 
 interface CabecalhoProps {
@@ -33,6 +35,7 @@ export const Cabecalho = forwardRef<HTMLButtonElement, CabecalhoProps>(function 
   botaoMenuRef,
 ) {
   const hoje = useHoje();
+  const { abrirNovaTarefa } = useAcoesTarefa();
 
   return (
     <header className={estilos.cabecalho}>
@@ -66,6 +69,17 @@ export const Cabecalho = forwardRef<HTMLButtonElement, CabecalhoProps>(function 
         </p>
 
         <div className={estilos.acoes}>
+          <MiniCronometro />
+          <Botao tamanho="sm" icone={Plus} className={estilos.novaTarefa} onClick={() => abrirNovaTarefa()}>
+            Nova tarefa
+          </Botao>
+          <BotaoIcone
+            icone={Plus}
+            rotulo="Nova tarefa"
+            variante="secundario"
+            className={estilos.novaTarefaCompacta}
+            onClick={() => abrirNovaTarefa()}
+          />
           <BotaoTema />
         </div>
       </div>

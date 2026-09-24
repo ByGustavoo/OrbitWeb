@@ -1,0 +1,116 @@
+.seletor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.opcao {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.entrada {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.rotulo,
+.criar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  min-width: 0;
+  height: var(--altura-controle);
+  padding-inline: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-pilula);
+  background-color: var(--superficie);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    border-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-base) var(--curva-saida),
+    transform var(--duracao-rapida) var(--curva-saida);
+}
+
+.ponto {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--cor-opcao);
+  transition: transform var(--duracao-base) var(--curva-mola);
+}
+
+.entrada:checked + .rotulo {
+  border-color: var(--cor-opcao);
+  background-color: var(--cor-opcao-suave);
+  color: var(--texto);
+  box-shadow: inset 0 0 0 1px var(--cor-opcao);
+}
+
+.entrada:checked + .rotulo .ponto {
+  transform: scale(1.25);
+}
+
+.entrada:focus-visible + .rotulo {
+  box-shadow:
+    inset 0 0 0 1px var(--cor-opcao),
+    var(--anel-foco);
+}
+
+.entrada:active + .rotulo {
+  transform: scale(0.97);
+}
+
+.criar {
+  padding-inline: var(--espaco-3) var(--espaco-4);
+  border-style: dashed;
+  background-color: transparent;
+  color: var(--texto-secundario);
+}
+
+.criar:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.nova {
+  animation: surgir var(--duracao-lenta) var(--curva-mola);
+}
+
+@media (hover: hover) {
+  .entrada:not(:checked):hover + .rotulo,
+  .criar:hover {
+    border-color: var(--borda-controle);
+    color: var(--texto);
+  }
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nova {
+    animation: none;
+  }
+
+  .ponto {
+    transition: none;
+  }
+}

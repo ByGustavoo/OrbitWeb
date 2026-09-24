@@ -82,3 +82,79 @@ export function formatarTempoRelativo(instante: string, agora: Date = new Date()
 export function pluralizar(quantidade: number, singular: string, plural: string): string {
   return `${formatarNumero(quantidade)} ${quantidade === 1 ? singular : plural}`;
 }
+
+const formatadorMesAno = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' });
+const formatadorInstante = new Intl.DateTimeFormat('pt-BR', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+export function formatarMesAno(data: Date): string {
+  return capitalizar(formatadorMesAno.format(data));
+}
+
+export function formatarInstante(instante: string): string {
+  return formatadorInstante.format(new Date(instante)).replace(',', ' às');
+}
+
+export function formatarIntervaloHorario(inicio: string | null, fim: string | null, diaInteiro: boolean): string {
+  if (diaInteiro || !inicio) return 'Dia inteiro';
+  return fim ? `${inicio} – ${fim}` : `A partir das ${inicio}`;
+}
+
+const doisDigitos = (valor: number) => String(valor).padStart(2, '0');
+
+export function formatarRelogio(segundosTotais: number): string {
+  const segundos = Math.max(0, Math.floor(segundosTotais));
+  const horas = Math.floor(segundos / 3600);
+  const minutos = Math.floor((segundos % 3600) / 60);
+  return `${doisDigitos(horas)}:${doisDigitos(minutos)}:${doisDigitos(segundos % 60)}`;
+}
+
+export function formatarContagemRegressiva(segundosTotais: number): string {
+  const segundos = Math.max(0, Math.ceil(segundosTotais));
+  return `${doisDigitos(Math.floor(segundos / 60))}:${doisDigitos(segundos % 60)}`;
+}
+
+export function formatarDuracaoSegundos(segundosTotais: number): string {
+  const segundos = Math.max(0, Math.floor(segundosTotais));
+  if (segundos < 60) return `${segundos} s`;
+  const minutos = Math.floor(segundos / 60);
+  if (minutos < 60) return segundos % 60 === 0 ? `${minutos} min` : `${minutos} min ${segundos % 60} s`;
+  return formatarDuracao(minutos);
+}
+
+export function formatarDuracaoSegundosPorExtenso(segundosTotais: number): string {
+  const segundos = Math.max(0, Math.floor(segundosTotais));
+  const horas = Math.floor(segundos / 3600);
+  const minutos = Math.floor((segundos % 3600) / 60);
+  const resto = segundos % 60;
+  const partes: string[] = [];
+  if (horas > 0) partes.push(`${horas} ${horas === 1 ? 'hora' : 'horas'}`);
+  if (minutos > 0) partes.push(`${minutos} ${minutos === 1 ? 'minuto' : 'minutos'}`);
+  if (resto > 0 || partes.length === 0) partes.push(`${resto} ${resto === 1 ? 'segundo' : 'segundos'}`);
+  return partes.length > 1 ? `${partes.slice(0, -1).join(', ')} e ${partes[partes.length - 1]}` : partes[0] ?? '';
+}
+
+const formatadorDiaMesLongo = new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long' });
+
+export function formatarDataLonga(iso: string): string {
+  const data = deDataIso(iso);
+  return `${formatadorDiaMesLongo.format(data)} de ${data.getFullYear()}`;
+}
+
+export function formatarIntervaloDias(inicioIso: string, fimIso: string): string {
+  const inicio = deDataIso(inicioIso);
+  const fim = deDataIso(fimIso);
+  const ano = fim.getFullYear();
+  if (inicio.getFullYear() !== ano) {
+    return `${formatadorDiaMesLongo.format(inicio)} de ${inicio.getFullYear()} — ${formatadorDiaMesLongo.format(fim)} de ${ano}`;
+  }
+  if (inicio.getMonth() !== fim.getMonth()) {
+    return `${formatadorDiaMesLongo.format(inicio)} — ${formatadorDiaMesLongo.format(fim)} de ${ano}`;
+  }
+  return `${inicio.getDate()} — ${formatadorDiaMesLongo.format(fim)} de ${ano}`;
+}

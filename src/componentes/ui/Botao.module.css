@@ -18,6 +18,10 @@
     transform var(--duracao-rapida) var(--curva-saida);
 }
 
+.botao svg {
+  flex-shrink: 0;
+}
+
 .botao:focus-visible {
   outline: none;
   box-shadow: var(--anel-foco);
@@ -46,6 +50,13 @@
   padding-inline: var(--espaco-3);
   font-size: var(--tamanho-sm);
   border-radius: var(--raio-sm);
+}
+
+.lg {
+  height: var(--altura-controle-lg);
+  padding-inline: var(--espaco-6);
+  font-size: var(--tamanho-base);
+  gap: var(--espaco-2);
 }
 
 .larguraTotal {

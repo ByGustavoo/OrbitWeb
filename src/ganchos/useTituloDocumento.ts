@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { NOME_APLICACAO, SLOGAN_APLICACAO } from '@/configuracoes/aplicacao';
+import { definirTituloBase } from '@/utilitarios/tituloDocumento';
 
 export function useTituloDocumento(titulo: string): void {
   useEffect(() => {
-    document.title = titulo ? `${titulo} · ${NOME_APLICACAO}` : `${NOME_APLICACAO} · ${SLOGAN_APLICACAO}`;
+    definirTituloBase(titulo);
   }, [titulo]);
 }

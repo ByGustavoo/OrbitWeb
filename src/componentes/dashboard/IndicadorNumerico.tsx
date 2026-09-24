@@ -5,19 +5,29 @@ import { formatarNumero } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './IndicadorNumerico.module.css';
 
-export type TomIndicador = 'neutro' | 'sucesso' | 'erro' | 'urgente' | 'sequencia';
+export type TomIndicador = 'neutro' | 'destaque' | 'sucesso' | 'erro' | 'urgente' | 'sequencia';
 
 export interface IndicadorNumericoProps {
   icone: LucideIcon;
   rotulo: string;
   valor: number;
   unidade?: (valor: number) => string;
+  formatar?: (valor: number) => string;
   contexto: ReactNode;
   tom?: TomIndicador;
   className?: string;
 }
 
-export function IndicadorNumerico({ icone: Icone, rotulo, valor, unidade, contexto, tom = 'neutro', className }: IndicadorNumericoProps) {
+export function IndicadorNumerico({
+  icone: Icone,
+  rotulo,
+  valor,
+  unidade,
+  formatar = formatarNumero,
+  contexto,
+  tom = 'neutro',
+  className,
+}: IndicadorNumericoProps) {
   const exibido = useContagem(valor);
 
   return (
@@ -29,8 +39,8 @@ export function IndicadorNumerico({ icone: Icone, rotulo, valor, unidade, contex
         {rotulo}
       </dt>
       <dd className={estilos.valor}>
-        <span aria-hidden="true">{formatarNumero(exibido)}</span>
-        <span className="visualmente-oculto">{formatarNumero(valor)}</span>
+        <span aria-hidden="true">{formatar(exibido)}</span>
+        <span className="visualmente-oculto">{formatar(valor)}</span>
         {unidade ? <span className={estilos.unidade}>{unidade(valor)}</span> : null}
       </dd>
       <dd className={estilos.contexto}>{contexto}</dd>

@@ -1,0 +1,57 @@
+.grade {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background-color: var(--borda);
+  border-top: 1px solid var(--borda);
+  transition: opacity var(--duracao-base) var(--curva-saida);
+}
+
+.grade[aria-busy='true'] {
+  opacity: 0.72;
+}
+
+.linhaSemana,
+.linhaDias {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+}
+
+.diaSemana {
+  display: grid;
+  place-items: center start;
+  padding: var(--espaco-2) var(--espaco-3);
+  background-color: var(--superficie);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+  letter-spacing: 0.02em;
+}
+
+.inicial {
+  display: none;
+}
+
+.linhaDias:last-child > :first-child {
+  border-bottom-left-radius: calc(var(--raio-lg) - 1px);
+}
+
+.linhaDias:last-child > :last-child {
+  border-bottom-right-radius: calc(var(--raio-lg) - 1px);
+}
+
+@container calendario (max-width: 560px) {
+  .diaSemana {
+    place-items: center;
+    padding-inline: 0;
+  }
+
+  .abreviacao {
+    display: none;
+  }
+
+  .inicial {
+    display: inline;
+  }
+}

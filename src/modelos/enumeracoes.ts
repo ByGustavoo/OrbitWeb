@@ -22,10 +22,27 @@ export type DiaSemana = 'DOMINGO' | 'SEGUNDA' | 'TERCA' | 'QUARTA' | 'QUINTA' | 
 
 export type EscopoAlteracao = 'SOMENTE_ESTA' | 'ESTA_E_PROXIMAS';
 
+export const FREQUENCIAS: Frequencia[] = ['DIARIA', 'DIAS_DA_SEMANA', 'SEMANAL', 'MENSAL', 'ANUAL'];
+export const DIAS_SEMANA: DiaSemana[] = ['DOMINGO', 'SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO'];
+
 export type ModoCronometro = 'LIVRE' | 'POMODORO';
 
 export type OrigemSessao = 'CRONOMETRO' | 'MANUAL';
 
-export type TipoEventoRecente = 'TAREFA_CRIADA' | 'TAREFA_CONCLUIDA' | 'TAREFA_CANCELADA' | 'SESSAO_SALVA';
+export type TipoEventoRecente = 'TAREFA_CRIADA' | 'TAREFA_CONCLUIDA' | 'TAREFA_CANCELADA' | 'TAREFA_REABERTA' | 'SESSAO_SALVA';
+
+export type TipoEventoTarefa =
+  | 'TAREFA_CRIADA'
+  | 'TAREFA_CONCLUIDA'
+  | 'TAREFA_CANCELADA'
+  | 'TAREFA_REABERTA'
+  | 'PRIORIDADE_ALTERADA'
+  | 'DATA_ALTERADA';
+
+export type TipoEventoHistorico = TipoEventoTarefa | 'TAREFA_NAO_REALIZADA' | 'SESSAO_ESTUDO';
+
+export type AreaHistorico = 'TAREFAS' | 'ESTUDOS';
+
+export const AREAS_HISTORICO: AreaHistorico[] = ['TAREFAS', 'ESTUDOS'];
 
 export type OrdenacaoTarefas = 'DATA' | 'PRIORIDADE' | 'ATUALIZACAO';

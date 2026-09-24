@@ -8,10 +8,11 @@ import estilos from './ProgressoMetas.module.css';
 
 export interface ProgressoMetasProps {
   resultado: ResultadoAssincrono<ProgressoMetaDTO[]>;
+  semanaEncerrada?: boolean;
   className?: string;
 }
 
-export function ProgressoMetas({ resultado, className }: ProgressoMetasProps) {
+export function ProgressoMetas({ resultado, semanaEncerrada = false, className }: ProgressoMetasProps) {
   return (
     <Painel className={className} aria-labelledby="titulo-metas">
       <CabecalhoPainel titulo={<span id="titulo-metas">Metas da semana</span>} descricao="Horas de estudo por atividade, de domingo a sábado" />
@@ -27,7 +28,7 @@ export function ProgressoMetas({ resultado, className }: ProgressoMetasProps) {
               compacto
               icone={Target}
               titulo="Nenhuma meta definida."
-              descricao="Defina uma meta semanal para cada atividade na tela do Cronômetro e acompanhe o progresso aqui."
+              descricao="Defina uma meta semanal para cada atividade na página Estudos e acompanhe o progresso aqui."
             />
           ) : (
             <ul className={estilos.lista}>
@@ -59,7 +60,7 @@ export function ProgressoMetas({ resultado, className }: ProgressoMetasProps) {
                           Meta batida
                         </>
                       ) : (
-                        `Faltam ${formatarDuracao(faltam)}`
+                        `${semanaEncerrada ? 'Faltaram' : 'Faltam'} ${formatarDuracao(faltam)}`
                       )}
                     </span>
                   </li>

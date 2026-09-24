@@ -1,11 +1,11 @@
 import type { CSSProperties } from 'react';
-import { CalendarClock, Check, Repeat } from 'lucide-react';
+import { CalendarClock, CalendarDays, Check, Repeat } from 'lucide-react';
 import { IndicadorGiratorio } from '@/componentes/ui';
 import { coresDaPrioridade } from '@/modelos/cores';
 import type { TarefaDTO } from '@/modelos/tarefas';
 import { formatarDiaRelativo } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
-import { SeloCategoria, SeloPrioridade, SeloSituacao } from './SelosTarefa';
+import { SeloCategoria, SeloPrazo, SeloPrioridade, SeloSituacao } from './SelosTarefa';
 import estilos from './ItemTarefa.module.css';
 
 export interface ItemTarefaProps {
@@ -13,7 +13,9 @@ export interface ItemTarefaProps {
   hojeIso: string;
   enviando?: boolean;
   mostrarDia?: boolean;
+  mostrarSituacao?: boolean;
   aoAlternarConclusao: (tarefa: TarefaDTO) => void;
+  aoAbrir?: (tarefa: TarefaDTO) => void;
   indice?: number;
 }
 
@@ -31,19 +33,45 @@ function Quando({ tarefa, className }: { tarefa: TarefaDTO; className?: string }
   );
 }
 
-export function ItemTarefa({ tarefa, hojeIso, enviando = false, mostrarDia = false, aoAlternarConclusao, indice = 0 }: ItemTarefaProps) {
+function rotuloMarcador(tarefa: TarefaDTO): string {
+  if (tarefa.situacao === 'CANCELADA') return `“${tarefa.titulo}” está cancelada`;
+  return tarefa.situacao === 'CONCLUIDA' ? `Reabrir “${tarefa.titulo}”` : `Concluir “${tarefa.titulo}”`;
+}
+
+export function ItemTarefa({
+  tarefa,
+  hojeIso,
+  enviando = false,
+  mostrarDia = false,
+  mostrarSituacao = false,
+  aoAlternarConclusao,
+  aoAbrir,
+  indice = 0,
+}: ItemTarefaProps) {
   const concluida = tarefa.situacao === 'CONCLUIDA';
+  const cancelada = tarefa.situacao === 'CANCELADA';
+  const atrasada = tarefa.prazo === 'ATRASADA';
+  const prazoEmDestaque = atrasada || tarefa.prazo === 'NAO_REALIZADA';
   const estilo = { '--cor-prioridade': coresDaPrioridade(tarefa.prioridade).texto, '--indice': indice } as CSSProperties;
 
   return (
-    <li className={juntarClasses(estilos.item, 'item-em-cascata', concluida && estilos.concluida)} style={estilo}>
+    <li
+      className={juntarClasses(
+        estilos.item,
+        'item-em-cascata',
+        concluida && estilos.concluida,
+        cancelada && estilos.cancelada,
+        aoAbrir && estilos.abrivel,
+      )}
+      style={estilo}
+    >
       <span className={estilos.marcador}>
         <input
           type="checkbox"
           className={estilos.entrada}
           checked={concluida}
-          disabled={enviando}
-          aria-label={concluida ? `Reabrir “${tarefa.titulo}”` : `Concluir “${tarefa.titulo}”`}
+          disabled={enviando || cancelada}
+          aria-label={rotuloMarcador(tarefa)}
           onChange={() => aoAlternarConclusao(tarefa)}
         />
         {enviando ? (
@@ -57,18 +85,36 @@ export function ItemTarefa({ tarefa, hojeIso, enviando = false, mostrarDia = fal
 
       <div className={estilos.corpo}>
         <p className={estilos.titulo}>
-          <span className={estilos.tituloTexto}>{tarefa.titulo}</span>
+          {aoAbrir ? (
+            <button type="button" className={estilos.abrir} onClick={() => aoAbrir(tarefa)}>
+              <span className={estilos.tituloTexto}>{tarefa.titulo}</span>
+              <span className="visualmente-oculto">, ver detalhes</span>
+            </button>
+          ) : (
+            <span className={estilos.tituloTexto}>{tarefa.titulo}</span>
+          )}
         </p>
         <div className={estilos.meta}>
           <Quando tarefa={tarefa} className={estilos.quandoCompacto} />
           {mostrarDia && tarefa.data ? (
-            <span className={estilos.atraso}>
-              <CalendarClock size={13} strokeWidth={2} aria-hidden="true" />
-              <span className="visualmente-oculto">Era para </span>
+            <span className={juntarClasses(estilos.dia, atrasada && estilos.atraso)}>
+              {atrasada ? (
+                <CalendarClock size={13} strokeWidth={2} aria-hidden="true" />
+              ) : (
+                <CalendarDays size={13} strokeWidth={2} aria-hidden="true" />
+              )}
+              {atrasada ? <span className="visualmente-oculto">Era para </span> : null}
               {formatarDiaRelativo(tarefa.data, hojeIso)}
             </span>
           ) : null}
-          {tarefa.situacao === 'EM_ANDAMENTO' ? <SeloSituacao situacao="EM_ANDAMENTO" /> : null}
+          {mostrarSituacao ? (
+            <>
+              {tarefa.situacao !== 'PENDENTE' || !prazoEmDestaque ? <SeloSituacao situacao={tarefa.situacao} /> : null}
+              <SeloPrazo prazo={tarefa.prazo} />
+            </>
+          ) : tarefa.situacao === 'EM_ANDAMENTO' ? (
+            <SeloSituacao situacao="EM_ANDAMENTO" />
+          ) : null}
           {tarefa.categoria ? <SeloCategoria nome={tarefa.categoria.nome} cor={tarefa.categoria.cor} /> : null}
           {tarefa.serieId !== null ? (
             <span className={estilos.recorrente} title="Tarefa recorrente">

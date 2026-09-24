@@ -1,0 +1,56 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  container: lista-tarefas / inline-size;
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+}
+
+.tituloGrupo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding-bottom: var(--espaco-2);
+  border-bottom: 1px solid var(--borda);
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+  letter-spacing: 0;
+}
+
+.passado {
+  color: var(--texto-secundario);
+}
+
+.relativo {
+  color: var(--destaque);
+}
+
+.relativo::after {
+  content: '·';
+  margin-left: var(--espaco-2);
+  color: var(--texto-terciario);
+}
+
+.contagem {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding-inline: var(--espaco-1);
+  border-radius: var(--raio-pilula);
+  background-color: var(--neutro-suave);
+  color: var(--texto-secundario);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.itens {
+  display: flex;
+  flex-direction: column;
+}

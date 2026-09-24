@@ -10,6 +10,12 @@ import estilos from './Modal.module.css';
 
 const DURACAO_SAIDA_MS = 200;
 
+const pilhaModais: symbol[] = [];
+
+function estaNoTopo(identificador: symbol): boolean {
+  return pilhaModais[pilhaModais.length - 1] === identificador;
+}
+
 export interface ModalProps {
   aberto: boolean;
   aoFechar: () => void;
@@ -37,6 +43,7 @@ export function Modal({
   const [saindo, setSaindo] = useState(false);
   const painelRef = useRef<HTMLDivElement>(null);
   const origemRef = useRef<HTMLElement | null>(null);
+  const identificador = useRef(Symbol('modal')).current;
   const idBase = useId();
   const idTitulo = `${idBase}-titulo`;
   const idDescricao = `${idBase}-descricao`;
@@ -61,6 +68,15 @@ export function Modal({
   useTravarRolagem(montado);
 
   useEffect(() => {
+    if (!montado) return;
+    pilhaModais.push(identificador);
+    return () => {
+      const indice = pilhaModais.lastIndexOf(identificador);
+      if (indice >= 0) pilhaModais.splice(indice, 1);
+    };
+  }, [montado, identificador]);
+
+  useEffect(() => {
     if (!montado || saindo) return;
     const painel = painelRef.current;
     if (!painel || painel.contains(document.activeElement)) return;
@@ -73,6 +89,7 @@ export function Modal({
   useEffect(() => {
     if (!montado || saindo) return;
     const aoPressionar = (evento: KeyboardEvent) => {
+      if (!estaNoTopo(identificador)) return;
       if (evento.key === 'Escape') {
         evento.stopPropagation();
         aoFechar();
@@ -82,7 +99,7 @@ export function Modal({
     };
     document.addEventListener('keydown', aoPressionar);
     return () => document.removeEventListener('keydown', aoPressionar);
-  }, [montado, saindo, aoFechar]);
+  }, [montado, saindo, aoFechar, identificador]);
 
   if (!montado) return null;
 

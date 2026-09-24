@@ -49,6 +49,23 @@ export interface TarefaDTO {
   atualizadoEm: string;
 }
 
+export interface TarefaEnvioDTO {
+  titulo: string;
+  descricao: string | null;
+  data: string | null;
+  diaInteiro: boolean;
+  horarioInicio: string | null;
+  horarioFim: string | null;
+  prioridade: Prioridade;
+  situacao: Situacao;
+  categoriaId: number | null;
+  atividadeId: number | null;
+  lembreteMinutosAntes: MinutosLembrete | null;
+  recorrencia: RecorrenciaDTO | null;
+}
+
+export const MINUTOS_LEMBRETE: MinutosLembrete[] = [0, 5, 15, 30, 60];
+
 export interface FiltrosTarefas {
   data?: string;
   dataInicial?: string;
