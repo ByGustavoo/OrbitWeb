@@ -1,0 +1,202 @@
+.leitura {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-height: 2.5rem;
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  text-align: right;
+}
+
+.leitura strong {
+  color: var(--texto);
+  font-size: var(--tamanho-base);
+  font-weight: var(--peso-forte);
+}
+
+.dicaLeitura {
+  max-width: 20rem;
+  color: var(--texto-terciario);
+}
+
+.corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 236px);
+  gap: var(--espaco-8);
+  align-items: start;
+}
+
+.calendario {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: var(--espaco-5) var(--espaco-4);
+}
+
+.mes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  min-width: 0;
+}
+
+.nomeMes {
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.semana,
+.grade {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.semana {
+  color: var(--texto-terciario);
+  font-size: 0.625rem;
+  text-align: center;
+}
+
+.dia,
+.vazio {
+  aspect-ratio: 1;
+  border-radius: 3px;
+}
+
+.vazio {
+  visibility: hidden;
+}
+
+.dia {
+  cursor: default;
+  transition:
+    transform var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-rapida) var(--curva-saida);
+}
+
+.nivel0 {
+  background-color: var(--calor-0);
+}
+
+.nivel1 {
+  background-color: var(--calor-1);
+}
+
+.nivel2 {
+  background-color: var(--calor-2);
+}
+
+.nivel3 {
+  background-color: var(--calor-3);
+}
+
+.nivel4 {
+  background-color: var(--calor-4);
+}
+
+.hoje {
+  box-shadow:
+    0 0 0 1px var(--superficie),
+    0 0 0 2px var(--destaque);
+}
+
+.focado {
+  transform: scale(1.18);
+  box-shadow:
+    0 0 0 1px var(--superficie),
+    0 0 0 2px var(--texto-secundario);
+}
+
+.futuro,
+.futuro.nivel0 {
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px var(--borda);
+}
+
+.lateral {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.estatisticas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.estatistica {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+  font-size: var(--tamanho-sm);
+}
+
+.estatistica dt {
+  color: var(--texto-secundario);
+}
+
+.estatistica dd {
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.atividade {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.corAtividade {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legenda {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  padding-top: var(--espaco-3);
+  border-top: 1px solid var(--borda);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.amostra {
+  flex-shrink: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+}
+
+@media (hover: none), (max-width: 767px) {
+  .dicaLeitura {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .corpo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--espaco-6);
+  }
+
+  .calendario {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 8.5rem;
+    overflow-x: auto;
+    padding-bottom: var(--espaco-2);
+    scroll-snap-type: x proximity;
+  }
+
+  .mes {
+    scroll-snap-align: end;
+  }
+}

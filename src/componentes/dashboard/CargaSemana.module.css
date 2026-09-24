@@ -1,0 +1,118 @@
+.carga {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.legenda {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  font-weight: var(--peso-medio);
+}
+
+.dias {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--espaco-1);
+}
+
+.dia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-1);
+  padding-block: var(--espaco-2);
+  border-radius: var(--raio-sm);
+}
+
+.hoje {
+  background-color: var(--destaque-suave);
+}
+
+.quantidade {
+  color: var(--texto-secundario);
+  font-family: var(--fonte-numeros);
+  font-size: var(--tamanho-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.hoje .quantidade,
+.hoje .nome {
+  color: var(--destaque);
+  font-weight: var(--peso-forte);
+}
+
+.trilho {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 14px;
+  height: 52px;
+}
+
+.barra {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+  height: calc(var(--proporcao) * 100%);
+  min-height: 2px;
+  overflow: hidden;
+  border-radius: 4px 4px 1px 1px;
+  background-color: var(--carga-a-fazer);
+  transform-origin: bottom;
+  animation: crescer var(--duracao-lenta) var(--curva-saida) backwards;
+  animation-delay: calc(var(--indice) * var(--passo-cascata));
+}
+
+.concluidas {
+  display: block;
+  width: 100%;
+  height: calc(var(--proporcao-concluidas) * 100%);
+  background-color: var(--carga-concluida);
+}
+
+.parcial {
+  border-top: 2px solid var(--superficie);
+}
+
+.passado .barra {
+  opacity: 0.75;
+}
+
+.nome {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.chaves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.chave {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.amostra {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background-color: var(--carga-a-fazer);
+}
+
+.amostraConcluidas {
+  background-color: var(--carga-concluida);
+}
+
+@keyframes crescer {
+  from {
+    transform: scaleY(0);
+  }
+}

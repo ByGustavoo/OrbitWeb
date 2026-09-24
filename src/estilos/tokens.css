@@ -59,10 +59,12 @@
   --curva-saida: cubic-bezier(0.22, 1, 0.36, 1);
   --curva-entrada: cubic-bezier(0.55, 0, 1, 0.45);
   --curva-mola: cubic-bezier(0.34, 1.36, 0.54, 1);
+  --curva-tema: cubic-bezier(0.45, 0, 0.25, 1);
   --duracao-rapida: 120ms;
   --duracao-base: 200ms;
   --duracao-lenta: 360ms;
   --duracao-expressiva: 520ms;
+  --duracao-tema: 600ms;
   --passo-cascata: 30ms;
 
   --camada-cabecalho: 30;

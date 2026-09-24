@@ -1,4 +1,5 @@
 export { AreaTexto } from './AreaTexto';
+export { BarraProgresso } from './BarraProgresso';
 export { Botao } from './Botao';
 export type { BotaoProps, TamanhoBotao, VarianteBotao } from './Botao';
 export { BotaoIcone } from './BotaoIcone';
@@ -8,6 +9,7 @@ export { CampoNumero } from './CampoNumero';
 export { CampoSelecao } from './CampoSelecao';
 export type { OpcaoSelecao } from './CampoSelecao';
 export { CampoTexto } from './CampoTexto';
+export { ConteudoAssincrono } from './ConteudoAssincrono';
 export { DialogoConfirmacao } from './DialogoConfirmacao';
 export { Esqueleto, EsqueletoCartao, EsqueletoLista } from './Esqueleto';
 export { EstadoErro } from './EstadoErro';

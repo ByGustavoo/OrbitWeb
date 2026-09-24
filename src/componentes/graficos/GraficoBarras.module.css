@@ -1,0 +1,60 @@
+.figura {
+  position: relative;
+  min-width: 0;
+}
+
+.area {
+  width: 100%;
+  font-family: var(--fonte-numeros);
+  font-variant-numeric: tabular-nums;
+}
+
+.area :global(.recharts-cartesian-grid line) {
+  stroke: var(--grafico-grade);
+}
+
+.area :global(.recharts-cartesian-axis-tick-value) {
+  fill: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}
+
+.area :global(.recharts-surface) {
+  overflow: visible;
+}
+
+.barra :global(path) {
+  fill: var(--grafico-1);
+  transition: fill var(--duracao-rapida) var(--curva-saida);
+}
+
+.barra :global(.recharts-active-bar path),
+.barra :global(.recharts-bar-rectangle:hover path) {
+  fill: var(--destaque-forte);
+}
+
+.cursor {
+  fill: var(--superficie-suave);
+}
+
+.dica {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--espaco-2) var(--espaco-3);
+  background-color: var(--superficie-elevada);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-sm);
+  box-shadow: var(--sombra-flutuante);
+  font-family: var(--fonte-interface);
+}
+
+.dicaValor {
+  color: var(--texto);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-forte);
+}
+
+.dicaRotulo {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+}

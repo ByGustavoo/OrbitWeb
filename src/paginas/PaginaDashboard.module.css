@@ -1,0 +1,47 @@
+.painel {
+  container: dashboard / inline-size;
+}
+
+.grade {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--espaco-5);
+}
+
+.resumo,
+.mapa,
+.metas {
+  grid-column: 1 / -1;
+}
+
+.hoje {
+  grid-column: span 8;
+  grid-row: span 2;
+}
+
+.produtividade {
+  grid-column: span 8;
+}
+
+.proximas,
+.prioridades,
+.recentes {
+  grid-column: span 4;
+}
+
+@container dashboard (max-width: 980px) {
+  .hoje,
+  .produtividade,
+  .proximas,
+  .prioridades,
+  .recentes {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+}
+
+@container dashboard (max-width: 680px) {
+  .grade {
+    gap: var(--espaco-4);
+  }
+}

@@ -1,17 +1,5 @@
-import { CalendarDays, ClipboardCheck, History, LayoutDashboard, ListChecks, Settings, Timer } from 'lucide-react';
+import { CalendarDays, ClipboardCheck, History, ListChecks, Settings, Timer } from 'lucide-react';
 import { PaginaProvisoria } from './PaginaProvisoria';
-
-export function PaginaDashboard() {
-  return (
-    <PaginaProvisoria
-      titulo="Dashboard"
-      tituloDocumento=""
-      descricao="O que você tem para hoje e como está sua semana."
-      icone={LayoutDashboard}
-      proximaEtapa="Aqui vão aparecer as tarefas de hoje, os indicadores da semana, a sequência de dias e o mapa de estudo."
-    />
-  );
-}
 
 export function PaginaCalendario() {
   return (

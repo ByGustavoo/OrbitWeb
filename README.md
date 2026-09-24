@@ -16,6 +16,8 @@
 
 * ⚛️ React 18
 
+* 📊 Recharts
+
 * 🔷 TypeScript 5
 
 * 🖼️ Lucide React
@@ -26,17 +28,19 @@
 
 * 🔤 Geist e Geist Mono (Fontsource, servidas pelo próprio app)
 
+* 🧪 Vitest (regras de negócio)
+
 
 <br>
 
 
 ## 📌 Status do Projeto
 
-O projeto está na **Fase 03 — Design System e Estrutura Visual**, concluída. Já existem a base visual
-completa, o layout (menu lateral, cabeçalho e conteúdo), a tela de boas-vindas, os temas claro e
-escuro, os componentes reutilizáveis e a navegação entre todas as páginas. As telas de domínio
-(Dashboard, Calendário, Tarefas, Estudos, Histórico, Revisão semanal e Configurações) ainda são
-provisórias e serão construídas nas próximas fases, a começar pela **Fase 04 — Dashboard**.
+O projeto está na **Fase 04 — Dashboard**, concluída. Além da base visual, do layout, da tela de
+boas-vindas, dos temas e dos componentes da Fase 03, já existem o Dashboard completo e a camada de
+dados (cliente HTTP, serviços e simulador da API). As demais telas de domínio (Calendário, Tarefas,
+Estudos, Histórico, Revisão semanal e Configurações) ainda são provisórias e serão construídas nas
+próximas fases, a começar pela **Fase 05 — Calendário e gerenciamento de tarefas**.
 
 Os requisitos do produto estão em [`REQUISITOS.md`](REQUISITOS.md) e as decisões técnicas em
 [`ARQUITETURA.md`](ARQUITETURA.md). Os dois são a fonte de verdade: uma mudança de regra passa por
@@ -51,6 +55,8 @@ eles antes de chegar ao código.
 <br>
 
 🔹 **Prontas**
+* **Dashboard**: saudação com o que falta hoje; resumo da semana (concluídas, pendentes, atrasadas, urgentes e sequência de dias); tarefas de hoje com conclusão e "Desfazer"; atrasadas com "Mover todas para hoje"; próximas atividades com a carga de tarefas da semana; tarefas em aberto por prioridade; produtividade (tarefas concluídas e tempo de estudo por dia, em 7 ou 30 dias); atividade recente; mapa de calor de estudo dos últimos 6 meses; metas da semana.
+* Camada de dados: cliente HTTP único com tempo limite, erros tipados e fuso no cabeçalho; serviços por recurso; simulador que responde às mesmas rotas da API e guarda os dados no navegador.
 * Tela de boas-vindas com a frase de efeito, exibida ao abrir o Orbit numa nova aba ou janela, com saída em cascata e o logo viajando até o menu lateral.
 * Menu lateral com seções Planejamento, Estudos e Acompanhamento, modo recolhido persistido e gaveta abaixo de 1100px.
 * Cabeçalho com a data de hoje e troca de tema animada.
@@ -60,7 +66,6 @@ eles antes de chegar ao código.
 * Catálogo de todos os componentes e estados em `/componentes`, só no ambiente de desenvolvimento.
 
 🔹 **Planejadas** (definidas em `REQUISITOS.md`)
-* **Dashboard**: tarefas de hoje, concluídas, pendentes, atrasadas e urgentes, gráficos, mapa de calor de estudo, sequência de dias, metas da semana e eventos recentes.
 * **Calendário**: grade do mês, agenda do dia, navegação por mês e ano e criação de tarefa na data escolhida.
 * **Tarefas**: título, descrição, data opcional, horário de início e fim, prioridade, situação, categoria com cor, recorrência (diária, dias da semana, semanal, mensal e anual) e reagendamento de atrasadas em lote.
 * **Estudos**: cronômetro livre e Pomodoro que continua ao trocar de tela, atividades com meta semanal, sessões manuais e histórico.
@@ -126,6 +131,12 @@ $ npm run preview
 $ npm run typecheck
 ```
 
+🔹 test
+```bash
+# Testes das regras de negócio (prazo, sequência, escala do mapa de calor)
+$ npm run test
+```
+
 <br>
 
 > O `typecheck` usa `tsc -b`, e não `tsc --noEmit`. O `tsconfig.json` da raiz é uma solução com
@@ -169,32 +180,37 @@ Em produção, `window.__ORBIT_CONFIG__.urlApi` (gravado em `public/config.js`) 
 
 ```bash
 src/
+├── api/             clienteHttp, ErroApi, rotasApi (única fonte de URLs), transportes
 ├── componentes/
 │   ├── ui/          Botao, BotaoIcone, CampoTexto, CampoNumero, CampoBusca, AreaTexto,
 │   │                CampoSelecao, SeletorData, SeletorHorario, CaixaSelecao, GrupoRadio,
 │   │                Interruptor, GrupoOpcoes, Selo, Painel, Modal, DialogoConfirmacao,
 │   │                Flutuante, Notificacao, Esqueleto, IndicadorGiratorio, EstadoVazio,
-│   │                EstadoErro
+│   │                EstadoErro, BarraProgresso, ConteudoAssincrono
 │   ├── layout/      MenuLateral, Cabecalho, CabecalhoPagina, BotaoTema
 │   ├── boasVindas/  TelaBoasVindas e a transição para a aplicação
-│   ├── tarefas/     selos de prioridade, situação, prazo e categoria
+│   ├── dashboard/   ResumoIndicadores, TarefasDeHoje, ProximasAtividades, CargaSemana,
+│   │                PrioridadesEmAberto, PainelProdutividade, MapaCalorEstudo,
+│   │                ListaEventosRecentes
+│   ├── estudos/     ProgressoMetas
+│   ├── graficos/    GraficoBarras (Recharts)
+│   ├── tarefas/     ItemTarefa e selos de prioridade, situação, prazo e categoria
 │   └── comum/       MarcaOrbit
 ├── configuracoes/   ambiente, aplicacao, navegacao
+├── dados/simulacao/ simulador da API: banco no localStorage, sementes e manipuladores
 ├── estilos/         tokens.css (escala), temas.css (cores por tema), global.css
-├── ganchos/         useArmazenamentoLocal, useConsultaMidia, useTravarRolagem,
-│                    useTituloDocumento
+├── ganchos/         useDadosAssincronos, useContagem, useArmazenamentoLocal,
+│                    useConsultaMidia, useTravarRolagem, useTituloDocumento
 ├── layouts/         LayoutAplicacao (casca: menu lateral + cabeçalho + conteúdo)
-├── modelos/         enumeracoes, rotulos, cores (contratos de domínio)
-├── paginas/         páginas provisórias, PaginaComponentes, PaginaNaoEncontrada
-├── provedores/      ProvedorTema, ProvedorNotificacoes, ProvedoresAplicacao
+├── modelos/         DTOs (tarefas, estudos, painel, comum), enumeracoes, rotulos, cores
+├── paginas/         PaginaDashboard, páginas provisórias, PaginaComponentes,
+│                    PaginaNaoEncontrada
+├── provedores/      ProvedorTema, ProvedorNotificacoes, ProvedorAlteracoes
+├── regras/          prazo, sequencia, escalaCalor (com testes)
 ├── rotas/           RotasAplicacao, caminhos (única fonte de rotas)
-└── utilitarios/     datas, foco, juntarClasses
+├── servicos/        servicoTarefas, servicoSessoes, servicoDashboard
+└── utilitarios/     datas, formatacao, foco, juntarClasses
 ```
-
-<br>
-
-As pastas `api/`, `servicos/`, `regras/` e `dados/simulacao/` entram a partir da Fase 04, conforme a
-estrutura completa descrita no `ARQUITETURA.md`.
 
 
 <br>
@@ -243,6 +259,18 @@ kebab-case sem acento (`/tarefas/resumo-calendario`), campo e query param em cam
 
 O backend precisa liberar **CORS** para a origem do dev server (`http://localhost:5173`).
 
+Os dados que o Dashboard espera de cada rota estão na seção 16 do `ARQUITETURA.md`.
+
+<br>
+
+🔹 Controles do simulador (só em desenvolvimento, no console do navegador)
+```js
+orbitSimulacao.restaurar()                 // gera de novo os dados de exemplo
+orbitSimulacao.esvaziar()                  // apaga tudo, para ver os estados vazios
+orbitSimulacao.falhar('/tarefas')          // rotas que começam assim respondem 503 ('*' = todas, false = desliga)
+orbitSimulacao.latencia(8000)              // latência fixa, para ver os esqueletos (false = 200–500ms)
+```
+
 
 <br>
 
@@ -253,7 +281,7 @@ O backend precisa liberar **CORS** para a origem do dev server (`http://localhos
 
 * ⚡ Um script inline no `index.html` aplica o tema salvo antes do React montar, evitando o flash de tema errado.
 
-* 🔀 Três modos: claro, escuro e sistema (acompanha o dispositivo). O botão do cabeçalho alterna entre claro e escuro, com os ícones de sol e lua trocando em mola e as cores da página em transição suave.
+* 🔀 Três modos: claro, escuro e sistema (acompanha o dispositivo). O botão do cabeçalho alterna entre claro e escuro, com os ícones de sol e lua trocando em mola e a página inteira esmaecendo de um tema para o outro em 600ms.
 
 * 🔵 Destaque em azul-marinho (`#1f3b73` no claro, `#8faae6` no escuro): sóbrio, para não competir com o conteúdo.
 
@@ -281,9 +309,7 @@ O backend precisa liberar **CORS** para a origem do dev server (`http://localhos
 
 ## 🗺️ Próximas Etapas
 
-* 📊 **Fase 04 — Dashboard**, seguida de Calendário, Tarefas, Estudos e Revisão semanal.
-
-* 🧪 Camada de serviços, dados simulados e Vitest para as regras de negócio.
+* 📅 **Fase 05 — Calendário e gerenciamento de tarefas**, seguida de Estudos e Revisão semanal.
 
 * ☕ OrbitAPI em Java / Spring Boot, e depois Docker e esteira de publicação no mesmo modelo do PrismaWeb.
 

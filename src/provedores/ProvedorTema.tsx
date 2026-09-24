@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import { CHAVE_TEMA } from '@/configuracoes/aplicacao';
 import { gravarArmazenamentoLocal, lerArmazenamentoLocal } from '@/ganchos/useArmazenamentoLocal';
 
@@ -16,8 +17,14 @@ interface ValorContextoTema {
 const ContextoTema = createContext<ValorContextoTema | null>(null);
 
 const CONSULTA_TEMA_ESCURO = '(prefers-color-scheme: dark)';
+const CONSULTA_MOVIMENTO_REDUZIDO = '(prefers-reduced-motion: reduce)';
 const CLASSE_TROCANDO_TEMA = 'trocando-tema';
-const DURACAO_TROCA_TEMA_MS = 420;
+const CLASSE_CRUZANDO_TEMA = 'cruzando-tema';
+const DURACAO_TROCA_TEMA_MS = 640;
+
+interface DocumentoComTransicao {
+  startViewTransition?: (atualizar: () => void) => { finished: Promise<void> };
+}
 
 let temporizadorTroca = 0;
 
@@ -26,6 +33,25 @@ function suavizarTroca(): void {
   raiz.classList.add(CLASSE_TROCANDO_TEMA);
   window.clearTimeout(temporizadorTroca);
   temporizadorTroca = window.setTimeout(() => raiz.classList.remove(CLASSE_TROCANDO_TEMA), DURACAO_TROCA_TEMA_MS);
+}
+
+function trocarComTransicao(aplicar: () => void): void {
+  const documento = document as unknown as DocumentoComTransicao;
+  const podeCruzar =
+    documento.startViewTransition &&
+    document.visibilityState === 'visible' &&
+    !window.matchMedia(CONSULTA_MOVIMENTO_REDUZIDO).matches;
+
+  if (!podeCruzar || !documento.startViewTransition) {
+    suavizarTroca();
+    aplicar();
+    return;
+  }
+
+  const raiz = document.documentElement;
+  const limpar = () => raiz.classList.remove(CLASSE_CRUZANDO_TEMA);
+  raiz.classList.add(CLASSE_CRUZANDO_TEMA);
+  documento.startViewTransition(aplicar).finished.then(limpar, limpar);
 }
 
 function lerModoSalvo(): ModoTema {
@@ -54,11 +80,17 @@ export function ProvedorTema({ children }: { children: ReactNode }) {
     document.documentElement.dataset.tema = tema;
   }, [tema]);
 
-  const definirModo = useCallback((proximo: ModoTema) => {
-    suavizarTroca();
-    setModo(proximo);
-    gravarArmazenamentoLocal(CHAVE_TEMA, proximo);
-  }, []);
+  const definirModo = useCallback(
+    (proximo: ModoTema) => {
+      const resolvido: TemaAplicado = proximo === 'sistema' ? preferenciaSistema : proximo;
+      gravarArmazenamentoLocal(CHAVE_TEMA, proximo);
+      trocarComTransicao(() => {
+        document.documentElement.dataset.tema = resolvido;
+        flushSync(() => setModo(proximo));
+      });
+    },
+    [preferenciaSistema],
+  );
 
   const alternarTema = useCallback(() => {
     definirModo(tema === 'escuro' ? 'claro' : 'escuro');

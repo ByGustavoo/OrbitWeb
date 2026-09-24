@@ -14,7 +14,7 @@ function carregarProvisoria(nome: keyof ModuloPaginasProvisorias) {
   });
 }
 
-const PaginaDashboard = carregarProvisoria('PaginaDashboard');
+const PaginaDashboard = lazy(() => import('@/paginas/PaginaDashboard'));
 const PaginaCalendario = carregarProvisoria('PaginaCalendario');
 const PaginaTarefas = carregarProvisoria('PaginaTarefas');
 const PaginaEstudos = carregarProvisoria('PaginaEstudos');

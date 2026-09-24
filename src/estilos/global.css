@@ -193,12 +193,19 @@ legend {
 .trocando-tema *::before,
 .trocando-tema *::after {
   transition:
-    background-color var(--duracao-lenta) var(--curva-saida),
-    border-color var(--duracao-lenta) var(--curva-saida),
-    color var(--duracao-lenta) var(--curva-saida),
-    fill var(--duracao-lenta) var(--curva-saida),
-    stroke var(--duracao-lenta) var(--curva-saida),
-    box-shadow var(--duracao-lenta) var(--curva-saida) !important;
+    background-color var(--duracao-tema) var(--curva-tema),
+    border-color var(--duracao-tema) var(--curva-tema),
+    color var(--duracao-tema) var(--curva-tema),
+    fill var(--duracao-tema) var(--curva-tema),
+    stroke var(--duracao-tema) var(--curva-tema),
+    box-shadow var(--duracao-tema) var(--curva-tema) !important;
+}
+
+.cruzando-tema::view-transition-group(*),
+.cruzando-tema::view-transition-old(*),
+.cruzando-tema::view-transition-new(*) {
+  animation-duration: var(--duracao-tema);
+  animation-timing-function: var(--curva-tema);
 }
 
 .marca-em-transicao {

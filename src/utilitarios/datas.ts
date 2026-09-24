@@ -99,3 +99,24 @@ export function gradeDoMes(ano: number, mes: number): Date[] {
   const inicio = adicionarDias(primeiro, -primeiro.getDay());
   return Array.from({ length: 42 }, (_, indice) => adicionarDias(inicio, indice));
 }
+
+export function inicioDaSemana(data: Date): Date {
+  return adicionarDias(new Date(data.getFullYear(), data.getMonth(), data.getDate()), -data.getDay());
+}
+
+export function adicionarDiasIso(iso: string, dias: number): string {
+  return dataIsoLocal(adicionarDias(deDataIso(iso), dias));
+}
+
+export function diasEntre(inicioIso: string, fimIso: string): number {
+  return Math.round((deDataIso(fimIso).getTime() - deDataIso(inicioIso).getTime()) / 86400000);
+}
+
+export function intervaloDeDias(inicioIso: string, fimIso: string): string[] {
+  const total = diasEntre(inicioIso, fimIso);
+  return Array.from({ length: Math.max(0, total + 1) }, (_, indice) => adicionarDiasIso(inicioIso, indice));
+}
+
+export function hojeIso(): string {
+  return dataIsoLocal(hoje());
+}

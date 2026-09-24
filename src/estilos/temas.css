@@ -67,10 +67,13 @@
   --cor-cinza-suave: #edeef3;
 
   --calor-0: #eceef2;
-  --calor-1: #dbe3f2;
-  --calor-2: #a9bbe0;
-  --calor-3: #5b78b8;
+  --calor-1: #a3b6dd;
+  --calor-2: #7390cb;
+  --calor-3: #4766a8;
   --calor-4: #1f3b73;
+
+  --carga-concluida: #16a34a;
+  --carga-a-fazer: #2f74e6;
 
   --grafico-grade: #e7e9ed;
   --grafico-1: #1f3b73;
@@ -164,10 +167,13 @@
   --cor-cinza-suave: #23262e;
 
   --calor-0: #20242a;
-  --calor-1: #18233b;
-  --calor-2: #243a6c;
-  --calor-3: #4462a8;
-  --calor-4: #8faae6;
+  --calor-1: #2d4b88;
+  --calor-2: #4768ad;
+  --calor-3: #6d8dd0;
+  --calor-4: #a9c0f0;
+
+  --carga-concluida: #27ad5d;
+  --carga-a-fazer: #5b8ef0;
 
   --grafico-grade: #242830;
   --grafico-1: #8faae6;

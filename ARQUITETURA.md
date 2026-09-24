@@ -155,7 +155,7 @@ OrbitWeb/
     │   ├── useArmazenamentoLocal.ts
     │   ├── useTravarRolagem.ts
     │   ├── useValidacaoFormulario.ts
-    │   ├── usePaletaGrafico.ts      cores dos gráficos a partir dos tokens do tema
+    │   ├── useContagem.ts           animação dos números dos indicadores
     │   └── useAtalhoTeclado.ts
     ├── layouts/
     │   └── LayoutAplicacao.tsx      sidebar + cabeçalho + conteúdo
@@ -290,13 +290,15 @@ há rota própria para o formulário.
   pendentes, atrasadas e urgentes; sequência de dias; tarefas concluídas por dia; minutos de
   estudo por dia; distribuição por prioridade; mapa de calor de estudo; progresso das metas da
   semana; eventos recentes; atalho para a revisão semanal.
-- **Componentes:** `CabecalhoPagina`, `SeletorPeriodo` (7/30 dias), `IndicadorNumerico`,
-  `ListaTarefas`, `CartaoSequencia`, `GraficoBarras`, `GraficoRosca`, `MapaCalorEstudo`,
-  `ProgressoMetas`, `ListaEventosRecentes`.
+- **Componentes:** `CabecalhoPagina`, `ResumoIndicadores` (com `IndicadorNumerico` e a
+  sequência), `TarefasDeHoje` (com `ItemTarefa`), `ProximasAtividades` (com `CargaSemana`),
+  `PrioridadesEmAberto`, `PainelProdutividade` (com `GraficoBarras` e o período 7/30 dias),
+  `ListaEventosRecentes`, `MapaCalorEstudo`, `ProgressoMetas`. Detalhes na seção 16.
 - **Ações:** concluir ou iniciar tarefa, abrir tarefa, nova tarefa, "mover todas as atrasadas para
   hoje", trocar período, ir para a revisão semanal.
-- **Dados:** `buscarResumoDashboard`, `buscarTarefas({ data: hoje })`, `buscarMapaCalor`,
-  `buscarSequencia`, `buscarProgressoSemanal`.
+- **Dados:** `buscarResumoDashboard`, `buscarSequencia`, `buscarTarefas({ data: hoje })`,
+  `buscarTarefas({ prazo: ATRASADA })`, `buscarTarefas` dos próximos 7 dias,
+  `buscarResumoCalendario` da semana, `buscarMapaCalor`, `buscarProgressoSemanal`.
 
 ### Calendário — `/calendario`
 
@@ -414,13 +416,19 @@ mesma qualidade e o mesmo comportamento, adaptados ao Orbit, e não uma cópia.
 
 ### `componentes/dashboard/`
 
-`IndicadorNumerico`, `CartaoSequencia`, `MapaCalorEstudo` (mesmo desenho do `CalendarioGastos`
-do PrismaWeb), `ListaEventosRecentes`.
+`ResumoIndicadores`, `IndicadorNumerico`, `TarefasDeHoje`, `ProximasAtividades`, `CargaSemana`,
+`PrioridadesEmAberto`, `PainelProdutividade`, `MapaCalorEstudo` (mesmo desenho do
+`CalendarioGastos` do PrismaWeb), `ListaEventosRecentes`.
 
 ### `componentes/graficos/`
 
-`GraficoBarras`, `GraficoRosca` (Recharts) e `DicaGrafico` (tooltip). As cores vêm de
-`usePaletaGrafico`, que lê os tokens do tema, então os gráficos acompanham a troca de tema.
+`GraficoBarras` (Recharts, com a dica embutida e uma tabela equivalente para leitores de tela).
+`GraficoRosca` fica para quando alguma tela precisar dele. As cores **não** passam por JavaScript:
+o CSS do componente pinta os elementos do Recharts com os tokens (`--grafico-1`,
+`--grafico-grade`, `--texto-terciario`), então o gráfico troca de tema junto com o resto da página.
+O `usePaletaGrafico` previsto foi descartado: lendo `getComputedStyle` durante a renderização, ele
+pegava as cores do tema anterior, porque o `data-tema` só muda no efeito do `ProvedorTema`, depois
+dos filhos. O Recharts fica num chunk próprio (`graficos`), fora do código das páginas.
 
 ---
 
@@ -643,6 +651,8 @@ export interface SessaoEmAndamento {
 export interface ResumoDashboardDTO {
   dataInicial: string;
   dataFinal: string;
+  inicioSemana: string;
+  fimSemana: string;
   contagens: {
     concluidas: number;
     pendentes: number;
@@ -968,7 +978,11 @@ O `clienteHttp` transforma toda falha num `ErroApi` com um `tipo`:
   `<html>`.
 - Um script curto no `index.html` aplica o tema antes da primeira pintura, para não haver "piscada"
   do tema errado ao abrir.
-- `usePaletaGrafico` lê as cores dos tokens, então os gráficos do Recharts se redesenham com o tema.
+- A troca de tema pelo botão é um esmaecimento cruzado da página inteira (View Transitions API),
+  com 600ms e curva suave nas duas pontas. Por ser uma única animação composta, não pesa mesmo em
+  telas com muitos elementos. Sem suporte, com a aba oculta ou com movimento reduzido, cai na
+  transição de cores por CSS (`.trocando-tema`), com a mesma duração.
+- Os gráficos do Recharts são pintados por CSS com os tokens, então acompanham a troca de tema.
 
 ### Responsividade
 
@@ -1033,8 +1047,8 @@ termina vazio; sem atualização otimista na primeira versão.
 
 ## Status
 
-Fase 02 aprovada. Fase 03 concluída, aguardando aprovação.
-Próxima fase: **Fase 04 — Dashboard**.
+Fase 02 aprovada. Fase 03 concluída. Fase 04 (Dashboard) concluída, aguardando aprovação.
+Próxima fase: **Fase 05 — Calendário e gerenciamento de tarefas**.
 
 ---
 
@@ -1070,12 +1084,12 @@ de cor, espaço, raio, sombra ou duração fica solto nos componentes.
 | Estados | `--destaque`, `--sucesso`, `--aviso`, `--erro`, `--info`, cada um com `-suave` e, quando preciso, `-grafico` |
 | Prioridade | `--prioridade-{baixa,media,alta,urgente}` e `-suave` |
 | Paleta de categorias | `--cor-{azul,verde,amarelo,laranja,vermelho,rosa,roxo,ciano,cinza}` e `-suave` |
-| Mapa de calor e gráficos | `--calor-0..4`, `--grafico-grade`, `--grafico-1..6` |
+| Mapa de calor e gráficos | `--calor-0..4`, `--grafico-grade`, `--grafico-1..6`, `--carga-concluida`, `--carga-a-fazer` |
 | Tipografia | `--tamanho-{xs,sm,base,md,lg,xl,2xl,destaque,cronometro}`, `--peso-*`, `--altura-linha-*` |
 | Espaço | `--espaco-1..16` (base 4px) |
 | Raio | `--raio-{xs,sm,md,lg,xl,pilula}` |
 | Elevação | `--sombra-cartao`, `--sombra-controle`, `--sombra-flutuante`, `--sombra-sobreposicao`, `--anel-foco` |
-| Movimento | `--duracao-{rapida,base,lenta}` (120/200/360ms), `--curva-{saida,entrada,mola}` |
+| Movimento | `--duracao-{rapida,base,lenta}` (120/200/360ms), `--curva-{saida,entrada,mola}`, `--duracao-tema` (600ms) e `--curva-tema` para a troca de tema |
 | Camadas | `--camada-{cabecalho,menu,sobreposicao,modal,flutuante,notificacao}` |
 
 O contraste de todos os pares texto × fundo foi conferido nos dois temas (WCAG AA).
@@ -1109,3 +1123,103 @@ A **tela de boas-vindas** (`src/componentes/boasVindas/`) aparece sempre que o O
 
 O catálogo com todos os componentes e estados fica em `/componentes`, **só no ambiente de
 desenvolvimento**.
+
+---
+
+## 16. Dashboard (Fase 04)
+
+### Composição
+
+```text
+Cabeçalho da página   saudação + o que falta hoje · atalho para a Revisão semanal
+Resumo                Concluídas · Pendentes · Atrasadas · Urgentes · Sequência (uma faixa só)
+Tarefas de hoje       grupo "Atrasadas" (com "Mover todas para hoje") + lista do dia, com progresso
+Próximas atividades   carga da semana (tarefas por dia, concluídas × a fazer) + próximos 7 dias
+Em aberto por prioridade
+Produtividade         abas Tarefas concluídas / Tempo de estudo + gráfico por dia · período 7/30 dias
+Atividade recente
+Estudo por dia        mapa de calor dos últimos 6 meses (regra H1)
+Metas da semana
+```
+
+No desktop, "Tarefas de hoje" ocupa 8 de 12 colunas e duas linhas, com "Próximas atividades" e
+"Em aberto por prioridade" empilhados ao lado. Abaixo de 980px de conteúdo tudo vira uma coluna, na
+ordem acima, que é a ordem de importância. A grade usa *container queries*, então responde à
+largura real do conteúdo (com ou sem menu lateral), e não à da janela.
+
+### O que cada número significa
+
+| Indicador | Regra |
+|---|---|
+| Concluídas | Tarefas com `dataConclusao` na semana atual (domingo a sábado) |
+| Pendentes | Pendentes + em andamento com data na semana atual e ainda no prazo; o contexto mostra quantas estão em andamento |
+| Atrasadas | Todas com `prazo = ATRASADA`, de qualquer data |
+| Urgentes | Prioridade `URGENTE`, pendente ou em andamento, com qualquer data ou sem data |
+| Sequência | `SequenciaDTO` (regra S1 e regra 17) |
+| Em aberto por prioridade | Pendentes + em andamento de qualquer data, por prioridade |
+| Produtividade | Tarefas concluídas por dia (pela data de conclusão) e minutos de estudo por dia, no período escolhido |
+
+O período 7/30 dias vale só para o painel de Produtividade (decisão 15) e fica na URL
+(`/?periodo=30`). Os contadores do resumo são sempre da semana atual.
+
+### Dados que o Dashboard espera da API
+
+| Região | Chamada | Resposta |
+|---|---|---|
+| Resumo, Prioridades, Produtividade, Atividade recente | `GET /api/dashboard/resumo?dataInicial&dataFinal` | `ResumoDashboardDTO`. `contagens` usa a semana atual (informada em `inicioSemana`/`fimSemana`); as séries usam `dataInicial..dataFinal`, com um item por dia, inclusive os zerados; `distribuicaoPrioridade` traz as quatro prioridades; `eventosRecentes` traz os 6 mais recentes |
+| Sequência | `GET /api/dashboard/sequencia?data` | `SequenciaDTO` |
+| Tarefas de hoje | `GET /api/tarefas?data=hoje&ordenacao=DATA&tamanho=50` | `PaginaDTO<TarefaDTO>` |
+| Atrasadas | `GET /api/tarefas?prazo=ATRASADA&ordenacao=DATA&tamanho=50` | `PaginaDTO<TarefaDTO>` |
+| Próximas atividades | `GET /api/tarefas?dataInicial=amanhã&dataFinal=hoje+7&situacao=PENDENTE&situacao=EM_ANDAMENTO&tamanho=6` | `PaginaDTO<TarefaDTO>` |
+| Carga da semana | `GET /api/tarefas/resumo-calendario?dataInicial&dataFinal` | `DiaCalendarioDTO[]`, só os dias com tarefa, sem as canceladas |
+| Mapa de calor | `GET /api/estudos/mapa-calor?dataInicial&dataFinal` | `MapaCalorDTO`, um item por dia do intervalo (o front pede do 1º dia de 5 meses atrás até o último dia do mês atual) |
+| Metas | `GET /api/estudos/progresso-semanal?inicioSemana` | `ProgressoMetaDTO[]`, só atividades não arquivadas e com meta |
+| Concluir, reabrir, desfazer | `PATCH /api/tarefas/{id}/situacao` | `TarefaDTO` atualizada |
+| Mover atrasadas e desfazer | `POST /api/tarefas/reagendamentos` | `TarefaDTO[]` reagendadas |
+
+Em `EventoRecenteDTO`, `descricao` é o **título** do item referenciado (a tarefa, ou o nome da
+atividade em `SESSAO_SALVA`); a frase ("Você concluiu …") é montada pelo front. Ao reabrir uma
+tarefa concluída, o evento de conclusão correspondente sai da lista.
+
+### Interações
+
+- **Concluir** pelo marcador redondo (a borda tem a cor da prioridade). O item mostra o envio e só
+  aparece como concluído depois da resposta da API. O toast "Tarefa concluída." oferece
+  "Desfazer", que devolve a situação anterior (inclusive "em andamento").
+- **Mover todas para hoje** pede confirmação, muda só a data e oferece "Desfazer", que reenvia as
+  datas originais pelo mesmo endpoint.
+- Depois de qualquer alteração, `notificarAlteracao('tarefas')` faz todas as regiões que dependem
+  de tarefas buscarem de novo. Enquanto isso, o painel de Produtividade mantém o gráfico anterior
+  esmaecido, sem esqueleto.
+- Cada região tem esqueleto no formato do conteúdo, estado vazio e estado de erro com
+  "Tentar novamente", independentes: uma falha não derruba o resto da página.
+
+### Visualizações
+
+- **Gráfico de barras:** uma série só, na cor `--grafico-1`, barras de até 24px com a ponta
+  arredondada; eixo de minutos com marcas redondas (30 min, 1h, 2h…). No celular, o gráfico de 7
+  dias mostra só o dia da semana no eixo.
+- **Carga da semana:** a altura da barra é a quantidade de tarefas do dia em relação ao dia mais
+  cheio da semana; a parte verde (`--carga-concluida`) é o que já foi concluído e a azul
+  (`--carga-a-fazer`), o que falta, separadas por um vão de 2px. O par foi validado nos dois temas
+  para daltonismo e contraste. Não há escala de cor: a intensidade é o próprio comprimento da barra.
+- **Números do resumo:** contam de 0 até o valor em cerca de 1 segundo, desacelerando no fim
+  (`useContagem`); com movimento reduzido, aparecem direto.
+- **Mapa de calor:** 5 níveis por quartis dos dias com estudo (`regras/escalaCalor.ts`), dias futuros
+  vazados, hoje com anel. A rampa `--calor-1..4` foi reajustada nos dois temas para o nível mais
+  claro ter contraste de pelo menos 2:1 com o cartão (antes ficava em 1,3:1 e sumia). No celular o
+  mapa rola na horizontal e abre no mês atual.
+
+### Simulador em desenvolvimento
+
+No console do navegador, com `VITE_FONTE_DADOS=simulada`:
+
+| Comando | Efeito |
+|---|---|
+| `orbitSimulacao.restaurar()` | Gera de novo os dados de exemplo em relação a hoje |
+| `orbitSimulacao.esvaziar()` | Apaga tudo, para ver os estados vazios |
+| `orbitSimulacao.falhar('/tarefas,/estudos')` | Faz as rotas que começam com esses trechos responderem 503 (`'*'` para todas; `false` desliga) |
+| `orbitSimulacao.latencia(8000)` | Fixa a latência em milissegundos, para ver os esqueletos (`false` volta a 200–500ms) |
+
+Recarregue a página depois de cada comando. Os dados simulados ficam em
+`localStorage['orbit:simulacao:banco']`.
