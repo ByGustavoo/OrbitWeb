@@ -8,37 +8,35 @@
   <strong>Orbit</strong> é o frontend de uma aplicação de produtividade pessoal: <em>organize o que move o seu dia</em>. Reúne tarefas, agenda, calendário, prioridades, cronômetro de estudos e histórico de tempo em uma única interface, com dashboard do dia, tarefas recorrentes, metas semanais de estudo, mapa de calor, sequência de dias e revisão semanal. O backend será o OrbitAPI, em Java / Spring Boot; até lá, o frontend roda com dados simulados que respondem às mesmas rotas e formatos da API.
 </div> 
 
- <br> <br> 
+ <br> <br>
+
+## 🚀 Ferramentas Utilizadas
+
+* ⚡ Vite 5
+
+* 🧪 Vitest
+  
+* 📊 Recharts
+  
+* ⚛️ React 18
+
+* 🖼️ Lucide React
+  
+* 🎨 HTML e CSS
+  
+* 🔷 TypeScript 5
+
+* 🧭 React Router 6
+
+* 🔤 Geist e Geist Mono
+
+<br>
 
 ## 🎯 Objetivo
 
 Ajudar uma pessoa a planejar o dia e acompanhar o próprio ritmo: o que precisa ser feito, quando,
 com que prioridade, quanto tempo foi dedicado a estudar e como foi a semana. Uso individual, sem
 login, na primeira versão.
-
-
-<br>
-
-
-## 🚀 Ferramentas Utilizadas
-
-* ⚡ Vite 5
-
-* ⚛️ React 18
-
-* 🔷 TypeScript 5
-
-* 🎨 HTML e CSS (CSS Modules e custom properties, sem framework de UI)
-
-* 🧭 React Router 6
-
-* 📊 Recharts
-
-* 🖼️ Lucide React
-
-* 🔤 Geist e Geist Mono (Fontsource, servidas pelo próprio app)
-
-* 🧪 Vitest
 
 <br>
 
