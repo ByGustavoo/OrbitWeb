@@ -8,37 +8,35 @@
   <strong>Orbit</strong> é o frontend de uma aplicação de produtividade pessoal: <em>organize o que move o seu dia</em>. Reúne tarefas, agenda, calendário, prioridades, cronômetro de estudos e histórico de tempo em uma única interface, com dashboard do dia, tarefas recorrentes, metas semanais de estudo, mapa de calor, sequência de dias e revisão semanal. O backend será o OrbitAPI, em Java / Spring Boot; até lá, o frontend roda com dados simulados que respondem às mesmas rotas e formatos da API.
 </div> 
 
- <br> <br> 
+ <br> <br>
+
+## 🚀 Ferramentas Utilizadas
+
+* ⚡ Vite 5
+
+* 🧪 Vitest
+  
+* 📊 Recharts
+  
+* ⚛️ React 18
+
+* 🖼️ Lucide React
+  
+* 🎨 HTML e CSS
+  
+* 🔷 TypeScript 5
+
+* 🧭 React Router 6
+
+* 🔤 Geist e Geist Mono
+
+<br>
 
 ## 🎯 Objetivo
 
 Ajudar uma pessoa a planejar o dia e acompanhar o próprio ritmo: o que precisa ser feito, quando,
 com que prioridade, quanto tempo foi dedicado a estudar e como foi a semana. Uso individual, sem
 login, na primeira versão.
-
-
-<br>
-
-
-## 🚀 Ferramentas Utilizadas
-
-* ⚡ Vite 5
-
-* ⚛️ React 18
-
-* 🔷 TypeScript 5
-
-* 🎨 HTML e CSS (CSS Modules e custom properties, sem framework de UI)
-
-* 🧭 React Router 6
-
-* 📊 Recharts
-
-* 🖼️ Lucide React
-
-* 🔤 Geist e Geist Mono (Fontsource, servidas pelo próprio app)
-
-* 🧪 Vitest
 
 <br>
 
@@ -69,14 +67,23 @@ As decisões ainda abertas estão na seção **Pendências**, no fim deste arqui
 <br>
 
 * **Dashboard**: saudação com o que falta hoje; resumo da semana (concluídas, pendentes, atrasadas, urgentes e sequência de dias); tarefas de hoje com conclusão e "Desfazer"; atrasadas de dias anteriores com "Mover todas para hoje"; próximas atividades com a carga de tarefas da semana; tarefas em aberto por prioridade; produtividade (tarefas concluídas e tempo de estudo por dia, em 7 ou 30 dias); atividade recente; mapa de calor de estudo dos últimos 6 meses; metas da semana.
+  
 * **Calendário**: grade do mês com hoje e dia selecionado bem distintos, marcadores de carga (a fazer, atrasada, concluída, não realizada) e sinais de atraso e prioridade; navegação por mês, seletor de mês e ano, botão "Hoje" e teclado completo; agenda do dia ao lado no desktop e abaixo da grade no tablet e no celular, com as sessões de estudo do dia.
+  
 * **Tarefas**: visões Todas, Sem data e Atrasadas; busca, filtros de situação, prioridade e categoria, ordenação, agrupamento por dia e paginação; "Mover todas para hoje".
+  
 * **Gerenciamento de tarefas**: formulário com validação em português, recorrência (diária, dias da semana, semanal, mensal e anual, com término), escolha "só esta / esta e as próximas", detalhes, troca de situação, conclusão com "Desfazer", exclusão com confirmação e lembretes dentro do app.
+  
 * **Estudos**: atividades com cor e meta semanal, arquivamento, sessões manuais editáveis, histórico recente e métricas da semana.
+  
 * **Cronômetro**: modo livre e Pomodoro, que continua ao trocar de tela ou recarregar, mini cronômetro no cabeçalho, tempo no título da aba e início de estudo a partir de uma tarefa.
+  
 * **Histórico**: linha do tempo agrupada por dia com tarefas criadas, concluídas, canceladas, reabertas e não realizadas, prioridade e data alteradas e sessões de estudo; filtros Tudo, Tarefas e Estudos, período e busca; detalhes de cada registro.
+  
 * **Revisão semanal**: resumo comparado à semana anterior, destaques e pontos de atenção, tarefas concluídas e tempo de estudo por dia, estudos e metas por atividade, situação das tarefas planejadas, o que continua em aberto, próxima semana e nota da semana.
+  
 * Tema claro, escuro e sistema; menu lateral recolhível que vira gaveta abaixo de 1100px; tela de boas-vindas; design system próprio com catálogo em `/componentes` (só em desenvolvimento).
+  
 * Estados de carregamento, vazio, sem resultados e erro em todas as regiões de dados.
 
 <br>
