@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { CalendarRange, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Botao, BotaoIcone, IndicadorGiratorio } from '@/componentes/ui';
 import { formatarIntervaloDias } from '@/utilitarios/formatacao';
@@ -9,9 +10,18 @@ export interface NavegacaoSemanaProps {
   ehSemanaAtual: boolean;
   situacao: string;
   carregando: boolean;
+  aguardandoDados: boolean;
   aoIrParaAnterior: () => void;
   aoIrParaSeguinte: () => void;
   aoIrParaAtual: () => void;
+}
+
+function TextoDaSemana({ aguardando, children }: { aguardando: boolean; children: ReactNode }) {
+  return (
+    <span className={aguardando ? undefined : estilos.textoRevelado}>
+      <span className={aguardando ? estilos.textoAguardando : undefined}>{children}</span>
+    </span>
+  );
 }
 
 export function NavegacaoSemana({
@@ -20,6 +30,7 @@ export function NavegacaoSemana({
   ehSemanaAtual,
   situacao,
   carregando,
+  aguardandoDados,
   aoIrParaAnterior,
   aoIrParaSeguinte,
   aoIrParaAtual,
@@ -31,13 +42,15 @@ export function NavegacaoSemana({
       <BotaoIcone icone={ChevronLeft} rotulo="Semana anterior" onClick={aoIrParaAnterior} className={estilos.seta} />
 
       <div className={estilos.centro}>
-        <h2 className={estilos.periodo} aria-live="polite">
+        <h2 className={estilos.periodo} aria-live="polite" aria-busy={aguardandoDados}>
           <CalendarRange className={estilos.icone} size={18} strokeWidth={2} aria-hidden="true" />
-          <span>{periodo}</span>
+          <TextoDaSemana aguardando={aguardandoDados}>{periodo}</TextoDaSemana>
         </h2>
         <p className={estilos.situacao}>
-          {situacao}
-          <span className={estilos.carregando}>{carregando ? <IndicadorGiratorio tamanho={14} /> : null}</span>
+          <TextoDaSemana aguardando={aguardandoDados}>{situacao}</TextoDaSemana>
+          <span className={estilos.carregando}>
+            {carregando && !aguardandoDados ? <IndicadorGiratorio tamanho={14} /> : null}
+          </span>
         </p>
       </div>
 

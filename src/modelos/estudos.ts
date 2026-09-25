@@ -67,8 +67,6 @@ export interface SegundosDiaDTO {
 }
 
 export interface ResumoEstudosDTO {
-  dataInicial: string | null;
-  dataFinal: string | null;
   totalSegundos: number;
   totalSessoes: number;
   mediaSegundosPorSessao: number;

@@ -3,10 +3,26 @@
   min-width: 0;
 }
 
+.figuraFlexivel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
 .area {
   width: 100%;
   font-family: var(--fonte-numeros);
   font-variant-numeric: tabular-nums;
+}
+
+.areaFlexivel {
+  position: relative;
+  flex: 1;
+}
+
+.areaFlexivel > :global(.recharts-responsive-container) {
+  position: absolute;
+  inset: 0;
 }
 
 .area :global(.recharts-cartesian-grid line) {

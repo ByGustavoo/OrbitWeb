@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Check } from 'lucide-react';
-import { ErroApi } from '@/api/ErroApi';
+import { descreverFalha, errosDeCampo } from '@/api/tratamentoErros';
 import { AreaTexto, Botao, CabecalhoPainel, Painel } from '@/componentes/ui';
 import type { NotaSemanaDTO } from '@/modelos/revisao';
 import { LIMITE_NOTA_SEMANA } from '@/modelos/revisao';
@@ -40,8 +40,7 @@ export function NotaDaSemana({ nota, aoSalvar, className }: NotaDaSemanaProps) {
       setSalva(resultado);
       setTexto(resultado?.texto ?? '');
     } catch (falha) {
-      const campo = falha instanceof ErroApi ? falha.erros.find((item) => item.campo === 'texto') : undefined;
-      setErro(campo?.mensagem ?? 'Não foi possível salvar a nota. Verifique a conexão e tente de novo.');
+      setErro(errosDeCampo<'texto'>(falha).texto ?? `Não foi possível salvar a nota. ${descreverFalha(falha)}`);
     } finally {
       setSalvando(false);
     }

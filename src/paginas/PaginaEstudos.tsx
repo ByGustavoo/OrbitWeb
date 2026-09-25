@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ErroApi } from '@/api/ErroApi';
+import { descreverFalha, ehErroApi } from '@/api/tratamentoErros';
 import { Cronometro } from '@/componentes/estudos/Cronometro';
 import { FormularioAtividade } from '@/componentes/estudos/FormularioAtividade';
 import { FormularioSessao } from '@/componentes/estudos/FormularioSessao';
@@ -36,11 +36,6 @@ interface EstadoModal<T> {
 
 function porAtividade(lista: EstudoPorAtividadeDTO[] | undefined): Map<number, EstudoPorAtividadeDTO> | null {
   return lista ? new Map(lista.map((item) => [item.atividade.id, item])) : null;
-}
-
-function mensagemDeErro(erro: unknown, padrao: string): string {
-  if (erro instanceof ErroApi && (erro.tipo === 'CONFLITO' || erro.tipo === 'NAO_ENCONTRADO')) return erro.message;
-  return padrao;
 }
 
 export default function PaginaEstudos() {
@@ -107,7 +102,7 @@ export default function PaginaEstudos() {
       notificarAlteracao('atividades');
       notificacoes.sucesso('Atividade desarquivada.', `“${atividade.nome}” voltou para o cronômetro e para as metas.`);
     } catch (erro) {
-      notificacoes.erro('Não foi possível desarquivar a atividade.', mensagemDeErro(erro, 'Verifique a conexão e tente de novo.'));
+      notificacoes.erro('Não foi possível desarquivar a atividade.', descreverFalha(erro));
     } finally {
       setIdsDesarquivando((atuais) => {
         const proximos = new Set(atuais);
@@ -129,7 +124,7 @@ export default function PaginaEstudos() {
         acao: { rotulo: 'Desfazer', aoExecutar: () => void desarquivar(atividade) },
       });
     } catch (erro) {
-      notificacoes.erro('Não foi possível arquivar a atividade.', mensagemDeErro(erro, 'Verifique a conexão e tente de novo.'));
+      notificacoes.erro('Não foi possível arquivar a atividade.', descreverFalha(erro));
     }
   };
 
@@ -140,7 +135,7 @@ export default function PaginaEstudos() {
       fecharFormularioAtividade();
       notificacoes.sucesso('Atividade excluída.', `“${atividade.nome}” não aparece mais no cronômetro.`);
     } catch (erro) {
-      notificacoes.erro('Não foi possível excluir a atividade.', mensagemDeErro(erro, 'Verifique a conexão e tente de novo.'));
+      notificacoes.erro('Não foi possível excluir a atividade.', descreverFalha(erro));
     }
   };
 
@@ -173,11 +168,11 @@ export default function PaginaEstudos() {
       fecharFormularioSessao();
       notificacoes.sucesso('Sessão excluída.', `${formatarDuracaoSegundos(item.duracaoSegundos)} de ${item.atividade.nome} saíram do histórico.`);
     } catch (erro) {
-      if (erro instanceof ErroApi && erro.tipo === 'NAO_ENCONTRADO') {
+      if (ehErroApi(erro, 'NAO_ENCONTRADO')) {
         notificarAlteracao('sessoes');
         fecharFormularioSessao();
       }
-      notificacoes.erro('Não foi possível excluir a sessão.', mensagemDeErro(erro, 'Verifique a conexão e tente de novo.'));
+      notificacoes.erro('Não foi possível excluir a sessão.', descreverFalha(erro));
     }
   };
 
@@ -224,7 +219,7 @@ export default function PaginaEstudos() {
               atividades={atividades.dados}
               semana={semanaPorAtividade}
               total={totalPorAtividade}
-              erro={Boolean(atividades.erro || semana.erro || total.erro)}
+              erro={atividades.erro ?? semana.erro ?? total.erro}
               tentando={atividades.carregando || semana.carregando || total.carregando}
               idEmAndamento={sessao?.atividade.id ?? null}
               sessaoPausada={sessao?.estado === 'PAUSADA'}
@@ -249,7 +244,7 @@ export default function PaginaEstudos() {
               sessoes={recentes.dados?.itens ?? null}
               hojeIso={hojeIso}
               dias={DIAS_HISTORICO}
-              erro={recentes.erro !== null}
+              erro={recentes.erro}
               tentando={recentes.carregando}
               idDestacada={idSessaoDestacada}
               aoTentarNovamente={recentes.recarregar}

@@ -1,7 +1,7 @@
 import { useId, useState } from 'react';
 import type { CSSProperties, FormEvent } from 'react';
 import { AlertCircle, AlertTriangle, Pencil } from 'lucide-react';
-import { ErroApi } from '@/api/ErroApi';
+import { descreverFalha, errosDeCampo } from '@/api/tratamentoErros';
 import { AreaTexto, Botao, CampoNumero, Modal } from '@/componentes/ui';
 import { coresDaPaleta } from '@/modelos/cores';
 import { useCronometro } from '@/provedores/ProvedorCronometro';
@@ -19,10 +19,9 @@ export interface ResumoSessaoProps {
 }
 
 function mensagemFalha(erro: unknown): string {
-  if (erro instanceof ErroApi && erro.tipo === 'VALIDACAO' && erro.erros.length > 0) {
-    return `${erro.erros[0]?.mensagem ?? 'Revise os dados da sessão.'} A sessão continua guardada neste navegador.`;
-  }
-  return 'Não foi possível salvar a sessão. Ela continua guardada neste navegador: verifique a conexão e tente de novo.';
+  const [primeiroErroCampo] = Object.values(errosDeCampo(erro));
+  if (primeiroErroCampo) return `${primeiroErroCampo} A sessão continua guardada neste navegador.`;
+  return `Não foi possível salvar a sessão. ${descreverFalha(erro)} Ela continua guardada neste navegador.`;
 }
 
 export function ResumoSessao({ aberto, sessao, aoSalvar, aoPedirDescarte }: ResumoSessaoProps) {

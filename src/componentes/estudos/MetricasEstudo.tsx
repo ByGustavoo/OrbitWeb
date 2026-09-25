@@ -31,7 +31,7 @@ export function MetricasEstudo({ semana, hojeIso }: MetricasEstudoProps) {
       <EstadoErro
         compacto
         titulo="Não foi possível carregar as métricas"
-        descricao="Verifique a conexão e tente de novo."
+        erro={semana.erro}
         aoTentarNovamente={semana.recarregar}
         tentando={semana.carregando}
         className={estilos.erro}

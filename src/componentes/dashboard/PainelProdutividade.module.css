@@ -1,5 +1,6 @@
 .conteudo {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--espaco-5);
   transition: opacity var(--duracao-base) var(--curva-saida);
@@ -76,6 +77,9 @@
 }
 
 .painelGrafico {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   min-height: 220px;
 }
 

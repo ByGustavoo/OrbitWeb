@@ -77,6 +77,15 @@
   width: 7rem;
 }
 
+@media (max-width: 479px) {
+  .progresso {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--espaco-3);
+    padding-top: 0;
+  }
+}
+
 .celebracao {
   display: flex;
   align-items: center;

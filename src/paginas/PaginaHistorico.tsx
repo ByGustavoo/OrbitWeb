@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ChevronDown, History, SearchX } from 'lucide-react';
-import { ErroApi } from '@/api/ErroApi';
+import { descreverFalha, ehErroApi } from '@/api/tratamentoErros';
 import { FormularioSessao } from '@/componentes/estudos/FormularioSessao';
 import { BarraFiltrosHistorico } from '@/componentes/historico/BarraFiltrosHistorico';
 import type { FiltrosTelaHistorico } from '@/componentes/historico/BarraFiltrosHistorico';
@@ -188,8 +188,8 @@ export default function PaginaHistorico() {
     try {
       const pagina = await servicoHistorico.buscarHistorico({ ...consulta, pagina: proxima });
       setExtras({ base: primeiraPagina, itens: [...(extrasValidos?.itens ?? []), ...pagina.itens], pagina: proxima });
-    } catch {
-      notificacoes.erro('Não foi possível carregar mais registros.', 'Verifique a conexão e tente de novo.');
+    } catch (erro) {
+      notificacoes.erro('Não foi possível carregar mais registros.', descreverFalha(erro));
     } finally {
       setCarregandoMais(false);
     }
@@ -226,12 +226,11 @@ export default function PaginaHistorico() {
       fecharFormularioSessao();
       notificacoes.sucesso('Sessão excluída.', `${formatarDuracaoSegundos(sessao.duracaoSegundos)} de ${sessao.atividade.nome} saíram do histórico.`);
     } catch (erro) {
-      const ausente = erro instanceof ErroApi && erro.tipo === 'NAO_ENCONTRADO';
-      if (ausente) {
+      if (ehErroApi(erro, 'NAO_ENCONTRADO')) {
         notificarAlteracao('sessoes');
         fecharFormularioSessao();
       }
-      notificacoes.erro('Não foi possível excluir a sessão.', ausente ? erro.message : 'Verifique a conexão e tente de novo.');
+      notificacoes.erro('Não foi possível excluir a sessão.', descreverFalha(erro));
     }
   };
 
@@ -282,7 +281,7 @@ export default function PaginaHistorico() {
           {resultado.erro && !resultado.carregando ? (
             <EstadoErro
               titulo="Não foi possível carregar o histórico"
-              descricao="Verifique a conexão e tente de novo."
+              erro={resultado.erro}
               aoTentarNovamente={resultado.recarregar}
             />
           ) : !registros || desatualizada ? (

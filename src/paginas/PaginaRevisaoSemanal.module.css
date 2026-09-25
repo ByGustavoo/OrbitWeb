@@ -5,6 +5,10 @@
   container: revisao / inline-size;
 }
 
+.surgir {
+  animation: orbit-surgir var(--duracao-lenta) var(--curva-saida) backwards;
+}
+
 .grade {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -35,21 +39,33 @@
   align-self: start;
 }
 
+.fixa {
+  position: sticky;
+  top: calc(var(--altura-cabecalho) + var(--espaco-5));
+}
+
 .graficos {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--espaco-6) var(--espaco-8);
 }
 
-@container revisao (max-width: 980px) {
-  .metade,
+@container revisao (max-width: 879.98px) {
   .maior,
   .menor {
     grid-column: 1 / -1;
   }
+
+  .fixa {
+    position: static;
+  }
 }
 
 @container revisao (max-width: 680px) {
+  .metade {
+    grid-column: 1 / -1;
+  }
+
   .grade {
     gap: var(--espaco-4);
   }

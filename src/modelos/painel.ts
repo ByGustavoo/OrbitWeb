@@ -1,6 +1,5 @@
 import type { Prioridade, TipoEventoRecente } from './enumeracoes';
 import type { MinutosDiaDTO } from './estudos';
-import type { ResumoAtividadeDTO } from './tarefas';
 
 export interface ContagensDashboardDTO {
   concluidas: number;
@@ -8,7 +7,6 @@ export interface ContagensDashboardDTO {
   emAndamento: number;
   atrasadas: number;
   urgentes: number;
-  hoje: number;
 }
 
 export interface EventoRecenteDTO {
@@ -21,13 +19,10 @@ export interface EventoRecenteDTO {
 export interface ResumoDashboardDTO {
   dataInicial: string;
   dataFinal: string;
-  inicioSemana: string;
-  fimSemana: string;
   contagens: ContagensDashboardDTO;
   concluidasPorDia: { data: string; quantidade: number }[];
   minutosEstudoPorDia: MinutosDiaDTO[];
   distribuicaoPrioridade: { prioridade: Prioridade; quantidade: number }[];
-  minutosPorAtividade: { atividade: ResumoAtividadeDTO; minutos: number }[];
   eventosRecentes: EventoRecenteDTO[];
 }
 

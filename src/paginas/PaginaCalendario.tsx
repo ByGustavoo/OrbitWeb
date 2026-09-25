@@ -165,7 +165,7 @@ export default function PaginaCalendario() {
             hojeIso={hoje}
             tarefas={tarefasDoDia}
             desatualizada={agendaDesatualizada}
-            erro={agenda.erro !== null}
+            erro={agenda.erro}
             tentando={agenda.carregando}
             idsEnviando={acoes.idsEnviando}
             aoTentarNovamente={agenda.recarregar}

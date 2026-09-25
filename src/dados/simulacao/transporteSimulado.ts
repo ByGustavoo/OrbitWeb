@@ -1,4 +1,5 @@
 import { rotasApi } from '@/api/rotasApi';
+import { ambiente } from '@/configuracoes/ambiente';
 import type { MetodoHttp, RequisicaoTransporte, RespostaTransporte, Transporte } from '@/api/transporte';
 import { esvaziarBanco, obterBanco, restaurarBanco, salvarBanco } from './bancoSimulado';
 import type { BancoSimulado } from './bancoSimulado';
@@ -33,7 +34,7 @@ import {
   resumirCalendario,
 } from './manipuladores/tarefas';
 import { estenderSeries } from './series';
-import { naoEncontrado, problema } from './resposta';
+import { rotaInexistente, servicoIndisponivel } from './resposta';
 
 type Manipulador = (
   banco: BancoSimulado,
@@ -122,12 +123,23 @@ function esperar(signal: AbortSignal): Promise<void> {
   });
 }
 
-export const transporteSimulado: Transporte = async (requisicao) => {
-  await esperar(requisicao.signal);
-
-  if (deveFalhar(requisicao.caminho)) {
-    return problema(503, 'Serviço indisponível', 'Falha simulada pelo modo de desenvolvimento.');
+function caminhoBaseApi(): string {
+  try {
+    return new URL(ambiente.urlApi).pathname.replace(/\/$/, '');
+  } catch {
+    return '';
   }
+}
+
+function completarErro(resposta: RespostaTransporte, caminho: string): RespostaTransporte {
+  if (resposta.status < 400 || !resposta.corpo || typeof resposta.corpo !== 'object') return resposta;
+  const base = caminhoBaseApi();
+  const corpo = resposta.corpo as { instance?: string; type?: string };
+  return { ...resposta, corpo: { ...corpo, instance: `${base}${caminho}`, type: `${base}${corpo.type ?? ''}` } };
+}
+
+function atender(requisicao: RequisicaoTransporte): RespostaTransporte {
+  if (deveFalhar(requisicao.caminho)) return servicoIndisponivel('Falha simulada pelo modo de desenvolvimento.');
 
   const banco = obterBanco();
   const agora = new Date();
@@ -141,10 +153,15 @@ export const transporteSimulado: Transporte = async (requisicao) => {
     return rota.manipulador(banco, requisicao, agora, Number(parametro), parametro);
   }
 
-  return naoEncontrado(`Rota ${requisicao.metodo} ${requisicao.caminho} não existe no simulador.`);
+  return rotaInexistente(`Rota ${requisicao.metodo} ${requisicao.caminho} não existe no simulador.`);
+}
+
+export const transporteSimulado: Transporte = async (requisicao) => {
+  await esperar(requisicao.signal);
+  return completarErro(atender(requisicao), requisicao.caminho);
 };
 
-if (import.meta.env.DEV) {
+if (ambiente.desenvolvimento) {
   Object.assign(window, {
     orbitSimulacao: {
       restaurar: restaurarBanco,

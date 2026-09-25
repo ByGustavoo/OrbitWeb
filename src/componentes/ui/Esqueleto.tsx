@@ -6,12 +6,19 @@ export interface EsqueletoProps {
   largura?: number | string;
   altura?: number | string;
   raio?: string;
+  imediato?: boolean;
   className?: string;
 }
 
-export function Esqueleto({ largura = '100%', altura = 14, raio, className }: EsqueletoProps) {
+export function Esqueleto({ largura = '100%', altura = 14, raio, imediato = false, className }: EsqueletoProps) {
   const estilo: CSSProperties = { width: largura, height: altura, borderRadius: raio };
-  return <span className={juntarClasses(estilos.esqueleto, className)} style={estilo} aria-hidden="true" />;
+  return (
+    <span
+      className={juntarClasses(estilos.esqueleto, imediato && estilos.semAtraso, className)}
+      style={estilo}
+      aria-hidden="true"
+    />
+  );
 }
 
 export interface EsqueletoListaProps {

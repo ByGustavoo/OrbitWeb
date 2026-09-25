@@ -1,7 +1,7 @@
 import { useCallback, useId, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { AlertCircle, BookOpen, Circle, CircleCheck, CircleDot, CircleSlash, Tag } from 'lucide-react';
-import { ErroApi } from '@/api/ErroApi';
+import { descreverFalha, ehErroApi, errosDeCampo } from '@/api/tratamentoErros';
 import {
   AreaTexto,
   Botao,
@@ -259,21 +259,18 @@ export function FormularioTarefa({ aberto, tarefa, dataPadrao, aoFechar, aoEnvia
       setPedindoEscopo(false);
     } catch (falha) {
       setPedindoEscopo(false);
-      if (falha instanceof ErroApi && falha.tipo === 'VALIDACAO' && falha.erros.length > 0) {
-        const mapeados: Partial<Record<CampoFormulario, string>> = {};
-        falha.erros.forEach(({ campo, mensagem }) => {
-          mapeados[campo as CampoFormulario] = mensagem;
-        });
+      const mapeados = errosDeCampo<CampoFormulario>(falha);
+      if (ehErroApi(falha, 'VALIDACAO') && Object.keys(mapeados).length > 0) {
         setErrosServidor(mapeados);
         const primeiro = primeiroCampoComErro(mapeados as ErrosTarefa) ?? (Object.keys(mapeados)[0] as CampoFormulario | undefined);
         if (primeiro) focarCampo(primeiro);
         return;
       }
-      if (falha instanceof ErroApi && falha.tipo === 'NAO_ENCONTRADO') {
+      if (ehErroApi(falha, 'NAO_ENCONTRADO')) {
         setFalhaGeral('Esta tarefa foi excluída enquanto você editava. Feche o formulário para ver a lista atualizada.');
         return;
       }
-      setFalhaGeral('Não foi possível salvar a tarefa. Verifique a conexão e tente de novo. O que você preencheu continua aqui.');
+      setFalhaGeral(`Não foi possível salvar a tarefa. ${descreverFalha(falha)} O que você preencheu continua aqui.`);
     } finally {
       setEnviando(false);
     }

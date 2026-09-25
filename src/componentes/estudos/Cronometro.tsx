@@ -238,7 +238,7 @@ export function Cronometro({ atividades, idAtividadeNova, aoCriarAtividade, aoPe
               <EstadoErro
                 compacto
                 titulo="Não foi possível carregar as atividades"
-                descricao="Verifique a conexão e tente de novo."
+                erro={atividades.erro}
                 aoTentarNovamente={atividades.recarregar}
                 tentando={atividades.carregando}
               />

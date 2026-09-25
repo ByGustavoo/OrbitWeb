@@ -212,6 +212,7 @@ export function PainelProdutividade({ resultado, periodo, aoMudarPeriodo, classN
                     formatarEixo={ativa.formatarEixo}
                     marcasEixo={ativa.marcasEixo}
                     passoEixo={periodo === '30' ? (estreito ? 9 : 4) : 0}
+                    preencher
                   />
                 )}
               </div>

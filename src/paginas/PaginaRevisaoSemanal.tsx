@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react';
 import { CircleCheck, History, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
-import { ProgressoMetas } from '@/componentes/estudos/ProgressoMetas';
 import { BarrasDaSemana } from '@/componentes/revisao/BarrasDaSemana';
 import { EstudosDaSemana } from '@/componentes/revisao/EstudosDaSemana';
 import { FatosSemana } from '@/componentes/revisao/FatosSemana';
@@ -41,10 +40,10 @@ function descreverSituacao(ehSemanaAtual: boolean, hojeIso: string): string {
 function EsqueletoRevisao() {
   return (
     <div className={estilos.grade} role="status" aria-label="Carregando a revisão da semana…">
-      <Esqueleto className={estilos.inteiro} altura={236} raio="var(--raio-lg)" />
-      <Esqueleto className={estilos.metade} altura={180} raio="var(--raio-lg)" />
-      <Esqueleto className={estilos.metade} altura={180} raio="var(--raio-lg)" />
-      <Esqueleto className={estilos.inteiro} altura={340} raio="var(--raio-lg)" />
+      <Esqueleto className={estilos.inteiro} altura={284} raio="var(--raio-lg)" imediato />
+      <Esqueleto className={estilos.metade} altura={242} raio="var(--raio-lg)" imediato />
+      <Esqueleto className={estilos.metade} altura={242} raio="var(--raio-lg)" imediato />
+      <Esqueleto className={estilos.inteiro} altura={386} raio="var(--raio-lg)" imediato />
     </div>
   );
 }
@@ -67,6 +66,7 @@ export default function PaginaRevisaoSemanal() {
   );
 
   const revisao = resultado.dados?.inicioSemana === semana ? resultado.dados : null;
+  const aguardandoDados = revisao === null && !resultado.erro;
 
   const irParaSemana = useCallback(
     (inicio: string) =>
@@ -99,7 +99,7 @@ export default function PaginaRevisaoSemanal() {
       return (
         <EstadoErro
           titulo="Não foi possível carregar a revisão da semana"
-          descricao="Verifique a conexão e tente de novo."
+          erro={resultado.erro}
           aoTentarNovamente={resultado.recarregar}
         />
       );
@@ -129,7 +129,7 @@ export default function PaginaRevisaoSemanal() {
     const nota = (
       <NotaDaSemana
         key={semana}
-        className={`${estilos.menor} ${estilos.topo}`}
+        className={`${estilos.menor} ${estilos.topo} ${estilos.fixa}`}
         nota={revisao.nota}
         aoSalvar={(texto) => servicoRevisaoSemanal.salvarNotaSemana(semana, texto)}
       />
@@ -137,7 +137,7 @@ export default function PaginaRevisaoSemanal() {
 
     if (semanaSemRegistros(revisao)) {
       return (
-        <div className={estilos.grade}>
+        <div key={semana} className={`${estilos.grade} ${estilos.surgir}`}>
           <Painel className={estilos.inteiro}>
             <EstadoVazio
               icone={History}
@@ -160,10 +160,9 @@ export default function PaginaRevisaoSemanal() {
     const pontos = montarPontosDeAtencao(revisao);
     const totalTarefas = revisao.porDia.reduce((soma, dia) => soma + dia.tarefasConcluidas, 0);
     const totalMinutos = revisao.porDia.reduce((soma, dia) => soma + dia.minutosEstudo, 0);
-    const metas = { dados: revisao.estudos.metas, carregando: false, erro: null, recarregar: resultado.recarregar };
 
     return (
-      <div className={estilos.grade}>
+      <div key={semana} className={`${estilos.grade} ${estilos.surgir}`}>
         <div className={estilos.inteiro}>
           <ResumoSemana revisao={revisao} />
         </div>
@@ -216,8 +215,12 @@ export default function PaginaRevisaoSemanal() {
           </div>
         </Painel>
 
-        <EstudosDaSemana className={estilos.maior} estudos={revisao.estudos} aoVerEstudos={() => navegar(caminhos.estudos)} />
-        <ProgressoMetas className={estilos.menor} resultado={metas} semanaEncerrada={!revisao.emAndamento} />
+        <EstudosDaSemana
+          className={estilos.inteiro}
+          estudos={revisao.estudos}
+          semanaEncerrada={!revisao.emAndamento}
+          aoVerEstudos={() => navegar(caminhos.estudos)}
+        />
 
         <TarefasDaSemana
           className={estilos.inteiro}
@@ -257,6 +260,7 @@ export default function PaginaRevisaoSemanal() {
           ehSemanaAtual={ehSemanaAtual}
           situacao={descreverSituacao(ehSemanaAtual, hojeIso)}
           carregando={resultado.carregando}
+          aguardandoDados={aguardandoDados}
           aoIrParaAnterior={() => irParaSemana(semanaAnterior(semana))}
           aoIrParaSeguinte={() => irParaSemana(semanaSeguinte(semana))}
           aoIrParaAtual={() => irParaSemana(semanaAtual)}

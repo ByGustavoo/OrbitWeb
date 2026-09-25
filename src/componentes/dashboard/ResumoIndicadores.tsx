@@ -74,7 +74,7 @@ export function ResumoIndicadores({ resumo, sequencia }: ResumoIndicadoresProps)
         <EstadoErro
           compacto
           titulo="Não foi possível carregar o resumo"
-          descricao="Verifique a conexão e tente de novo. Se continuar, tente daqui a pouco."
+          erro={resumo.erro}
           aoTentarNovamente={resumo.recarregar}
           className={estilos.erro}
         />

@@ -1,6 +1,6 @@
 import { ambiente } from '@/configuracoes/ambiente';
-import type { ProblemaDTO } from '@/modelos/comum';
 import { ErroApi, tipoPorStatus } from './ErroApi';
+import { lerErrorResponse, registrarErro } from './tratamentoErros';
 import type { MetodoHttp, Transporte, ValorConsulta } from './transporte';
 import { transporteFetch } from './transporteFetch';
 
@@ -29,9 +29,20 @@ function fusoHorario(): string {
   }
 }
 
-function mensagemDoProblema(corpo: unknown, status: number): { mensagem: string; problema: ProblemaDTO } {
-  const problema = corpo && typeof corpo === 'object' ? (corpo as ProblemaDTO) : {};
-  return { mensagem: problema.detail ?? problema.title ?? `Falha na requisição (${status}).`, problema };
+function erroDaResposta(status: number, corpo: unknown): ErroApi {
+  const resposta = lerErrorResponse(corpo, status);
+  const mensagem = resposta?.detail || resposta?.title || `Falha na requisição (${status}).`;
+  return new ErroApi(tipoPorStatus(status), mensagem, status, resposta);
+}
+
+function normalizarFalha(erro: unknown, abortada: boolean, expirou: boolean): ErroApi {
+  if (erro instanceof ErroApi) return erro;
+  if (abortada) {
+    return expirou
+      ? new ErroApi('TEMPO_ESGOTADO', 'O servidor demorou demais para responder.')
+      : new ErroApi('CANCELADO', 'A requisição foi cancelada.');
+  }
+  return new ErroApi('REDE', 'Não foi possível falar com o servidor.');
 }
 
 async function requisitar<T>(metodo: MetodoHttp, caminho: string, corpo: unknown, opcoes: OpcoesRequisicao = {}): Promise<T> {
@@ -57,19 +68,13 @@ async function requisitar<T>(metodo: MetodoHttp, caminho: string, corpo: unknown
       signal: controlador.signal,
     });
 
-    if (resposta.status >= 400) {
-      const { mensagem, problema } = mensagemDoProblema(resposta.corpo, resposta.status);
-      throw new ErroApi(tipoPorStatus(resposta.status), mensagem, resposta.status, problema.erros ?? []);
-    }
+    if (resposta.status >= 400) throw erroDaResposta(resposta.status, resposta.corpo);
 
     return resposta.corpo as T;
   } catch (erro) {
-    if (erro instanceof ErroApi) throw erro;
-    if (controlador.signal.aborted) {
-      if (expirou) throw new ErroApi('TEMPO_ESGOTADO', 'O servidor demorou demais para responder.');
-      throw new ErroApi('CANCELADO', 'A requisição foi cancelada.');
-    }
-    throw new ErroApi('REDE', 'Não foi possível falar com o servidor.');
+    const falha = normalizarFalha(erro, controlador.signal.aborted, expirou);
+    registrarErro(falha, { metodo, caminho });
+    throw falha;
   } finally {
     window.clearTimeout(temporizador);
     opcoes.signal?.removeEventListener('abort', cancelarExterno);

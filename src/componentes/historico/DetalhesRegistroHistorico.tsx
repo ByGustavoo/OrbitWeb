@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { ArrowRight, ListChecks, PencilLine, SearchX } from 'lucide-react';
-import { ErroApi } from '@/api/ErroApi';
+import { ehErroApi } from '@/api/tratamentoErros';
 import { SeloCategoria, SeloPrazo, SeloPrioridade, SeloSituacao } from '@/componentes/tarefas/SelosTarefa';
 import { Botao, Esqueleto, EstadoErro, EstadoVazio, Modal } from '@/componentes/ui';
 import { useDadosAssincronos } from '@/ganchos/useDadosAssincronos';
@@ -179,7 +179,7 @@ function EsqueletoDetalhes() {
 }
 
 function registroAusente(erro: Error | null): boolean {
-  return erro instanceof ErroApi && erro.tipo === 'NAO_ENCONTRADO';
+  return ehErroApi(erro, 'NAO_ENCONTRADO');
 }
 
 export function DetalhesRegistroHistorico({ aberto, registro, aoFechar, aoAbrirTarefa, aoEditarSessao }: DetalhesRegistroHistoricoProps) {
@@ -213,7 +213,7 @@ export function DetalhesRegistroHistorico({ aberto, registro, aoFechar, aoAbrirT
         <EstadoErro
           compacto
           titulo="Não foi possível carregar os detalhes"
-          descricao="Verifique a conexão e tente de novo."
+          erro={detalhe.erro}
           aoTentarNovamente={detalhe.recarregar}
           tentando={detalhe.carregando}
         />

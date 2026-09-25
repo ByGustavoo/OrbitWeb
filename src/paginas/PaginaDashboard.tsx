@@ -176,24 +176,26 @@ export default function PaginaDashboard() {
             aoAbrirCalendario={() => navegar(caminhos.calendario)}
           />
 
-          <ProximasAtividades
-            className={estilos.proximas}
-            resultado={proximas}
-            hojeIso={hojeIso}
-            inicioSemana={inicioSemana}
-            diasAdiante={DIAS_PROXIMAS}
-          />
+          <div className={estilos.lateral}>
+            <ProximasAtividades
+              className={estilos.proximas}
+              resultado={proximas}
+              hojeIso={hojeIso}
+              inicioSemana={inicioSemana}
+              diasAdiante={DIAS_PROXIMAS}
+            />
 
-          <PrioridadesEmAberto className={estilos.prioridades} resultado={resumo} />
+            <PrioridadesEmAberto className={estilos.prioridades} resultado={resumo} />
+
+            <ListaEventosRecentes
+              className={estilos.recentes}
+              resultado={resumo}
+              agora={agora}
+              aoVerHistorico={() => navegar(caminhos.historico)}
+            />
+          </div>
 
           <PainelProdutividade className={estilos.produtividade} resultado={resumo} periodo={periodo} aoMudarPeriodo={mudarPeriodo} />
-
-          <ListaEventosRecentes
-            className={estilos.recentes}
-            resultado={resumo}
-            agora={agora}
-            aoVerHistorico={() => navegar(caminhos.historico)}
-          />
 
           <MapaCalorEstudo className={estilos.mapa} resultado={mapa} hojeIso={hojeIso} meses={MESES_MAPA} />
 

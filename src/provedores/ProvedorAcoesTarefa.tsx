@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ErroApi } from '@/api/ErroApi';
+import { descreverFalha, ehErroApi } from '@/api/tratamentoErros';
 import { DetalhesTarefa } from '@/componentes/tarefas/DetalhesTarefa';
 import { EscolhaEscopoAlteracao } from '@/componentes/tarefas/EscolhaEscopoAlteracao';
 import { FormularioTarefa } from '@/componentes/tarefas/FormularioTarefa';
@@ -42,8 +42,8 @@ interface ValorContextoAcoesTarefa {
 const ContextoAcoesTarefa = createContext<ValorContextoAcoesTarefa | null>(null);
 
 function mensagemDeErro(erro: unknown): string {
-  if (erro instanceof ErroApi && erro.tipo === 'NAO_ENCONTRADO') return 'Esta tarefa não existe mais. A lista foi atualizada.';
-  return 'Verifique a conexão e tente de novo.';
+  if (ehErroApi(erro, 'NAO_ENCONTRADO')) return 'Esta tarefa não existe mais. A lista foi atualizada.';
+  return descreverFalha(erro);
 }
 
 function descreverQuando(tarefa: TarefaDTO): string {
@@ -97,7 +97,7 @@ export function ProvedorAcoesTarefa({ children }: { children: ReactNode }) {
 
   const tratarAusente = useCallback(
     (erro: unknown, id: number) => {
-      if (!(erro instanceof ErroApi) || erro.tipo !== 'NAO_ENCONTRADO') return;
+      if (!ehErroApi(erro, 'NAO_ENCONTRADO')) return;
       notificarAlteracao('tarefas');
       if (detalhesRef.current.tarefa?.id === id) setDetalhes((atual) => ({ ...atual, aberto: false }));
     },
@@ -332,7 +332,7 @@ export function ProvedorAcoesTarefa({ children }: { children: ReactNode }) {
       .then((atual) => setDetalhes((estado) => (estado.tarefa?.id === atual.id ? { ...estado, tarefa: atual } : estado)))
       .catch((erro: unknown) => {
         if (controlador.signal.aborted) return;
-        if (erro instanceof ErroApi && erro.tipo === 'NAO_ENCONTRADO') {
+        if (ehErroApi(erro, 'NAO_ENCONTRADO')) {
           setDetalhes((estado) => ({ ...estado, aberto: false }));
           notificacoes.aviso('Esta tarefa não existe mais.', 'Ela pode ter sido excluída em outra tela.');
           notificarAlteracao('tarefas');

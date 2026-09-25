@@ -1,7 +1,7 @@
 import { useId, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { AlertCircle, BookOpen, Trash2 } from 'lucide-react';
-import { ErroApi } from '@/api/ErroApi';
+import { descreverFalha, ehErroApi, errosDeCampo } from '@/api/tratamentoErros';
 import { AreaTexto, Botao, CampoNumero, CampoSelecao, DialogoConfirmacao, Modal, SeletorData, SeletorHorario } from '@/componentes/ui';
 import type { OpcaoSelecao } from '@/componentes/ui';
 import { coresDaPaleta } from '@/modelos/cores';
@@ -174,22 +174,19 @@ export function FormularioSessao({ aberto, sessao, atividades, atividadePadraoId
     try {
       await aoEnviar(envio);
     } catch (falha) {
-      if (falha instanceof ErroApi && falha.tipo === 'VALIDACAO' && falha.erros.length > 0) {
-        const doServidor: ErrosSessao = {};
-        falha.erros.forEach(({ campo, mensagem }) => {
-          doServidor[campo as CampoSessao] = mensagem;
-        });
+      const doServidor: ErrosSessao = errosDeCampo<CampoSessao>(falha);
+      if (ehErroApi(falha, 'VALIDACAO') && Object.keys(doServidor).length > 0) {
         const mapeados = errosDoFormulario(doServidor, estado);
         setErrosServidor(mapeados);
         const primeiroServidor = primeiroCampoComErroSessao(doServidor);
         if (primeiroServidor) focarCampo(CAMPO_DO_ERRO[primeiroServidor]);
         return;
       }
-      if (falha instanceof ErroApi && falha.tipo === 'NAO_ENCONTRADO') {
+      if (ehErroApi(falha, 'NAO_ENCONTRADO')) {
         setFalhaGeral('Esta sessão foi excluída em outra tela. Feche o formulário para ver o histórico atualizado.');
         return;
       }
-      setFalhaGeral('Não foi possível salvar a sessão. Verifique a conexão e tente de novo. O que você preencheu continua aqui.');
+      setFalhaGeral(`Não foi possível salvar a sessão. ${descreverFalha(falha)} O que você preencheu continua aqui.`);
     } finally {
       setEnviando(false);
     }

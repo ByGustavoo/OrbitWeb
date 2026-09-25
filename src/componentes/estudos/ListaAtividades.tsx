@@ -11,7 +11,7 @@ export interface ListaAtividadesProps {
   atividades: AtividadeEstudoDTO[] | null;
   semana: Map<number, EstudoPorAtividadeDTO> | null;
   total: Map<number, EstudoPorAtividadeDTO> | null;
-  erro: boolean;
+  erro: Error | null;
   tentando: boolean;
   idEmAndamento: number | null;
   sessaoPausada: boolean;
@@ -139,7 +139,7 @@ export function ListaAtividades({
         <EstadoErro
           compacto
           titulo="Não foi possível carregar as atividades"
-          descricao="Verifique a conexão e tente de novo."
+          erro={erro}
           aoTentarNovamente={aoTentarNovamente}
           tentando={tentando}
         />

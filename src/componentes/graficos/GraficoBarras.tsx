@@ -20,6 +20,7 @@ export interface GraficoBarrasProps {
   marcasEixo?: number[];
   passoEixo?: number;
   altura?: number;
+  preencher?: boolean;
 }
 
 function prefereMovimentoReduzido(): boolean {
@@ -52,17 +53,22 @@ export function GraficoBarras({
   marcasEixo,
   passoEixo,
   altura = 220,
+  preencher = false,
 }: GraficoBarrasProps) {
   const idResumo = useId();
   const intervalo = passoEixo ?? (dados.length > 14 ? Math.ceil(dados.length / 7) - 1 : 0);
 
   return (
-    <figure className={estilos.figura} aria-describedby={idResumo}>
+    <figure className={preencher ? `${estilos.figura} ${estilos.figuraFlexivel}` : estilos.figura} aria-describedby={idResumo}>
       <figcaption className="visualmente-oculto" id={idResumo}>
         {titulo}. {resumo}
       </figcaption>
 
-      <div className={estilos.area} style={{ height: altura }} aria-hidden="true">
+      <div
+        className={preencher ? `${estilos.area} ${estilos.areaFlexivel}` : estilos.area}
+        style={preencher ? { minHeight: altura } : { height: altura }}
+        aria-hidden="true"
+      >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={dados} margin={{ top: 8, right: 4, bottom: 0, left: 0 }} barCategoryGap="22%">
             <CartesianGrid vertical={false} />

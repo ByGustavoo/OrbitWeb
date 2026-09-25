@@ -1,11 +1,15 @@
 import { CloudOff, RotateCw } from 'lucide-react';
+import { descreverFalha } from '@/api/tratamentoErros';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import { Botao } from './Botao';
 import estilos from './EstadoMensagem.module.css';
 
+const DESCRICAO_PADRAO = 'Verifique sua conexão e tente novamente. Se o problema continuar, tente mais tarde.';
+
 export interface EstadoErroProps {
   titulo: string;
   descricao?: string;
+  erro?: unknown;
   aoTentarNovamente?: () => void;
   tentando?: boolean;
   compacto?: boolean;
@@ -14,12 +18,14 @@ export interface EstadoErroProps {
 
 export function EstadoErro({
   titulo,
-  descricao = 'Verifique sua conexão e tente novamente. Se o problema continuar, tente mais tarde.',
+  descricao: descricaoInformada,
+  erro,
   aoTentarNovamente,
   tentando = false,
   compacto = false,
   className,
 }: EstadoErroProps) {
+  const descricao = descricaoInformada ?? (erro === undefined ? DESCRICAO_PADRAO : descreverFalha(erro));
   return (
     <div className={juntarClasses(estilos.estado, estilos.erro, compacto && estilos.compacto, className)} role="alert">
       <span className={estilos.icone} aria-hidden="true">

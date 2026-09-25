@@ -30,7 +30,8 @@
   flex-direction: column;
 }
 
-.imediato .esqueleto {
+.imediato .esqueleto,
+.esqueleto.semAtraso {
   animation-delay: 0ms;
 }
 

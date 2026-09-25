@@ -15,7 +15,7 @@ export interface AgendaDiaProps {
   hojeIso: string;
   tarefas: TarefaDTO[] | null;
   desatualizada: boolean;
-  erro: boolean;
+  erro: Error | null;
   tentando: boolean;
   idsEnviando: ReadonlySet<number>;
   aoTentarNovamente: () => void;
@@ -94,7 +94,7 @@ export function AgendaDia({
           <EstadoErro
             compacto
             titulo="Não foi possível carregar as tarefas deste dia"
-            descricao="Verifique a conexão e tente de novo."
+            erro={erro}
             aoTentarNovamente={aoTentarNovamente}
             tentando={tentando}
           />

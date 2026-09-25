@@ -1,4 +1,4 @@
-import type { ErroCampoDTO } from '@/modelos/comum';
+import type { ErroCampoDTO, ErrorResponseDTO } from '@/modelos/comum';
 
 export type TipoErroApi =
   | 'REDE'
@@ -12,14 +12,18 @@ export type TipoErroApi =
 export class ErroApi extends Error {
   readonly tipo: TipoErroApi;
   readonly status: number;
-  readonly erros: ErroCampoDTO[];
+  readonly resposta: ErrorResponseDTO | null;
 
-  constructor(tipo: TipoErroApi, mensagem: string, status = 0, erros: ErroCampoDTO[] = []) {
+  constructor(tipo: TipoErroApi, mensagem: string, status = 0, resposta: ErrorResponseDTO | null = null) {
     super(mensagem);
     this.name = 'ErroApi';
     this.tipo = tipo;
     this.status = status;
-    this.erros = erros;
+    this.resposta = resposta;
+  }
+
+  get errosCampos(): ErroCampoDTO[] {
+    return this.resposta?.errors ?? [];
   }
 }
 

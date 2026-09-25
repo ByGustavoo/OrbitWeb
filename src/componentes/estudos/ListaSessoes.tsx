@@ -12,7 +12,7 @@ export interface ListaSessoesProps {
   sessoes: SessaoEstudoDTO[] | null;
   hojeIso: string;
   dias: number;
-  erro: boolean;
+  erro: Error | null;
   tentando: boolean;
   idDestacada: number | null;
   aoTentarNovamente: () => void;
@@ -78,7 +78,7 @@ export function ListaSessoes({
         <EstadoErro
           compacto
           titulo="Não foi possível carregar o histórico"
-          descricao="Verifique a conexão e tente de novo."
+          erro={erro}
           aoTentarNovamente={aoTentarNovamente}
           tentando={tentando}
         />

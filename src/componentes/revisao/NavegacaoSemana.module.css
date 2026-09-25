@@ -47,6 +47,19 @@
   transform: translateY(-50%);
 }
 
+.textoAguardando {
+  color: transparent;
+  background-color: var(--esqueleto-base);
+  border-radius: var(--raio-xs);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: pulsarTexto 1.4s ease-in-out infinite;
+}
+
+.textoRevelado {
+  animation: orbit-surgir var(--duracao-lenta) var(--curva-saida) backwards;
+}
+
 .seta {
   flex-shrink: 0;
 }
@@ -68,5 +81,11 @@
   .atual {
     grid-column: 1 / -1;
     justify-self: center;
+  }
+}
+
+@keyframes pulsarTexto {
+  50% {
+    background-color: var(--esqueleto-brilho);
   }
 }

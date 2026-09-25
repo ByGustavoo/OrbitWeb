@@ -13,12 +13,13 @@ export interface ErroCampoDTO {
   mensagem: string;
 }
 
-export interface ProblemaDTO {
-  type?: string;
-  title?: string;
-  status?: number;
-  detail?: string;
-  erros?: ErroCampoDTO[];
+export interface ErrorResponseDTO {
+  status: number;
+  title: string;
+  instance: string;
+  type: string;
+  detail: string;
+  errors?: ErroCampoDTO[] | null;
 }
 
 export interface CategoriaDTO {

@@ -26,7 +26,7 @@ export const navegacaoPrincipal: SecaoNavegacao[] = [
   },
   {
     titulo: 'Estudos',
-    itens: [{ rotulo: 'Cronômetro', icone: Timer, destino: caminhos.estudos }],
+    itens: [{ rotulo: 'Estudos', icone: Timer, destino: caminhos.estudos }],
   },
   {
     titulo: 'Acompanhamento',

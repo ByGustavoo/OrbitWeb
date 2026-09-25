@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { CalendarCheck2, CalendarOff, ListChecks, PartyPopper, Plus, SearchX } from 'lucide-react';
+import { descreverFalha } from '@/api/tratamentoErros';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { BarraFiltrosTarefas } from '@/componentes/tarefas/BarraFiltrosTarefas';
 import type { FiltroSituacao, FiltrosListaTarefas } from '@/componentes/tarefas/BarraFiltrosTarefas';
@@ -188,8 +189,8 @@ export default function PaginaTarefas() {
         tamanho: LIMITE_REAGENDAMENTO,
       });
       if (todas.itens.length > 0) acoes.pedirMoverParaHoje(todas.itens);
-    } catch {
-      notificacoes.erro('Não foi possível buscar as tarefas atrasadas.', 'Verifique a conexão e tente de novo.');
+    } catch (erro) {
+      notificacoes.erro('Não foi possível buscar as tarefas atrasadas.', descreverFalha(erro));
     } finally {
       setBuscandoAtrasadas(false);
     }
@@ -287,14 +288,14 @@ export default function PaginaTarefas() {
             <p className={estilos.total} aria-live="polite">
               {pluralizar(paginaAtual.totalItens, 'tarefa encontrada', 'tarefas encontradas')}
             </p>
-          ) : (
+          ) : resultado.erro && !resultado.carregando ? null : (
             <Esqueleto largura="9rem" altura={13} className={estilos.totalCarregando} />
           )}
 
           {resultado.erro && !resultado.carregando ? (
             <EstadoErro
               titulo="Não foi possível carregar as tarefas"
-              descricao="Verifique a conexão e tente de novo."
+              erro={resultado.erro}
               aoTentarNovamente={resultado.recarregar}
             />
           ) : !tarefas || desatualizada ? (

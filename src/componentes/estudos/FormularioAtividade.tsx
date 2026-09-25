@@ -1,7 +1,7 @@
 import { useId, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { AlertCircle, Archive, Trash2 } from 'lucide-react';
-import { ErroApi } from '@/api/ErroApi';
+import { descreverFalha, ehErroApi, errosDeCampo } from '@/api/tratamentoErros';
 import { Botao, CampoNumero, CampoTexto, DialogoConfirmacao, Modal, SeletorCor } from '@/componentes/ui';
 import type { Cor } from '@/modelos/enumeracoes';
 import { CORES } from '@/modelos/enumeracoes';
@@ -121,21 +121,19 @@ export function FormularioAtividade({
     try {
       await aoEnviar(normalizarAtividade(envio));
     } catch (falha) {
-      if (falha instanceof ErroApi && falha.erros.length > 0) {
-        const mapeados: ErrosAtividade = {};
-        falha.erros.forEach(({ campo, mensagem }) => {
-          mapeados[campo as CampoAtividade] = mensagem;
-        });
+      const mapeados: ErrosAtividade = errosDeCampo<CampoAtividade>(falha);
+      if (ehErroApi(falha, 'CONFLITO') && Object.keys(mapeados).length === 0) mapeados.nome = descreverFalha(falha);
+      if (ehErroApi(falha, 'VALIDACAO', 'CONFLITO') && Object.keys(mapeados).length > 0) {
         setErrosServidor(mapeados);
         const primeiroServidor = primeiroCampoComErroAtividade(mapeados);
         if (primeiroServidor) focarCampo(primeiroServidor);
         return;
       }
-      if (falha instanceof ErroApi && falha.tipo === 'NAO_ENCONTRADO') {
+      if (ehErroApi(falha, 'NAO_ENCONTRADO')) {
         setFalhaGeral('Esta atividade foi excluída em outra tela. Feche o formulário para ver a lista atualizada.');
         return;
       }
-      setFalhaGeral('Não foi possível salvar a atividade. Verifique a conexão e tente de novo. O que você preencheu continua aqui.');
+      setFalhaGeral(`Não foi possível salvar a atividade. ${descreverFalha(falha)} O que você preencheu continua aqui.`);
     } finally {
       setEnviando(false);
     }

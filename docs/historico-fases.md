@@ -1,4 +1,15 @@
-# OrbitWeb — Arquitetura e planejamento técnico
+# OrbitWeb — Histórico das fases 02 a 09
+
+> **Registro histórico.** Este documento acompanhou as fases 02 a 09 e guarda as decisões tomadas
+> em cada uma (D1–D5, F5.x, F7-x, F8-x, auditoria da Fase 09). Ele descreve planos e estados
+> intermediários que **podem divergir do código atual**: itens como `ProvedorConexao`,
+> `PaletaComandos`, `docker/` e `API_CONTRACT.md` foram planejados e não existem. O
+> `REQUISITOS.md` citado aqui foi removido; o conteúdo está no histórico do Git (commit `9676fe0`)
+> e as regras vigentes estão em [`regras-negocio.md`](regras-negocio.md).
+>
+> A documentação vigente é:
+> [`arquitetura.md`](arquitetura.md) · [`api-contrato.md`](api-contrato.md) ·
+> [`backend.md`](backend.md) · [`regras-negocio.md`](regras-negocio.md).
 
 Documento da **Fase 02**. Transforma os requisitos de `REQUISITOS.md` numa estrutura técnica.
 Os requisitos continuam sendo a fonte de verdade do produto; este documento diz **como** eles
@@ -256,7 +267,7 @@ Planejamento
    Tarefas
    Calendário
 Estudos
-   Cronômetro
+   Estudos
 Acompanhamento
    Histórico
    Revisão semanal
@@ -1172,10 +1183,16 @@ Estudo por dia        mapa de calor dos últimos 6 meses (regra H1)
 Metas da semana
 ```
 
-No desktop, "Tarefas de hoje" ocupa 8 de 12 colunas e duas linhas, com "Próximas atividades" e
-"Em aberto por prioridade" empilhados ao lado. Abaixo de 980px de conteúdo tudo vira uma coluna, na
-ordem acima, que é a ordem de importância. A grade usa *container queries*, então responde à
-largura real do conteúdo (com ou sem menu lateral), e não à da janela.
+A grade usa *container queries*, então responde à largura real do conteúdo (com ou sem menu
+lateral), e não à da janela.
+
+| Largura do conteúdo | Layout |
+|---|---|
+| ≥ 880px | Coluna principal (2fr) com "Tarefas de hoje" e "Produtividade"; coluna lateral (mín. 21rem) com "Próximas atividades", "Em aberto por prioridade" e "Atividade recente". As duas colunas são independentes e terminam alinhadas: se a lateral for mais alta, o gráfico de produtividade cresce para ocupar a sobra; se a principal for mais alta, "Atividade recente" se estende |
+| 640–879px | Uma coluna, com "Próximas atividades" e "Atividade recente" lado a lado e "Em aberto por prioridade" inteiro abaixo deles |
+| < 640px | Uma coluna, na ordem de importância |
+
+Mapa de calor e metas ocupam sempre a largura toda.
 
 ### O que cada número significa
 
@@ -1304,8 +1321,9 @@ Cabeçalho da página
 
 | Largura do conteúdo | Layout |
 |---|---|
-| > 980px | Grade + agenda lateral fixa ao rolar |
-| ≤ 980px | Agenda abaixo da grade |
+| > 1000px | Grade + agenda lateral (20 a 24rem) fixa ao rolar |
+| 840–1000px | Grade + agenda lateral de 20rem, para a grade continuar sendo o elemento principal |
+| < 840px | Agenda abaixo da grade |
 | ≤ 560px (calendário) | Grade compacta: iniciais dos dias, número centralizado, pontos menores |
 
 ### Tarefas — `/tarefas` (estado: `visao=todas|sem-data|atrasadas` e filtros)
@@ -1613,7 +1631,7 @@ Revisão semanal                                   [Ver histórico da semana]
 └──────────────────────────────────────────────────────────┘
 ┌ Destaques da semana ┐ ┌ Pontos de atenção ┐
 ┌ Atividades da semana: tarefas por dia | estudo por dia ┐
-┌ Estudos (por atividade) ┐ ┌ Metas da semana ┐
+┌ Estudos da semana: tempo, sessões e meta por atividade ┐
 ┌ Tarefas planejadas: barra de situação + legenda · Continuam em aberto ┐
 ┌ Próxima semana (ou Semana seguinte) ┐ ┌ Nota da semana ┐
 ```
@@ -1622,6 +1640,13 @@ Revisão semanal                                   [Ver histórico da semana]
   nesta semana." com "Ver a semana anterior", mantendo a próxima semana e a nota; erro com "Tentar
   novamente".
 - **Resumo:** 4 colunas, e 2 colunas quando a área útil tem menos de 820px.
+- **Colunas:** "Destaques" e "Pontos de atenção" ficam lado a lado até 680px de área útil; os pares
+  7/5 ("Próxima semana" × "Nota da semana") até 880px.
+- **Estudos da semana:** um painel só por atividade, com tempo, sessões e, quando há meta, a barra de
+  progresso e "Faltam"/"Meta batida". Atividade sem meta mostra "Sem meta" com uma linha tracejada no
+  lugar da barra; atividade com meta e sem estudo aparece com 0 min. Antes eram dois painéis
+  ("Estudos" e "Metas da semana") que repetiam as mesmas horas. Com duas colunas, a nota
+  da semana acompanha a rolagem da lista da próxima semana, como a agenda do Calendário.
 - **Acessibilidade:** barras com texto completo para leitor de tela ("segunda-feira, 21 de
   setembro: 3 tarefas concluídas"), legenda sempre visível na barra de situação, nada comunicado só
   por cor.
@@ -1706,6 +1731,26 @@ duas passam a usar o **início**, que também é a ordem da linha do tempo. O ba
   sendo validado ao enviar.
 - **Catálogo fora da produção:** `PaginaComponentes` só é importada quando
   `ambiente.desenvolvimento` é verdadeiro, e o build de produção não gera mais o chunk dela.
+
+### Auditoria de composição
+
+Cada tela foi medida no navegador (altura de cada painel × fim do conteúdo) em 1920, 1440, 1280, 1200,
+1024, 820, 390 e 360px, nos dois temas.
+
+| # | Severidade | Tela | Problema | Correção |
+|---|---|---|---|---|
+| C1 | Alto | Dashboard | Com menu lateral, abaixo de 1340px de janela (inclusive 1280, comum em notebooks) tudo virava uma coluna de 3.700px, com o gráfico da semana e as barras de prioridade esticados na largura toda | Duas colunas a partir de 880px de conteúdo e layout intermediário de 640 a 879px |
+| C2 | Alto | Revisão semanal | Mesmo limite de 980px: em 1280px tudo virava uma coluna, com listas de 4 frases ocupando 870px | Pares lado a lado até 680px (destaques) e 880px (7/5) |
+| C3 | Alto | Calendário | Em 1280px a agenda do dia caía para baixo da grade, fora da primeira tela | Agenda ao lado até 840px de conteúdo |
+| C4 | Médio | Dashboard | "Tarefas de hoje" ocupava duas linhas da grade e ficava com 90 a 150px vazios no fim, conforme os dados | Colunas independentes; a sobra vai para o gráfico de produtividade |
+| C5 | Médio | Revisão semanal | "Nota da semana" (330px) ao lado de "Próxima semana" (910px) deixava a coluna direita vazia | Nota fixa ao rolar |
+| C6 | Baixo | Dashboard (celular) | O progresso "1 de 6" quebrava para baixo do título alinhado à direita de uma caixa à esquerda | Número e barra na mesma linha |
+| C7 | Médio | Revisão semanal | "Estudos" e "Metas da semana" repetiam as mesmas horas por atividade | Um painel só, "Estudos da semana" (decisão do dono do produto) |
+| C8 | Baixo | Navegação | O menu dizia "Cronômetro" e o título da página, "Estudos" | Menu passa a dizer "Estudos" (decisão do dono do produto) |
+
+Sem mudança, por decisão ou por ser aceitável: a linha do tempo do Histórico e a lista de Tarefas
+mantêm o horário e a prioridade na borda direita em telas largas (padrão de listas de e-mail e do
+Linear); o cabeçalho do Calendário quebra em duas linhas no celular (correção da auditoria geral).
 
 ### Decisões pendentes (dependem do dono do produto)
 

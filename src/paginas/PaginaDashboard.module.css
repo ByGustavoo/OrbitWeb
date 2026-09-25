@@ -4,44 +4,90 @@
 
 .grade {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 2fr) minmax(21rem, 1fr);
+  grid-template-rows: auto auto 1fr auto auto;
+  grid-template-areas:
+    'resumo resumo'
+    'hoje lateral'
+    'produtividade lateral'
+    'mapa mapa'
+    'metas metas';
   gap: var(--espaco-5);
 }
 
-.resumo,
-.mapa,
-.metas {
-  grid-column: 1 / -1;
+.resumo {
+  grid-area: resumo;
 }
 
 .hoje {
-  grid-column: span 8;
-  grid-row: span 2;
+  grid-area: hoje;
 }
 
 .produtividade {
-  grid-column: span 8;
+  grid-area: produtividade;
 }
 
-.proximas,
-.prioridades,
+.mapa {
+  grid-area: mapa;
+}
+
+.metas {
+  grid-area: metas;
+}
+
+.lateral {
+  grid-area: lateral;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-5);
+  min-width: 0;
+}
+
 .recentes {
-  grid-column: span 4;
+  flex: 1;
 }
 
-@container dashboard (max-width: 980px) {
-  .hoje,
-  .produtividade,
-  .proximas,
-  .prioridades,
+@container dashboard (max-width: 879.98px) {
+  .grade {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-template-areas:
+      'resumo'
+      'hoje'
+      'lateral'
+      'produtividade'
+      'mapa'
+      'metas';
+  }
+
+  .lateral {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'proximas recentes'
+      'prioridades prioridades';
+  }
+
+  .proximas {
+    grid-area: proximas;
+  }
+
+  .prioridades {
+    grid-area: prioridades;
+  }
+
   .recentes {
-    grid-column: 1 / -1;
-    grid-row: auto;
+    grid-area: recentes;
   }
 }
 
-@container dashboard (max-width: 680px) {
-  .grade {
+@container dashboard (max-width: 639.98px) {
+  .grade,
+  .lateral {
     gap: var(--espaco-4);
+  }
+
+  .lateral {
+    display: flex;
   }
 }

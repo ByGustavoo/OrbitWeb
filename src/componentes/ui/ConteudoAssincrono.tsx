@@ -16,7 +16,7 @@ export function ConteudoAssincrono<T>({ resultado, esqueleto, tituloErro, childr
       <EstadoErro
         compacto
         titulo={tituloErro}
-        descricao="Verifique a conexão e tente de novo. Se continuar, tente daqui a pouco."
+        erro={resultado.erro}
         aoTentarNovamente={resultado.recarregar}
         tentando={resultado.carregando}
       />

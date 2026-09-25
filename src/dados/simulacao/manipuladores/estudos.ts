@@ -234,8 +234,6 @@ export function buscarResumoEstudos(banco: BancoSimulado, requisicao: Requisicao
   }
 
   const resposta: ResumoEstudosDTO = {
-    dataInicial: filtro.dataInicial ?? null,
-    dataFinal: filtro.dataFinal ?? null,
     totalSegundos,
     totalSessoes: sessoes.length,
     mediaSegundosPorSessao: sessoes.length > 0 ? Math.round(totalSegundos / sessoes.length) : 0,

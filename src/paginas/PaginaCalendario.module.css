@@ -75,7 +75,13 @@
   border: 1.5px solid var(--sucesso);
 }
 
-@container pagina-calendario (max-width: 980px) {
+@container pagina-calendario (max-width: 1000px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+}
+
+@container pagina-calendario (max-width: 839.98px) {
   .layout {
     grid-template-columns: minmax(0, 1fr);
   }
