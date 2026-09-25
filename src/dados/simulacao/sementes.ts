@@ -1,4 +1,3 @@
-import type { CategoriaDTO } from '@/modelos/comum';
 import type { Prioridade, Situacao, TipoEventoTarefa } from '@/modelos/enumeracoes';
 import type { MinutosLembrete, RecorrenciaDTO } from '@/modelos/tarefas';
 import { gerarDatasOcorrencias } from '@/regras/recorrencia';
@@ -6,6 +5,7 @@ import { adicionarDias, adicionarMesesIso, dataIsoLocal, deDataIso, diasEntre } 
 import type {
   AtividadeArmazenada,
   BancoSimulado,
+  CategoriaArmazenada,
   EventoArmazenado,
   SerieArmazenada,
   SessaoArmazenada,
@@ -33,7 +33,7 @@ function somarMinutos(horario: string, minutos: number): string {
   return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
 
-const categorias: CategoriaDTO[] = [
+const categorias: CategoriaArmazenada[] = [
   { id: 1, nome: 'Estudos', cor: 'ROXO' },
   { id: 2, nome: 'Trabalho', cor: 'AZUL' },
   { id: 3, nome: 'Casa e família', cor: 'VERDE' },

@@ -26,4 +26,10 @@ export interface CategoriaDTO {
   id: number;
   nome: string;
   cor: Cor;
+  quantidadeTarefas: number;
+}
+
+export interface CategoriaEnvioDTO {
+  nome: string;
+  cor: Cor;
 }

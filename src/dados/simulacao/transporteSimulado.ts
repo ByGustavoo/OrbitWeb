@@ -6,8 +6,11 @@ import type { BancoSimulado } from './bancoSimulado';
 import {
   alterarArquivamento,
   atualizarAtividade,
+  atualizarCategoria,
   criarAtividade,
+  criarCategoria,
   excluirAtividade,
+  excluirCategoria,
   listarAtividades,
   listarCategorias,
 } from './manipuladores/cadastros';
@@ -69,6 +72,9 @@ const rotas: Rota[] = [
   { metodo: 'PUT', padrao: /^\/tarefas\/(\d+)$/, manipulador: atualizarTarefa },
   { metodo: 'DELETE', padrao: /^\/tarefas\/(\d+)$/, manipulador: excluirTarefa },
   { metodo: 'GET', padrao: exato(rotasApi.categorias.lista), manipulador: listarCategorias },
+  { metodo: 'POST', padrao: exato(rotasApi.categorias.lista), manipulador: criarCategoria },
+  { metodo: 'PUT', padrao: /^\/categorias\/(\d+)$/, manipulador: atualizarCategoria },
+  { metodo: 'DELETE', padrao: /^\/categorias\/(\d+)$/, manipulador: excluirCategoria },
   { metodo: 'GET', padrao: exato(rotasApi.atividades.lista), manipulador: listarAtividades },
   { metodo: 'POST', padrao: exato(rotasApi.atividades.lista), manipulador: criarAtividade },
   { metodo: 'PATCH', padrao: /^\/atividades\/(\d+)\/arquivamento$/, manipulador: alterarArquivamento },

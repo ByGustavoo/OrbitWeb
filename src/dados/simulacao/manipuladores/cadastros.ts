@@ -1,13 +1,77 @@
 import type { RequisicaoTransporte, RespostaTransporte } from '@/api/transporte';
-import type { ErroCampoDTO } from '@/modelos/comum';
+import type { CategoriaDTO, CategoriaEnvioDTO, ErroCampoDTO } from '@/modelos/comum';
 import type { AtividadeEnvioDTO, AtividadeEstudoDTO } from '@/modelos/estudos';
 import { buscarNomeRepetido, normalizarAtividade, validarAtividade } from '@/regras/validacaoAtividade';
+import { buscarCategoriaComMesmoNome, normalizarCategoria, validarCategoria } from '@/regras/validacaoCategoria';
 import { gerarId, salvarBanco } from '../bancoSimulado';
-import type { AtividadeArmazenada, BancoSimulado } from '../bancoSimulado';
+import type { AtividadeArmazenada, BancoSimulado, CategoriaArmazenada } from '../bancoSimulado';
 import { conflito, criado, dadosInvalidos, naoEncontrado, ok, requisicaoInvalida, semConteudo } from '../resposta';
 
+function categoriaParaDTO(banco: BancoSimulado, categoria: CategoriaArmazenada): CategoriaDTO {
+  const quantidadeTarefas = banco.tarefas.filter((tarefa) => tarefa.categoria?.id === categoria.id).length;
+  return { id: categoria.id, nome: categoria.nome, cor: categoria.cor, quantidadeTarefas };
+}
+
 export function listarCategorias(banco: BancoSimulado): RespostaTransporte {
-  return ok([...banco.categorias].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')));
+  const categorias = [...banco.categorias]
+    .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+    .map((categoria) => categoriaParaDTO(banco, categoria));
+  return ok(categorias);
+}
+
+function lerEnvioCategoria(banco: BancoSimulado, corpo: unknown, idAtual: number | null): CategoriaEnvioDTO | RespostaTransporte {
+  if (!corpo || typeof corpo !== 'object' || typeof (corpo as CategoriaEnvioDTO).nome !== 'string') {
+    return requisicaoInvalida('Envie os dados da categoria.');
+  }
+  const dados = normalizarCategoria({ nome: (corpo as CategoriaEnvioDTO).nome, cor: (corpo as CategoriaEnvioDTO).cor });
+  const erros = validarCategoria(dados, banco.categorias, idAtual);
+  const errosCampos: ErroCampoDTO[] = Object.entries(erros).map(([campo, mensagem]) => ({ campo, mensagem: mensagem ?? '' }));
+
+  if (erros.nome && buscarCategoriaComMesmoNome(dados.nome, banco.categorias, idAtual)) {
+    return conflito(erros.nome, errosCampos);
+  }
+  if (errosCampos.length > 0) return dadosInvalidos(errosCampos);
+  return dados;
+}
+
+function ehRespostaCategoria(valor: CategoriaEnvioDTO | RespostaTransporte): valor is RespostaTransporte {
+  return 'status' in valor;
+}
+
+export function criarCategoria(banco: BancoSimulado, requisicao: RequisicaoTransporte): RespostaTransporte {
+  const dados = lerEnvioCategoria(banco, requisicao.corpo, null);
+  if (ehRespostaCategoria(dados)) return dados;
+
+  const categoria: CategoriaArmazenada = { id: gerarId(), ...dados };
+  banco.categorias.push(categoria);
+  salvarBanco();
+  return criado(categoriaParaDTO(banco, categoria));
+}
+
+export function atualizarCategoria(banco: BancoSimulado, requisicao: RequisicaoTransporte, _agora: Date, id: number): RespostaTransporte {
+  const categoria = banco.categorias.find((item) => item.id === id);
+  if (!categoria) return naoEncontrado('Esta categoria não existe mais.');
+
+  const dados = lerEnvioCategoria(banco, requisicao.corpo, id);
+  if (ehRespostaCategoria(dados)) return dados;
+
+  Object.assign(categoria, dados);
+  banco.tarefas.forEach((tarefa) => {
+    if (tarefa.categoria?.id === id) tarefa.categoria = { id, nome: categoria.nome, cor: categoria.cor };
+  });
+  salvarBanco();
+  return ok(categoriaParaDTO(banco, categoria));
+}
+
+export function excluirCategoria(banco: BancoSimulado, _requisicao: RequisicaoTransporte, _agora: Date, id: number): RespostaTransporte {
+  if (!banco.categorias.some((item) => item.id === id)) return naoEncontrado('Esta categoria não existe mais.');
+
+  banco.categorias = banco.categorias.filter((item) => item.id !== id);
+  banco.tarefas.forEach((tarefa) => {
+    if (tarefa.categoria?.id === id) tarefa.categoria = null;
+  });
+  salvarBanco();
+  return semConteudo();
 }
 
 export function listarAtividades(banco: BancoSimulado): RespostaTransporte {

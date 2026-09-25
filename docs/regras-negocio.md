@@ -164,8 +164,11 @@ O backend não participa do cronômetro: recebe a sessão pronta em `POST /sesso
 | C1 | Só existe uma sessão em andamento por vez; não dá para trocar de atividade com ela rodando. | — | — | Front |
 | C2 | O tempo é recalculado a partir de marcos de tempo, nunca somado num contador: aba em segundo plano, suspensão ou recarregar a página não perdem tempo. | Recarregar no meio da sessão | O cronômetro continua do ponto certo. | Front |
 | C3 | A sessão em andamento fica no navegador (`localStorage`) e sincroniza entre abas. | — | — | Front |
-| C4 | **Pomodoro:** foco de 25 min, pausa curta de 5 min, pausa longa de 15 min a cada 4 focos. Só o foco conta como estudo. Cada fase começa só com confirmação. | 2 focos completos | `duracaoSegundos = 3000`, `ciclosConcluidos = 2`. | Front |
-| C5 | As durações do Pomodoro são fixas até existir a tela de Configurações. | — | Tornar ajustável: **A DEFINIR** (tela de Configurações). | Front |
+| C4 | **Pomodoro:** o padrão é foco de 25 min, pausa curta de 5 min e pausa longa de 15 min a cada 4 focos. Só o foco conta como estudo. Cada fase começa só com confirmação, exceto a pausa quando "Começar a pausa sozinha" está ligado (C11). | 2 focos completos | `duracaoSegundos = 3000`, `ciclosConcluidos = 2`. | Front |
+| C5 | As durações são ajustáveis em Configurações, dentro destes limites: foco de 5 a 90 min, pausa curta de 1 a 30 min, pausa longa de 5 a 60 min e de 2 a 8 focos até a pausa longa. Valores fora do limite são trazidos para o limite mais próximo, e o campo avisa o ajuste até ser alterado de novo. Ficam no navegador (`localStorage`, chave `orbit:pomodoro`). | Digitar 200 no foco | O foco fica em 90 min, com o aviso "200 passa do máximo, então ficou em 90 min." | Front |
+| C10 | Uma sessão guarda as durações com que começou. Mudar as Configurações vale a partir da próxima sessão. | Mudar o foco para 50 min no meio de um foco de 25 | A sessão atual termina com 25 min; a próxima começa com 50. | Front |
+| C11 | **Começar a pausa sozinha** (opcional, desligado por padrão): ao fim do foco, a pausa começa no instante exato em que o foco terminou, mesmo que a página estivesse fechada. A volta ao foco continua exigindo confirmação. | Foco terminou há 2 min com a página fechada | Ao abrir, a pausa curta mostra 3 min restantes. | Front |
+| C12 | **Som ao fim de cada fase** (opcional, desligado por padrão): um aviso curto gerado pelo navegador quando o foco ou a pausa terminam. Só toca com o Orbit aberto em alguma aba e depois de alguma interação com a página, por regra dos navegadores. | — | — | Front |
 | C6 | Finalizar abre um resumo com duração, horário e observação; a duração pode ser corrigida antes de salvar. | Cronômetro esquecido ligado | Corrige para o tempo real. | Front |
 | C7 | Se salvar falhar, a sessão continua guardada no navegador até ser salva ou descartada. | Servidor fora do ar | "Ela continua guardada neste navegador." | Front |
 | C8 | Descartar pede confirmação a partir de 1 minuto. | — | — | Front |
@@ -178,6 +181,19 @@ O backend não participa do cronômetro: recebe a sessão pronta em `POST /sesso
 | ME1 | Meta semanal por atividade; o progresso soma os minutos das sessões com início de domingo a sábado. | Meta 3 h, 95 min estudados | 95 de 180 min. | API |
 | ME2 | Só atividades não arquivadas e com meta aparecem nas metas. Com meta e sem estudo, aparecem com 0. | — | — | API |
 | ME3 | Meta batida quando os minutos realizados alcançam a meta. Em semanas encerradas, o texto diz "Faltaram" em vez de "Faltam". | — | — | Front |
+
+---
+
+### 7.5 Categorias
+
+| # | Regra | Exemplo | Comportamento esperado | Onde |
+|---|---|---|---|---|
+| CA1 | Nome obrigatório, até 40 caracteres, espaços extras reduzidos. | "  Contas   da casa " | Salva "Contas da casa". | Ambos |
+| CA2 | Nome único, sem diferenciar maiúsculas. | Já existe "Saúde"; criar "saúde" | Conflito: "Já existe uma categoria chamada “Saúde”. Escolha outro nome." | Ambos |
+| CA3 | Cor obrigatória, da paleta fixa de 9 cores. | — | — | Ambos |
+| CA4 | Editar nome ou cor muda a categoria em todas as tarefas dela, sem gerar evento no Histórico. | Renomear "Trabalho" | As tarefas passam a mostrar o novo nome. | API |
+| CA5 | **Excluir é sempre permitido** e deixa as tarefas da categoria sem categoria. As tarefas continuam existindo. Não há arquivamento nem desfazer; a tela pede confirmação. | Excluir "Trabalho", com 21 tarefas | As 21 tarefas ficam com `categoria = null`. | API |
+| CA6 | A lista mostra quantas tarefas usam cada categoria (`quantidadeTarefas`), contando todas as situações e as ocorrências futuras já geradas de recorrentes. | "Saúde" com "Academia" três vezes por semana | Mais de 150 tarefas (ver pendência 2 da seção 12). | API |
 
 ---
 
@@ -243,8 +259,8 @@ O backend não participa do cronômetro: recebe a sessão pronta em `POST /sesso
 |---|---|---|---|---|
 | 1 | **Regra R4 × "Mover para hoje"** | Ao mover a ocorrência atrasada mais recente de uma série, a anterior ("não realizada") passa a ser a mais recente em atraso e volta a aparecer como atrasada; o dia fica com duas ocorrências da mesma série. | Considerar "não realizada" toda ocorrência que tenha outra da mesma série com data até hoje. | **A DEFINIR** (dono do produto) |
 | 2 | **"Em aberto por prioridade" com recorrentes** | Conta as ocorrências futuras, geradas 12 meses à frente (uma série três vezes por semana soma mais de 150 tarefas). | Contar só até o fim da próxima semana, ou contar cada série uma vez. | **A DEFINIR** (dono do produto) |
-| 3 | **Configurações** | A tela existe como provisória. | Tema, durações do Pomodoro e cadastro de categorias. | **A DEFINIR** (fase futura) |
-| 4 | **Cadastro de categorias** | O front só lê categorias. | Depende da tela de Configurações. | **A DEFINIR** |
+| 3 | **Configurações** | Implementada na Fase 10: tema, Pomodoro e categorias. | — | **Resolvida** |
+| 4 | **Cadastro de categorias** | Criar, editar e excluir pela tela de Configurações (seção 7.5). | — | **Resolvida** |
 | 5 | **Paleta de comandos (`Ctrl+K`)** | Aprovada nos requisitos, não implementada. | — | **A DEFINIR** (fase futura) |
 
 ---

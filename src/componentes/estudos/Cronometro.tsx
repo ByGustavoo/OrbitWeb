@@ -10,11 +10,13 @@ import { coresDaPaleta } from '@/modelos/cores';
 import type { ModoCronometro } from '@/modelos/enumeracoes';
 import type { AtividadeEstudoDTO } from '@/modelos/estudos';
 import { rotuloFase, useCronometro } from '@/provedores/ProvedorCronometro';
-import { DURACOES_POMODORO_PADRAO, lerCronometro } from '@/regras/cronometro';
+import { lerCronometro } from '@/regras/cronometro';
 import type { LeituraCronometro, SessaoEmAndamento } from '@/regras/cronometro';
+import type { PreferenciasPomodoro } from '@/regras/preferenciasPomodoro';
 import { dataIsoLocal } from '@/utilitarios/datas';
 import {
   formatarContagemRegressiva,
+  formatarDuracao,
   formatarDuracaoSegundosPorExtenso,
   formatarHorario,
   formatarRelogio,
@@ -60,6 +62,11 @@ function descreverInicio(iniciadaEm: string, agora: Date): string {
   return dataIsoLocal(new Date(iniciadaEm)) === dataIsoLocal(agora) ? horario : `Ontem, ${horario}`;
 }
 
+function descreverPomodoro(preferencias: PreferenciasPomodoro): string {
+  const { focoMinutos, pausaCurtaMinutos, pausaLongaMinutos, ciclosAtePausaLonga } = preferencias;
+  return `${formatarDuracao(focoMinutos)} de foco e ${formatarDuracao(pausaCurtaMinutos)} de pausa, com uma pausa de ${formatarDuracao(pausaLongaMinutos)} a cada ${ciclosAtePausaLonga} ciclos. Só o foco conta como estudo.`;
+}
+
 interface AcaoControle {
   rotulo: string;
   icone: LucideIcon;
@@ -91,7 +98,7 @@ export function Cronometro({ atividades, idAtividadeNova, aoCriarAtividade, aoPe
   const idRotuloAtividade = useId();
   const idTitulo = useId();
   const cronometro = useCronometro();
-  const { sessao, modoPreferido, atividadeSelecionadaId } = cronometro;
+  const { sessao, modoPreferido, atividadeSelecionadaId, preferenciasPomodoro } = cronometro;
   const agora = useAgora(sessao !== null && sessao.estado === 'RODANDO');
   const leitura = sessao ? lerCronometro(sessao, agora) : null;
   const estado = estadoVisual(sessao, leitura);
@@ -118,14 +125,14 @@ export function Cronometro({ atividades, idAtividadeNova, aoCriarAtividade, aoPe
   const semAtividades = !sessao && atividades.dados !== null && ativas.length === 0;
   const cor = atividadeExibida ? coresDaPaleta(atividadeExibida.cor).texto : undefined;
 
-  const ciclosPorConjunto = sessao?.pomodoro?.duracoes.ciclosAtePausaLonga ?? DURACOES_POMODORO_PADRAO.ciclosAtePausaLonga;
+  const ciclosPorConjunto = sessao?.pomodoro?.duracoes.ciclosAtePausaLonga ?? preferenciasPomodoro.ciclosAtePausaLonga;
   const emFoco = leitura?.fase === 'FOCO' && !leitura.faseConcluida;
   const ciclos = leitura?.ciclosConcluidos ?? 0;
   const ciclosNoConjunto = emFoco ? ciclos % ciclosPorConjunto : ciclos === 0 ? 0 : ((ciclos - 1) % ciclosPorConjunto) + 1;
 
   const tempo = !leitura
     ? modo === 'POMODORO'
-      ? formatarContagemRegressiva(DURACOES_POMODORO_PADRAO.focoSegundos)
+      ? formatarContagemRegressiva(preferenciasPomodoro.focoMinutos * 60)
       : formatarRelogio(0)
     : leitura.fase
       ? formatarContagemRegressiva(leitura.segundosRestantesFase)
@@ -361,7 +368,7 @@ export function Cronometro({ atividades, idAtividadeNova, aoCriarAtividade, aoPe
               {!selecionada && atividades.dados !== null
                 ? 'Escolha uma atividade acima para começar.'
                 : modo === 'POMODORO'
-                  ? '25 min de foco e 5 de pausa, com uma pausa de 15 min a cada 4 ciclos. Só o foco conta como estudo.'
+                  ? descreverPomodoro(preferenciasPomodoro)
                   : 'O tempo continua contando se você mudar de tela, trocar de aba ou recarregar a página.'}
             </p>
           )}

@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { CHAVE_PREFERENCIAS_CRONOMETRO, CHAVE_SESSAO_ESTUDO } from '@/configuracoes/aplicacao';
+import { CHAVE_PREFERENCIAS_CRONOMETRO, CHAVE_PREFERENCIAS_POMODORO, CHAVE_SESSAO_ESTUDO } from '@/configuracoes/aplicacao';
 import { gravarArmazenamentoLocal, lerArmazenamentoLocal } from '@/ganchos/useArmazenamentoLocal';
 import { useAgora } from '@/ganchos/useAgora';
 import type { ModoCronometro } from '@/modelos/enumeracoes';
@@ -11,6 +11,7 @@ import {
   encerrarSessao,
   iniciarProximaFase as iniciarProximaFaseRegra,
   iniciarSessao,
+  instanteFimDaFase,
   lerCronometro,
   lerSessaoSalva,
   montarEnvioSessao,
@@ -19,8 +20,11 @@ import {
   retomarSessao,
 } from '@/regras/cronometro';
 import type { FasePomodoro, LeituraCronometro, SessaoEmAndamento } from '@/regras/cronometro';
+import { duracoesDasPreferencias, lerPreferenciasPomodoro } from '@/regras/preferenciasPomodoro';
+import type { PreferenciasPomodoro } from '@/regras/preferenciasPomodoro';
 import { servicoSessoes } from '@/servicos';
-import { formatarContagemRegressiva, formatarDuracaoSegundos, formatarRelogio } from '@/utilitarios/formatacao';
+import { formatarContagemRegressiva, formatarDuracao, formatarDuracaoPorExtenso, formatarDuracaoSegundos, formatarRelogio } from '@/utilitarios/formatacao';
+import { prepararSom, tocarAviso } from '@/utilitarios/som';
 import { definirTituloDestaque } from '@/utilitarios/tituloDocumento';
 import { useAlteracoes } from './ProvedorAlteracoes';
 import { useNotificacoes } from './ProvedorNotificacoes';
@@ -54,6 +58,8 @@ interface ValorContextoCronometro {
   atividadeSelecionadaId: number | null;
   salvando: boolean;
   anuncio: string;
+  preferenciasPomodoro: PreferenciasPomodoro;
+  definirPreferenciasPomodoro: (parcial: Partial<PreferenciasPomodoro>) => void;
   definirModoPreferido: (modo: ModoCronometro) => void;
   selecionarAtividade: (id: number | null) => void;
   iniciar: (dados: { atividade: ResumoAtividadeDTO; tarefa?: ResumoTarefaSessaoDTO | null; modo?: ModoCronometro }) => boolean;
@@ -91,6 +97,10 @@ function lerPreferencias(): PreferenciasCronometro {
     modo: salvas.modo === 'POMODORO' ? 'POMODORO' : 'LIVRE',
     atividadeId: typeof salvas.atividadeId === 'number' ? salvas.atividadeId : null,
   };
+}
+
+function lerPomodoroArmazenado(): PreferenciasPomodoro {
+  return lerPreferenciasPomodoro(lerArmazenamentoLocal<unknown>(CHAVE_PREFERENCIAS_POMODORO, null));
 }
 
 export function descreverTituloAba(sessao: SessaoEmAndamento, leitura: LeituraCronometro): string {
@@ -139,6 +149,9 @@ export function ProvedorCronometro({ children }: { children: ReactNode }) {
   const notificacoes = useNotificacoes();
   const [sessao, setSessao] = useState<SessaoEmAndamento | null>(lerSessaoArmazenada);
   const [preferencias, setPreferencias] = useState<PreferenciasCronometro>(lerPreferencias);
+  const [pomodoro, setPomodoro] = useState<PreferenciasPomodoro>(lerPomodoroArmazenado);
+  const pomodoroRef = useRef(pomodoro);
+  pomodoroRef.current = pomodoro;
   const [salvando, setSalvando] = useState(false);
   const [anuncio, setAnuncio] = useState('');
   const sessaoRef = useRef(sessao);
@@ -173,6 +186,30 @@ export function ProvedorCronometro({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const definirPreferenciasPomodoro = useCallback((parcial: Partial<PreferenciasPomodoro>) => {
+    const proximas = lerPreferenciasPomodoro({ ...pomodoroRef.current, ...parcial });
+    pomodoroRef.current = proximas;
+    setPomodoro(proximas);
+    gravarArmazenamentoLocal(CHAVE_PREFERENCIAS_POMODORO, proximas);
+  }, []);
+
+  useEffect(() => {
+    if (!pomodoro.somAoFimDaFase) return;
+    const aoInteragir = () => prepararSom();
+    document.addEventListener('pointerdown', aoInteragir, true);
+    document.addEventListener('keydown', aoInteragir, true);
+    return () => {
+      document.removeEventListener('pointerdown', aoInteragir, true);
+      document.removeEventListener('keydown', aoInteragir, true);
+    };
+  }, [pomodoro.somAoFimDaFase]);
+
+  useEffect(() => {
+    if (!pomodoro.iniciarPausaSozinha || !sessao?.pomodoro || sessao.pomodoro.fase !== 'FOCO') return;
+    const fim = instanteFimDaFase(sessao);
+    if (fim && fim.getTime() <= Date.now()) aplicar(iniciarProximaFaseRegra(sessao, fim));
+  }, [sessao, pomodoro.iniciarPausaSozinha, aplicar]);
+
   useEffect(() => {
     const aoMudarArmazenamento = (evento: StorageEvent) => {
       if (evento.key === CHAVE_SESSAO_ESTUDO) {
@@ -186,6 +223,11 @@ export function ProvedorCronometro({ children }: { children: ReactNode }) {
         setSessao(proxima);
       }
       if (evento.key === CHAVE_PREFERENCIAS_CRONOMETRO) setPreferencias(lerPreferencias());
+      if (evento.key === CHAVE_PREFERENCIAS_POMODORO) {
+        const proximas = lerPomodoroArmazenado();
+        pomodoroRef.current = proximas;
+        setPomodoro(proximas);
+      }
     };
     window.addEventListener('storage', aoMudarArmazenamento);
     return () => window.removeEventListener('storage', aoMudarArmazenamento);
@@ -195,11 +237,12 @@ export function ProvedorCronometro({ children }: { children: ReactNode }) {
     ({ atividade, tarefa = null, modo }) => {
       if (sessaoRef.current) return false;
       const modoEscolhido = modo ?? preferencias.modo;
-      aplicar(iniciarSessao({ atividade, tarefa, modo: modoEscolhido }, new Date()));
+      const duracoes = duracoesDasPreferencias(pomodoroRef.current);
+      aplicar(iniciarSessao({ atividade, tarefa, modo: modoEscolhido, duracoes }, new Date()));
       atualizarPreferencias({ atividadeId: atividade.id, modo: modoEscolhido });
       anunciar(
         modoEscolhido === 'POMODORO'
-          ? `Sessão de ${atividade.nome} iniciada no Pomodoro. Foco de 25 minutos.`
+          ? `Sessão de ${atividade.nome} iniciada no Pomodoro. Foco de ${formatarDuracaoPorExtenso(pomodoroRef.current.focoMinutos)}.`
           : `Sessão de ${atividade.nome} iniciada.`,
       );
       return true;
@@ -260,8 +303,23 @@ export function ProvedorCronometro({ children }: { children: ReactNode }) {
   const aoConcluirFase = useCallback(
     (fase: FasePomodoro, atual: SessaoEmAndamento) => {
       const leitura = lerCronometro(atual, new Date());
+      const { somAoFimDaFase, iniciarPausaSozinha } = pomodoroRef.current;
+      if (somAoFimDaFase) tocarAviso(fase === 'FOCO' ? 'fimDoFoco' : 'fimDaPausa');
       if (fase === 'FOCO') {
         const pausa = leitura.proximaFase === 'PAUSA_LONGA' ? 'pausa longa' : 'pausa curta';
+        const fim = iniciarPausaSozinha ? instanteFimDaFase(atual) : null;
+        if (fim && sessaoRef.current?.iniciadaEm === atual.iniciadaEm) {
+          const comPausa = iniciarProximaFaseRegra(atual, fim);
+          aplicar(comPausa);
+          const minutosPausa = Math.round((comPausa.pomodoro ? lerCronometro(comPausa, fim).duracaoFaseSegundos : 0) / 60);
+          notificacoes.notificar({
+            titulo: 'Foco concluído.',
+            descricao: `${atual.atividade.nome}: a ${pausa} de ${formatarDuracao(minutosPausa)} já começou.`,
+            variante: 'informacao',
+          });
+          anunciar(`Foco concluído. A ${pausa} já começou.`);
+          return;
+        }
         notificacoes.notificar({
           titulo: 'Foco concluído.',
           descricao: `${atual.atividade.nome}: hora da ${pausa}. Ela começa quando você confirmar.`,
@@ -273,12 +331,14 @@ export function ProvedorCronometro({ children }: { children: ReactNode }) {
       notificacoes.notificar({ titulo: 'Pausa concluída.', descricao: 'Confirme quando quiser voltar ao foco.', variante: 'informacao' });
       anunciar('Pausa concluída. Confirme para voltar ao foco.');
     },
-    [anunciar, notificacoes],
+    [anunciar, aplicar, notificacoes],
   );
 
   const valor = useMemo<ValorContextoCronometro>(
     () => ({
       sessao,
+      preferenciasPomodoro: pomodoro,
+      definirPreferenciasPomodoro,
       modoPreferido: preferencias.modo,
       atividadeSelecionadaId: preferencias.atividadeId,
       salvando,
@@ -298,6 +358,8 @@ export function ProvedorCronometro({ children }: { children: ReactNode }) {
     [
       sessao,
       preferencias,
+      pomodoro,
+      definirPreferenciasPomodoro,
       salvando,
       anuncio,
       atualizarPreferencias,

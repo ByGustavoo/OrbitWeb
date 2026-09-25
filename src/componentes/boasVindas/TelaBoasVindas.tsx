@@ -112,7 +112,7 @@ export function TelaBoasVindas({ aoComecar }: { aoComecar: () => void }) {
     }
     medirDistanciaAteOLogo();
     setSaindo(true);
-    void import('@/paginas/paginasProvisorias');
+    void import('@/paginas/PaginaDashboard');
     window.setTimeout(() => transicionarParaAplicacao(aoComecar), DURACAO_DESPEDIDA_MS);
   };
 

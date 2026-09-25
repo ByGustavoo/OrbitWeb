@@ -10,6 +10,7 @@ export type TemaAplicado = 'claro' | 'escuro';
 interface ValorContextoTema {
   modo: ModoTema;
   tema: TemaAplicado;
+  temaDoSistema: TemaAplicado;
   definirModo: (modo: ModoTema) => void;
   alternarTema: () => void;
 }
@@ -97,8 +98,8 @@ export function ProvedorTema({ children }: { children: ReactNode }) {
   }, [definirModo, tema]);
 
   const valor = useMemo<ValorContextoTema>(
-    () => ({ modo, tema, definirModo, alternarTema }),
-    [modo, tema, definirModo, alternarTema],
+    () => ({ modo, tema, temaDoSistema: preferenciaSistema, definirModo, alternarTema }),
+    [modo, tema, preferenciaSistema, definirModo, alternarTema],
   );
 
   return <ContextoTema.Provider value={valor}>{children}</ContextoTema.Provider>;

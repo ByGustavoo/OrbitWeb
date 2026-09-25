@@ -1,19 +1,9 @@
 import { lazy } from 'react';
-import type { ComponentType } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ambiente } from '@/configuracoes/ambiente';
 import { estadoComParametros } from '@/ganchos/useParametrosPagina';
 import { LayoutAplicacao } from '@/layouts/LayoutAplicacao';
 import { caminhos } from './caminhos';
-
-type ModuloPaginasProvisorias = typeof import('@/paginas/paginasProvisorias');
-
-function carregarProvisoria(nome: keyof ModuloPaginasProvisorias) {
-  return lazy(async () => {
-    const modulo = await import('@/paginas/paginasProvisorias');
-    return { default: modulo[nome] as ComponentType };
-  });
-}
 
 const PaginaDashboard = lazy(() => import('@/paginas/PaginaDashboard'));
 const PaginaCalendario = lazy(() => import('@/paginas/PaginaCalendario'));
@@ -21,7 +11,7 @@ const PaginaTarefas = lazy(() => import('@/paginas/PaginaTarefas'));
 const PaginaEstudos = lazy(() => import('@/paginas/PaginaEstudos'));
 const PaginaHistorico = lazy(() => import('@/paginas/PaginaHistorico'));
 const PaginaRevisaoSemanal = lazy(() => import('@/paginas/PaginaRevisaoSemanal'));
-const PaginaConfiguracoes = carregarProvisoria('PaginaConfiguracoes');
+const PaginaConfiguracoes = lazy(() => import('@/paginas/PaginaConfiguracoes'));
 const PaginaComponentes = ambiente.desenvolvimento ? lazy(() => import('@/paginas/PaginaComponentes')) : null;
 const PaginaNaoEncontrada = lazy(() => import('@/paginas/PaginaNaoEncontrada'));
 

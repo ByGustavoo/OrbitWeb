@@ -4,6 +4,7 @@ import {
   encerrarSessao,
   iniciarProximaFase,
   iniciarSessao,
+  instanteFimDaFase,
   lerCronometro,
   lerSessaoSalva,
   montarEnvioSessao,
@@ -156,6 +157,31 @@ describe('cronômetro Pomodoro', () => {
     const leitura = lerCronometro(sessao, depois(4300));
     expect(leitura.segundosEstudo).toBe(900);
     expect(leitura.segundosRestantesFase).toBe(600);
+  });
+
+  it('usa as durações configuradas ao iniciar', () => {
+    const duracoes = { focoSegundos: 3000, pausaCurtaSegundos: 600, pausaLongaSegundos: 1200, ciclosAtePausaLonga: 3 };
+    const sessao = iniciarSessao({ atividade, modo: 'POMODORO', duracoes }, inicio);
+    expect(lerCronometro(sessao, depois(1500)).segundosRestantesFase).toBe(1500);
+  });
+
+  it('calcula o instante em que a fase termina, descontando as pausas', () => {
+    let sessao = iniciarSessao({ atividade, modo: 'POMODORO' }, inicio);
+    expect(instanteFimDaFase(sessao)?.toISOString()).toBe(depois(1500).toISOString());
+    sessao = pausarSessao(sessao, depois(600));
+    expect(instanteFimDaFase(sessao)).toBeNull();
+    sessao = retomarSessao(sessao, depois(1000));
+    expect(instanteFimDaFase(sessao)?.toISOString()).toBe(depois(1900).toISOString());
+  });
+
+  it('começar a pausa no instante em que o foco terminou conta o tempo de pausa já passado', () => {
+    const sessao = iniciarSessao({ atividade, modo: 'POMODORO' }, inicio);
+    const fim = instanteFimDaFase(sessao) as Date;
+    const pausa = iniciarProximaFase(sessao, fim);
+    const leitura = lerCronometro(pausa, depois(1500 + 120));
+    expect(leitura.fase).toBe('PAUSA_CURTA');
+    expect(leitura.segundosRestantesFase).toBe(180);
+    expect(leitura.segundosEstudo).toBe(1500);
   });
 
   it('envia os ciclos concluídos, inclusive o foco que acabou de terminar', () => {

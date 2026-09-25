@@ -113,12 +113,14 @@ existir.
 | Campo | Tipo Java | Obrigatório | Regra |
 |---|---|---|---|
 | `id` | `Long` | Sim | |
-| `nome` | `String` | Sim | Único (regra de unicidade e tamanho: **A DEFINIR NO BACKEND**, porque o front ainda não cadastra categorias) |
+| `nome` | `String` | Sim | Até 40 caracteres, espaços extras reduzidos, único sem diferenciar maiúsculas ([CA1–CA2](regras-negocio.md#75-categorias)) |
 | `cor` | `Cor` | Sim | |
 
-**Relacionamentos:** 1:N com `Tarefa`. Hoje só existe leitura (`GET /categorias`). A origem das
-categorias (dados iniciais ou cadastro) é **A DEFINIR NO BACKEND**. O simulador usa "Estudos",
-"Trabalho", "Casa e família" e "Saúde".
+**Relacionamentos:** 1:N com `Tarefa`. O cadastro é feito pela tela de Configurações
+(`POST`, `PUT` e `DELETE /categorias`). Excluir uma categoria deixa as tarefas dela com
+`categoria = null` (CA5). A resposta inclui `quantidadeTarefas`, calculada numa consulta de contagem
+agrupada por categoria, e não guardada na entidade. Dados iniciais são opcionais; o simulador
+começa com "Estudos", "Trabalho", "Casa e família" e "Saúde".
 
 ### 2.5 `AtividadeEstudo`
 
@@ -441,7 +443,9 @@ public record TarefaDTO(
 
 public record ResumoCategoriaDTO(Long id, String nome, Cor cor) {}
 public record ResumoAtividadeDTO(Long id, String nome, Cor cor) {}
-public record CategoriaDTO(Long id, String nome, Cor cor) {}
+public record CategoriaDTO(Long id, String nome, Cor cor, long quantidadeTarefas) {}
+
+public record CategoriaEnvioDTO(String nome, Cor cor) {}
 public record DiaCalendarioDTO(LocalDate data, int quantidade, Prioridade maiorPrioridade, int atrasadas, int concluidas) {}
 
 public record AtividadeEstudoDTO(Long id, String nome, Cor cor, Integer metaSemanalMinutos, boolean arquivada) {}
@@ -479,7 +483,7 @@ sugerido:
 | Controlador | Rotas |
 |---|---|
 | Tarefas | `GET/POST /tarefas`, `GET/PUT/DELETE /tarefas/{id}`, `PATCH /tarefas/{id}/situacao`, `POST /tarefas/reagendamentos`, `GET /tarefas/resumo-calendario` |
-| Categorias | `GET /categorias` |
+| Categorias | `GET/POST /categorias`, `PUT/DELETE /categorias/{id}` |
 | Atividades | `GET/POST /atividades`, `PUT/DELETE /atividades/{id}`, `PATCH /atividades/{id}/arquivamento` |
 | Sessões | `GET/POST /sessoes`, `PUT/DELETE /sessoes/{id}` |
 | Estudos | `GET /estudos/resumo`, `GET /estudos/progresso-semanal`, `GET /estudos/mapa-calor` |
@@ -776,7 +780,7 @@ DELETE /tarefas/{id}?escopo=…
 
 1. `ErrorResponseDTO` e o tratador global de exceções (o front depende deles em todas as telas).
 2. Leitura do fuso (`X-Fuso-Horario`) e `Clock`.
-3. Categorias (leitura) e atividades (CRUD + arquivamento).
+3. Categorias (CRUD) e atividades (CRUD + arquivamento).
 4. Tarefas sem recorrência: CRUD, situação, cálculo de prazo, filtros e paginação, eventos.
 5. Reagendamento e resumo do calendário.
 6. Recorrência: séries, geração, extensão, escopos.
@@ -800,7 +804,7 @@ derrubar o resto da página.
 | B3 | `type`, `title` e `detail` de cada erro; inclusão de `errors` e `timestamp` | A DEFINIR NO BACKEND |
 | B4 | Estratégia de cálculo do prazo em consultas e da linha do tempo do Histórico | A DEFINIR NO BACKEND |
 | B5 | Momento da extensão das séries recorrentes | A DEFINIR NO BACKEND |
-| B6 | Origem das categorias antes da tela de Configurações | A DEFINIR NO BACKEND |
+| B6 | Origem das categorias antes da tela de Configurações | Resolvida: cadastro pela tela de Configurações; dados iniciais opcionais |
 | B7 | Fuso padrão sem `X-Fuso-Horario` | A DEFINIR NO BACKEND |
 | B8 | Usuários e autenticação | A DEFINIR (fase futura) |
 | B9 | Decisões de produto pendentes (R4 × "Mover para hoje"; recorrentes futuras em "Em aberto por prioridade") | A DEFINIR (dono do produto) — ver [`regras-negocio.md`](regras-negocio.md#12-decisões-pendentes) |

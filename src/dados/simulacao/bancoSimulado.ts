@@ -1,10 +1,11 @@
-import type { CategoriaDTO } from '@/modelos/comum';
 import type { Cor, ModoCronometro, OrigemSessao, TipoEventoTarefa } from '@/modelos/enumeracoes';
 import type { NotaSemanaDTO } from '@/modelos/revisao';
-import type { RecorrenciaDTO, TarefaDTO } from '@/modelos/tarefas';
+import type { RecorrenciaDTO, ResumoCategoriaDTO, TarefaDTO } from '@/modelos/tarefas';
 import { VERSAO_BANCO, gerarSementes } from './sementes';
 
 export type TarefaArmazenada = Omit<TarefaDTO, 'prazo'>;
+
+export type CategoriaArmazenada = ResumoCategoriaDTO;
 
 export interface AtividadeArmazenada {
   id: number;
@@ -47,7 +48,7 @@ export interface EventoArmazenado {
 export interface BancoSimulado {
   versao: number;
   proximoId: number;
-  categorias: CategoriaDTO[];
+  categorias: CategoriaArmazenada[];
   atividades: AtividadeArmazenada[];
   tarefas: TarefaArmazenada[];
   series: SerieArmazenada[];

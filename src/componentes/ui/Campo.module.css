@@ -152,6 +152,18 @@
   color: var(--sucesso);
 }
 
+.mensagemAviso {
+  color: var(--aviso);
+  animation: surgirMensagem var(--duracao-base) var(--curva-saida);
+}
+
+@keyframes surgirMensagem {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
 @media (hover: hover) {
   .controle:hover:not(:focus-within):not(:has(.entrada:disabled)) {
     border-color: var(--texto-terciario);

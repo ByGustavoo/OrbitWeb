@@ -6,7 +6,7 @@ front-end (`src/servicos/`, `src/modelos/`, `src/api/`) e do simulador da API
 (`src/dados/simulacao/`), que hoje é a implementação de referência do comportamento esperado.
 
 Nenhuma rota aqui é hipotética: cada uma é chamada por pelo menos uma tela. Rotas que o front não
-usa (por exemplo, criar ou excluir categoria) **não** estão no contrato.
+usa **não** estão no contrato.
 
 Documentos relacionados:
 
@@ -345,24 +345,27 @@ sugestão de redação para a pessoa, não um valor definitivo.
 | 7 | POST | `/tarefas/reagendamentos` | `servicoTarefas` | `reagendarTarefas` |
 | 8 | GET | `/tarefas/resumo-calendario` | `servicoTarefas` | `buscarResumoCalendario` |
 | 9 | GET | `/categorias` | `servicoCategorias` | `buscarCategorias` |
-| 10 | GET | `/atividades` | `servicoAtividades` | `buscarAtividades` |
-| 11 | POST | `/atividades` | `servicoAtividades` | `criarAtividade` |
-| 12 | PUT | `/atividades/{id}` | `servicoAtividades` | `atualizarAtividade` |
-| 13 | PATCH | `/atividades/{id}/arquivamento` | `servicoAtividades` | `arquivarAtividade`, `desarquivarAtividade` |
-| 14 | DELETE | `/atividades/{id}` | `servicoAtividades` | `excluirAtividade` |
-| 15 | GET | `/sessoes` | `servicoSessoes` | `buscarSessoes` |
-| 16 | POST | `/sessoes` | `servicoSessoes` | `criarSessao` |
-| 17 | PUT | `/sessoes/{id}` | `servicoSessoes` | `atualizarSessao` |
-| 18 | DELETE | `/sessoes/{id}` | `servicoSessoes` | `excluirSessao` |
-| 19 | GET | `/estudos/resumo` | `servicoSessoes` | `buscarResumoEstudos` |
-| 20 | GET | `/estudos/progresso-semanal` | `servicoSessoes` | `buscarProgressoSemanal` |
-| 21 | GET | `/estudos/mapa-calor` | `servicoSessoes` | `buscarMapaCalor` |
-| 22 | GET | `/historico` | `servicoHistorico` | `buscarHistorico` |
-| 23 | GET | `/historico/{id}` | `servicoHistorico` | `buscarDetalhesHistorico` |
-| 24 | GET | `/revisao-semanal` | `servicoRevisaoSemanal` | `buscarRevisaoSemanal` |
-| 25 | PUT | `/revisao-semanal/{inicioSemana}/nota` | `servicoRevisaoSemanal` | `salvarNotaSemana` |
-| 26 | GET | `/dashboard/resumo` | `servicoDashboard` | `buscarResumoDashboard` |
-| 27 | GET | `/dashboard/sequencia` | `servicoDashboard` | `buscarSequencia` |
+| 10 | POST | `/categorias` | `servicoCategorias` | `criarCategoria` |
+| 11 | PUT | `/categorias/{id}` | `servicoCategorias` | `atualizarCategoria` |
+| 12 | DELETE | `/categorias/{id}` | `servicoCategorias` | `excluirCategoria` |
+| 13 | GET | `/atividades` | `servicoAtividades` | `buscarAtividades` |
+| 14 | POST | `/atividades` | `servicoAtividades` | `criarAtividade` |
+| 15 | PUT | `/atividades/{id}` | `servicoAtividades` | `atualizarAtividade` |
+| 16 | PATCH | `/atividades/{id}/arquivamento` | `servicoAtividades` | `arquivarAtividade`, `desarquivarAtividade` |
+| 17 | DELETE | `/atividades/{id}` | `servicoAtividades` | `excluirAtividade` |
+| 18 | GET | `/sessoes` | `servicoSessoes` | `buscarSessoes` |
+| 19 | POST | `/sessoes` | `servicoSessoes` | `criarSessao` |
+| 20 | PUT | `/sessoes/{id}` | `servicoSessoes` | `atualizarSessao` |
+| 21 | DELETE | `/sessoes/{id}` | `servicoSessoes` | `excluirSessao` |
+| 22 | GET | `/estudos/resumo` | `servicoSessoes` | `buscarResumoEstudos` |
+| 23 | GET | `/estudos/progresso-semanal` | `servicoSessoes` | `buscarProgressoSemanal` |
+| 24 | GET | `/estudos/mapa-calor` | `servicoSessoes` | `buscarMapaCalor` |
+| 25 | GET | `/historico` | `servicoHistorico` | `buscarHistorico` |
+| 26 | GET | `/historico/{id}` | `servicoHistorico` | `buscarDetalhesHistorico` |
+| 27 | GET | `/revisao-semanal` | `servicoRevisaoSemanal` | `buscarRevisaoSemanal` |
+| 28 | PUT | `/revisao-semanal/{inicioSemana}/nota` | `servicoRevisaoSemanal` | `salvarNotaSemana` |
+| 29 | GET | `/dashboard/resumo` | `servicoDashboard` | `buscarResumoDashboard` |
+| 30 | GET | `/dashboard/sequencia` | `servicoDashboard` | `buscarSequencia` |
 
 As URLs existem num só lugar do front: `src/api/rotasApi.ts`.
 
@@ -498,7 +501,13 @@ Exemplo de `TarefaDTO`:
 
 ### 4.4 Categoria
 
-**`CategoriaDTO`**: `{ id: number; nome: string; cor: Cor }`.
+**`CategoriaDTO`** (resposta): `{ id: number; nome: string; cor: Cor; quantidadeTarefas: number }`.
+
+**`CategoriaEnvioDTO`** (corpo de `POST` e `PUT`): `{ nome: string; cor: Cor }`.
+
+`quantidadeTarefas` conta todas as tarefas ligadas à categoria, em qualquer situação, inclusive as
+ocorrências futuras já geradas de tarefas recorrentes. Dentro de uma tarefa, a categoria continua
+vindo como `ResumoCategoriaDTO` (`{ id, nome, cor }`), sem a contagem.
 
 ### 4.5 Estudos
 
@@ -970,7 +979,8 @@ cancelada**, em ordem de data.
 
 ### 6.1 `GET /categorias`
 
-**Objetivo:** opções de categoria no formulário de tarefa e no filtro da página Tarefas.
+**Objetivo:** lista da tela de Configurações e opções de categoria no formulário de tarefa e no
+filtro da página Tarefas.
 
 **Parâmetros:** nenhum. **Request body:** nenhum.
 
@@ -978,16 +988,70 @@ cancelada**, em ordem de data.
 
 ```json
 [
-  { "id": 3, "nome": "Casa e família", "cor": "LARANJA" },
-  { "id": 1, "nome": "Estudos", "cor": "ROXO" }
+  { "id": 3, "nome": "Casa e família", "cor": "LARANJA", "quantidadeTarefas": 25 },
+  { "id": 1, "nome": "Estudos", "cor": "ROXO", "quantidadeTarefas": 0 }
 ]
 ```
 
 **Status HTTP:** `200`; `500` em erro inesperado.
 
-**Regras:** o front ainda não cria, edita nem exclui categorias (a tela de Configurações é
-provisória). Como as categorias passam a existir no backend (dados iniciais, cadastro futuro) é
-**A DEFINIR NO BACKEND**.
+### 6.2 `POST /categorias`
+
+**Objetivo:** criar uma categoria pela tela de Configurações.
+
+**Request body:** `CategoriaEnvioDTO`.
+
+```json
+{ "nome": "Viagens", "cor": "CIANO" }
+```
+
+**Response `201`:** `CategoriaDTO` com `quantidadeTarefas = 0`.
+
+**Normalização:** `nome` sem espaços nas pontas e com espaços internos repetidos reduzidos a um.
+
+**Validações** (`src/regras/validacaoCategoria.ts`):
+
+| Campo | Regra | Status | Mensagem sugerida |
+|---|---|---|---|
+| `nome` | Obrigatório | `400` | "Informe um nome para a categoria." |
+| `nome` | Até 40 caracteres | `400` | "Use no máximo 40 caracteres no nome. Agora são N." |
+| `nome` | Único, sem diferenciar maiúsculas | `409` | "Já existe uma categoria chamada “Nome”. Escolha outro nome." |
+| `cor` | Valor do enum `Cor` | `400` | "Escolha uma das cores da lista." |
+
+O formulário reconhece em `errors`: `nome`, `cor`. Num `409` sem `errors`, o front mostra o `detail`
+junto do campo `nome`.
+
+**Status HTTP:** `201`, `400`, `409`.
+
+### 6.3 `PUT /categorias/{id}`
+
+**Objetivo:** mudar o nome e a cor de uma categoria.
+
+**Path parameters:** `id`. **Request body:** `CategoriaEnvioDTO`. **Response `200`:** `CategoriaDTO`.
+
+Mesmas validações do `POST`; a unicidade ignora a própria categoria.
+
+**Status HTTP:** `200`, `400`, `404` ("Esta categoria não existe mais."), `409`.
+
+**Regras:** nome e cor novos aparecem em todas as tarefas da categoria (o resumo embutido é sempre o
+estado atual). Mudar a categoria não gera evento no Histórico (H1).
+
+### 6.4 `DELETE /categorias/{id}`
+
+**Objetivo:** excluir uma categoria.
+
+**Response `204`:** sem corpo.
+
+**Status HTTP:**
+
+| Status | Quando | `detail` sugerido |
+|---|---|---|
+| `204` | Excluída | — |
+| `404` | Id inexistente | "Esta categoria não existe mais." |
+
+**Regras:** a exclusão é sempre permitida. As tarefas ligadas à categoria ficam com
+`categoria = null` e continuam existindo. Não há arquivamento nem desfazer: a tela pede confirmação
+e diz quantas tarefas ficam sem categoria.
 
 ---
 
@@ -1699,5 +1763,5 @@ POST /tarefas/reagendamentos { itens: [{ id, data: hoje }] }
 | C5 | `tamanho` fora de 1..100 e enums desconhecidos em filtros: ajustar/ignorar ou `400` | A DEFINIR NO BACKEND |
 | C6 | Fuso quando `X-Fuso-Horario` falta ou é inválido | A DEFINIR NO BACKEND (sugestão: `America/Sao_Paulo`) |
 | C7 | Nota apagada: `200` com `null` ou `204` | A DEFINIR NO BACKEND |
-| C8 | Como as categorias são criadas antes da tela de Configurações | A DEFINIR NO BACKEND |
+| C8 | Como as categorias são criadas antes da tela de Configurações | Resolvida: cadastro pela tela de Configurações (`POST`, `PUT` e `DELETE /categorias`). Dados iniciais continuam opcionais |
 | C9 | Regra R4 × "Mover para hoje" e contagem de recorrentes futuras em "Em aberto por prioridade" | A DEFINIR (decisão do produto; ver [`regras-negocio.md`](regras-negocio.md#12-decisões-pendentes)) |

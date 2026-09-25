@@ -1,6 +1,6 @@
-# OrbitWeb — Histórico das fases 02 a 09
+# OrbitWeb — Histórico das fases 02 a 10
 
-> **Registro histórico.** Este documento acompanhou as fases 02 a 09 e guarda as decisões tomadas
+> **Registro histórico.** Este documento acompanhou as fases 02 a 10 e guarda as decisões tomadas
 > em cada uma (D1–D5, F5.x, F7-x, F8-x, auditoria da Fase 09). Ele descreve planos e estados
 > intermediários que **podem divergir do código atual**: itens como `ProvedorConexao`,
 > `PaletaComandos`, `docker/` e `API_CONTRACT.md` foram planejados e não existem. O
@@ -1762,3 +1762,59 @@ Linear); o cabeçalho do Calendário quebra em duas linhas no celular (correçã
    12 meses à frente), e só "Academia", três vezes por semana, soma mais de 150 tarefas "Baixa". Sugestão:
    contar só até o fim da próxima semana, ou contar cada série uma vez.
 
+---
+
+## 22. Configurações (Fase 10)
+
+A tela provisória de `/configuracoes` deu lugar à tela real, com três seções: Aparência, Pomodoro e
+Categorias. As regras vigentes estão em [`regras-negocio.md`](regras-negocio.md) (C4, C5, C10 a C12
+e CA1 a CA6) e o contrato em [`api-contrato.md`](api-contrato.md#6-categorias).
+
+### Decisões desta fase
+
+| # | Pergunta | Decisão |
+|---|---|---|
+| F10-1 | Excluir uma categoria usada em tarefas | Exclui, e as tarefas ficam sem categoria (como A8 nas atividades) |
+| F10-2 | Regras do nome da categoria | As mesmas das atividades: obrigatório, até 40 caracteres, único sem diferenciar maiúsculas |
+| F10-3 | Contrato com o backend | `POST /categorias`, `PUT /categorias/{id}` e `DELETE /categorias/{id}` documentados e atendidos pelo simulador |
+| F10-4 | Organização da página | Uma página só, com as três seções empilhadas e índice lateral fixo no desktop (some abaixo de 900px) |
+| F10-5 | Como as mudanças do Pomodoro são salvas | Na hora, com "Salvo" discreto, como o tema |
+| F10-6 | Limites do Pomodoro | Foco de 5 a 90 min, pausa curta de 1 a 30, pausa longa de 5 a 60 e de 2 a 8 focos |
+| F10-7 | Sessão em andamento | Continua com as durações com que começou; as novas valem a partir da próxima sessão, e a tela avisa |
+| F10-8 | Atividades de estudo | Continuam em Estudos; Configurações só aponta para lá |
+
+Sugestões aprovadas:
+
+- **S1** — `quantidadeTarefas` no `CategoriaDTO`, mostrada na lista e no diálogo de exclusão.
+- **S2** — som opcional ao fim de cada fase, gerado com a Web Audio API (sem arquivo de áudio).
+- **S3** — opção de começar a pausa sozinha ao fim do foco.
+
+### Composição
+
+- **Aparência:** três cartões de rádio (Claro, Escuro, Automático) com uma miniatura da interface
+  em cada tema. O Automático mostra as duas metades e diz qual tema o aparelho está usando agora.
+- **Pomodoro:** quatro campos numéricos, uma linha proporcional de "um ciclo completo" (focos,
+  pausas curtas e pausa longa, com o total de estudo e o tempo total), os interruptores "Começar a
+  pausa sozinha" e "Tocar um som ao fim de cada fase" (com "Ouvir o som") e "Restaurar padrão".
+  Campo vazio mostra erro e não é salvo; valor fora do limite é trazido para o limite, com um aviso
+  embaixo do campo (nova variante `aviso` do `EstruturaCampo`, usada pelo `CampoNumero` via
+  `aoAjustarAoLimite`).
+- **Categorias:** lista com cor, nome e quantidade de tarefas; "Nova categoria" e editar abrem o
+  `FormularioCategoria` (modal, com "Excluir" no rodapé, no mesmo padrão das atividades); estados
+  de carregamento, vazio e erro.
+
+### Implementação
+
+- `regras/preferenciasPomodoro.ts` lê, valida e limita as preferências; `regras/validacaoCategoria.ts`
+  valida categorias. As duas têm testes.
+- `ProvedorCronometro` guarda as preferências (`orbit:pomodoro`, sincronizadas entre abas), inicia
+  a sessão com as durações configuradas e, com a pausa automática ligada, começa a pausa no instante
+  exato do fim do foco (`instanteFimDaFase` em `regras/cronometro.ts`), inclusive ao reabrir a página.
+- `utilitarios/som.ts` gera o aviso sonoro. Os navegadores só liberam áudio depois de uma interação
+  com a página, então o provedor prepara o áudio no primeiro clique ou tecla quando o som está ligado.
+- `ProvedorTema` passou a expor `temaDoSistema`, usado na descrição do tema Automático.
+- Ao entrar na página, o índice desliza da esquerda, as seções sobem em cascata e a linha do ciclo
+  do Pomodoro se desenha trecho a trecho, tudo em menos de 1 s e desligado com
+  `prefers-reduced-motion`.
+- `paginasProvisorias.tsx` e `PaginaProvisoria.tsx` foram removidos: Configurações era a última
+  tela provisória.

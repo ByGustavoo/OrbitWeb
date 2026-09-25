@@ -19,3 +19,4 @@ export const NOME_VIAJA_COM_LOGO_NA_ENTRADA = false;
 
 export const CHAVE_SESSAO_ESTUDO = `${PREFIXO_ARMAZENAMENTO}cronometro:sessao`;
 export const CHAVE_PREFERENCIAS_CRONOMETRO = `${PREFIXO_ARMAZENAMENTO}cronometro:preferencias`;
+export const CHAVE_PREFERENCIAS_POMODORO = `${PREFIXO_ARMAZENAMENTO}pomodoro`;

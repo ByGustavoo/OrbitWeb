@@ -12,9 +12,16 @@ import estilos from './CampoNumero.module.css';
 const ESPERA_ANTES_DE_REPETIR_MS = 400;
 const INTERVALO_REPETICAO_MS = 70;
 
+export interface AjusteAoLimite {
+  digitado: number;
+  ajustado: number;
+}
+
 export interface CampoNumeroProps extends PropriedadesMensagensCampo {
   valor: number | null;
   aoMudar: (valor: number | null) => void;
+  aoAjustarAoLimite?: (ajuste: AjusteAoLimite) => void;
+  aviso?: string;
   minimo?: number;
   maximo?: number;
   passo?: number;
@@ -43,11 +50,13 @@ export function CampoNumero({
   rotulo,
   dica,
   erro,
+  aviso,
   sucesso,
   obrigatorio,
   className,
   valor,
   aoMudar,
+  aoAjustarAoLimite,
   minimo = -Infinity,
   maximo = Infinity,
   passo = 1,
@@ -114,6 +123,9 @@ export function CampoNumero({
     const final = numero === null ? null : limitar(numero);
     aoMudar(final);
     setTexto(formatar(final, casasDecimais));
+    if (numero !== null && final !== null && (numero < minimo || numero > maximo)) {
+      aoAjustarAoLimite?.({ digitado: numero, ajustado: final });
+    }
   };
 
   const aoTeclar = (evento: KeyboardEvent<HTMLInputElement>) => {
@@ -145,6 +157,7 @@ export function CampoNumero({
       rotulo={rotulo}
       dica={dica}
       erro={erro}
+      aviso={aviso}
       sucesso={sucesso}
       obrigatorio={obrigatorio}
       className={className}

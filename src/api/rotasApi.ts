@@ -8,6 +8,7 @@ export const rotasApi = {
   },
   categorias: {
     lista: '/categorias',
+    porId: (id: number) => `/categorias/${id}`,
   },
   atividades: {
     lista: '/atividades',

@@ -6,6 +6,7 @@ export { BotaoIcone } from './BotaoIcone';
 export { CaixaSelecao } from './CaixaSelecao';
 export { CampoBusca } from './CampoBusca';
 export { CampoNumero } from './CampoNumero';
+export type { AjusteAoLimite } from './CampoNumero';
 export { CampoSelecao } from './CampoSelecao';
 export type { OpcaoSelecao } from './CampoSelecao';
 export { CampoTexto } from './CampoTexto';

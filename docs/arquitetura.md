@@ -8,7 +8,7 @@ dados simulados pela API real (OrbitAPI, em Java + Spring Boot).
 | [`api-contrato.md`](api-contrato.md) | Endpoints, formatos, erros |
 | [`backend.md`](backend.md) | Guia de implementação da API |
 | [`regras-negocio.md`](regras-negocio.md) | Regras funcionais |
-| [`historico-fases.md`](historico-fases.md) | Registro das decisões tomadas nas fases 02 a 09 |
+| [`historico-fases.md`](historico-fases.md) | Registro das decisões tomadas nas fases 02 a 10 |
 
 ---
 
@@ -107,6 +107,7 @@ OrbitWeb/
     │   ├── historico/      BarraFiltrosHistorico, LinhaDoTempoHistorico, DetalhesRegistroHistorico
     │   ├── revisao/        NavegacaoSemana, ResumoSemana, FatosSemana, BarrasDaSemana,
     │   │                   EstudosDaSemana, TarefasDaSemana, ProximaSemana, NotaDaSemana
+    │   ├── configuracoes/  SecaoAparencia, SecaoPomodoro, SecaoCategorias, FormularioCategoria
     │   ├── dashboard/      ResumoIndicadores, IndicadorNumerico, TarefasDeHoje,
     │   │                   ProximasAtividades, CargaSemana, PrioridadesEmAberto,
     │   │                   PainelProdutividade, ListaEventosRecentes, MapaCalorEstudo
@@ -134,7 +135,7 @@ porque o React exige. Importações usam o apelido `@/` para `src/`.
 | `/historico` | `PaginaHistorico` | Linha do tempo de tarefas e estudos | `servicoHistorico`, `servicoSessoes`, `servicoAtividades` |
 | `/estudos/historico` | — | Redireciona para `/historico` filtrado em Estudos | — |
 | `/revisao` | `PaginaRevisaoSemanal` | Revisão da semana e nota | `servicoRevisaoSemanal` |
-| `/configuracoes` | `PaginaConfiguracoes` | **Provisória** ("Esta tela ainda está em construção") | — |
+| `/configuracoes` | `PaginaConfiguracoes` | Aparência (tema), Pomodoro (durações, início automático da pausa, som) e cadastro de categorias; índice lateral; `secao=aparencia\|pomodoro\|categorias` leva direto à seção | `servicoCategorias`; tema e Pomodoro no `localStorage` |
 | `/componentes` | `PaginaComponentes` | Catálogo do design system, **só em desenvolvimento** | — |
 | outras | `PaginaNaoEncontrada` | Página não encontrada | — |
 
@@ -148,7 +149,7 @@ endereços mostra só o caminho, o botão Voltar funciona e recarregar mantém a
   horário, seleção), caixas, interruptor, grupos de opções, selos, painéis, modal empilhável,
   diálogo de confirmação, notificações com "Desfazer", esqueletos, estados vazio e de erro,
   paginação, barra de progresso. Não conhecem tarefas nem estudos.
-- **Por domínio** (`tarefas/`, `calendario/`, `estudos/`, `historico/`, `revisao/`, `dashboard/`)
+- **Por domínio** (`tarefas/`, `calendario/`, `estudos/`, `historico/`, `revisao/`, `dashboard/`, `configuracoes/`)
   — desenham um pedaço de uma tela a partir de DTOs recebidos por props e devolvem as ações por
   *callbacks* (`aoConcluir`, `aoEnviar`…).
 - **Exceções conscientes:** `FormularioTarefa` carrega as listas de categorias e atividades, e
@@ -174,6 +175,9 @@ desmontada.
 | | `reagendarTarefas(reagendamento)` | `POST /tarefas/reagendamentos` | `TarefaDTO[]` |
 | | `buscarResumoCalendario(periodo)` | `GET /tarefas/resumo-calendario` | `DiaCalendarioDTO[]` |
 | `servicoCategorias` | `buscarCategorias()` | `GET /categorias` | `CategoriaDTO[]` |
+| `servicoCategorias` | `criarCategoria(dados)` | `POST /categorias` | `CategoriaDTO` |
+| `servicoCategorias` | `atualizarCategoria(id, dados)` | `PUT /categorias/{id}` | `CategoriaDTO` |
+| `servicoCategorias` | `excluirCategoria(id)` | `DELETE /categorias/{id}` | — |
 | `servicoAtividades` | `buscarAtividades()` | `GET /atividades` | `AtividadeEstudoDTO[]` |
 | | `criarAtividade(dados)` | `POST /atividades` | `AtividadeEstudoDTO` |
 | | `atualizarAtividade(id, dados)` | `PUT /atividades/{id}` | `AtividadeEstudoDTO` |
@@ -211,7 +215,7 @@ O cronômetro **não** é um serviço: é regra (`regras/cronometro.ts`) mais es
 | `historico.ts` | `RegistroHistoricoDTO`, `DetalheHistoricoDTO`, filtros e períodos |
 | `revisao.ts` | `RevisaoSemanalDTO` e partes; limite da nota |
 | `painel.ts` | `ResumoDashboardDTO`, `EventoRecenteDTO`, `SequenciaDTO` |
-| `comum.ts` | `PaginaDTO`, `ErrorResponseDTO`, `ErroCampoDTO`, `CategoriaDTO` |
+| `comum.ts` | `PaginaDTO`, `ErrorResponseDTO`, `ErroCampoDTO`, `CategoriaDTO`, `CategoriaEnvioDTO` |
 | `rotulos.ts` | Texto em português de cada valor de enum |
 | `cores.ts` | Tokens CSS de cada cor da paleta e de cada prioridade |
 

@@ -178,6 +178,13 @@ function mudarFase(sessao: SessaoEmAndamento, agora: Date, pularPausa: boolean):
   };
 }
 
+export function instanteFimDaFase(sessao: SessaoEmAndamento): Date | null {
+  const pomodoro = sessao.pomodoro;
+  if (!pomodoro || sessao.estado !== 'RODANDO' || !sessao.retomadaEm || sessao.encerradaEm) return null;
+  const restanteMs = duracaoDaFase(pomodoro.fase, pomodoro.duracoes) * 1000 - pomodoro.msFaseAcumulados;
+  return new Date(new Date(sessao.retomadaEm).getTime() + Math.max(0, restanteMs));
+}
+
 export function iniciarProximaFase(sessao: SessaoEmAndamento, agora: Date): SessaoEmAndamento {
   return mudarFase(sessao, agora, false);
 }

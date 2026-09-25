@@ -1,0 +1,130 @@
+.estrutura {
+  --atraso-entrada: 80ms;
+  --passo-entrada: 90ms;
+
+  display: grid;
+  grid-template-columns: 12rem minmax(0, 52rem);
+  align-items: start;
+  gap: var(--espaco-8);
+}
+
+.indice {
+  position: sticky;
+  top: calc(var(--altura-cabecalho) + var(--espaco-6));
+}
+
+.listaIndice > li {
+  animation: entrarIndice var(--duracao-lenta) var(--curva-saida) backwards;
+  animation-delay: calc(var(--atraso-entrada) + var(--ordem, 0) * 50ms);
+}
+
+.listaIndice > li:nth-child(2) {
+  --ordem: 1;
+}
+
+.listaIndice > li:nth-child(3) {
+  --ordem: 2;
+}
+
+.listaIndice {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.itemIndice {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-3);
+  min-height: var(--altura-item-menu);
+  padding-inline: var(--espaco-3);
+  border-radius: var(--raio-md);
+  color: var(--texto-secundario);
+  font-size: var(--tamanho-sm);
+  font-weight: var(--peso-medio);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida);
+}
+
+.itemIndice svg {
+  flex-shrink: 0;
+  color: var(--texto-terciario);
+  transition: color var(--duracao-rapida) var(--curva-saida);
+}
+
+.itemIndice:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+}
+
+.itemAtivo {
+  background-color: var(--destaque-suave);
+  color: var(--destaque);
+}
+
+.itemAtivo svg {
+  color: var(--destaque);
+}
+
+.secoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-6);
+  min-width: 0;
+}
+
+.secoes > * {
+  animation: entrarSecao var(--duracao-expressiva) var(--curva-saida) backwards;
+  animation-delay: calc(var(--atraso-entrada) + var(--ordem, 0) * var(--passo-entrada));
+}
+
+.secoes > :nth-child(2) {
+  --ordem: 1;
+}
+
+.secoes > :nth-child(3) {
+  --ordem: 2;
+}
+
+@keyframes entrarIndice {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+@keyframes entrarSecao {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@media (hover: hover) {
+  .itemIndice:not(.itemAtivo):hover {
+    background-color: var(--superficie-suave);
+    color: var(--texto);
+  }
+}
+
+@media (max-width: 1279px) {
+  .estrutura {
+    grid-template-columns: 10.5rem minmax(0, 1fr);
+    gap: var(--espaco-6);
+  }
+}
+
+@media (max-width: 899px) {
+  .estrutura {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .indice {
+    display: none;
+  }
+
+  .secoes {
+    gap: var(--espaco-5);
+  }
+}

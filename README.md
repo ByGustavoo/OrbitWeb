@@ -82,6 +82,8 @@ As decisões ainda abertas estão na seção **Pendências**, no fim deste arqui
   
 * **Revisão semanal**: resumo comparado à semana anterior, destaques e pontos de atenção, tarefas concluídas e tempo de estudo por dia, estudos e metas por atividade, situação das tarefas planejadas, o que continua em aberto, próxima semana e nota da semana.
   
+* **Configurações**: tema (claro, escuro ou automático), durações do Pomodoro com início automático da pausa e som ao fim de cada fase, e cadastro de categorias com a quantidade de tarefas de cada uma.
+  
 * Tema claro, escuro e sistema; menu lateral recolhível que vira gaveta abaixo de 1100px; tela de boas-vindas; design system próprio com catálogo em `/componentes` (só em desenvolvimento).
   
 * Estados de carregamento, vazio, sem resultados e erro em todas as regiões de dados.
@@ -89,7 +91,6 @@ As decisões ainda abertas estão na seção **Pendências**, no fim deste arqui
 <br>
 
 🔹 **Planejadas** (fora desta versão)
-* **Configurações** (tema, durações do Pomodoro e cadastro de categorias): a tela existe como provisória.
 * **Paleta de comandos** (`Ctrl+K`).
 
 
@@ -238,6 +239,7 @@ src/
 │   ├── estudos/       Cronometro, atividades, sessões, métricas, metas
 │   ├── historico/     filtros, linha do tempo, detalhes do registro
 │   ├── revisao/       navegação, resumo, fatos, gráficos, estudos, tarefas, próxima semana, nota
+│   ├── configuracoes/ seções Aparência, Pomodoro e Categorias, formulário de categoria
 │   ├── graficos/      GraficoBarras (Recharts)
 │   ├── boasVindas/    tela de boas-vindas
 │   └── comum/         MarcaOrbit
@@ -371,7 +373,7 @@ orbitSimulacao.latencia(8000)              // latência fixa, para ver os esquel
 | [`docs/api-contrato.md`](docs/api-contrato.md) | Contrato de todos os endpoints |
 | [`docs/backend.md`](docs/backend.md) | Guia de implementação do OrbitAPI |
 | [`docs/regras-negocio.md`](docs/regras-negocio.md) | Regras funcionais, com exemplos |
-| [`docs/historico-fases.md`](docs/historico-fases.md) | Registro das decisões das fases 02 a 09 |
+| [`docs/historico-fases.md`](docs/historico-fases.md) | Registro das decisões das fases 02 a 10 |
 
 
 <br>
@@ -383,7 +385,7 @@ orbitSimulacao.latencia(8000)              // latência fixa, para ver os esquel
 
 * 🧭 **Duas decisões de produto**: a regra de "não realizada" ao mover uma recorrente para hoje, e a contagem de ocorrências futuras em "Em aberto por prioridade" ([`docs/regras-negocio.md`](docs/regras-negocio.md#12-decisões-pendentes)).
 
-* ⚙️ **Configurações** e **paleta de comandos**, planejadas para uma fase futura.
+* ⌨️ **Paleta de comandos**, planejada para uma fase futura.
 
 * 🔐 Login e múltiplos usuários, previstos para o futuro: todas as requisições já passam por um ponto único para receber o token.
 
