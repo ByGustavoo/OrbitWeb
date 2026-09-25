@@ -41,6 +41,12 @@
   }
 }
 
+@media (min-width: 1100px) {
+  .conteudo {
+    border-left: 1px solid var(--borda);
+  }
+}
+
 @media (max-width: 1099px) {
   .casca,
   .cascaRecolhida {

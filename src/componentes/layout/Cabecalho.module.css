@@ -80,6 +80,31 @@
   display: none;
 }
 
+@media (min-width: 1100px) {
+  .cabecalho {
+    --raio-canto-conteudo: var(--raio-xl);
+    background-color: var(--superficie);
+    backdrop-filter: none;
+  }
+
+  .cabecalho::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: var(--raio-canto-conteudo);
+    height: var(--raio-canto-conteudo);
+    background: radial-gradient(
+      circle at 100% 100%,
+      transparent calc(var(--raio-canto-conteudo) - 1.5px),
+      var(--borda) calc(var(--raio-canto-conteudo) - 1px),
+      var(--borda) calc(var(--raio-canto-conteudo) - 0.5px),
+      var(--superficie) var(--raio-canto-conteudo)
+    );
+    pointer-events: none;
+  }
+}
+
 @media (max-width: 560px) {
   .separador,
   .diaMes {
