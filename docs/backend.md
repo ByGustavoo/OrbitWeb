@@ -26,8 +26,10 @@ Onde uma decisão ainda é do backend, o texto diz **A DEFINIR NO BACKEND**.
   (tarefa, série, categoria, atividade, sessão, evento, nota) precisarão pertencer a um usuário.
   Modelagem e momento: **A DEFINIR NO BACKEND**.
 - 27 endpoints, listados em [`api-contrato.md` › Índice](api-contrato.md#3-índice-de-endpoints).
-- Banco de dados, porta, *context-path* e versão da URL: **A DEFINIR NO BACKEND**. O front só
-  precisa da URL base (`VITE_URL_API`).
+- Banco de dados: PostgreSQL, schema `orbitapi`, migrations com Flyway.
+- URL base: `http://localhost:9018/OrbitAPI/v1` em dev e porta `9028` em prod
+  ([`api-contrato.md` › 1.1](api-contrato.md#11-url-base)). O front só precisa dela em
+  `VITE_URL_API`.
 
 ---
 
@@ -136,7 +138,8 @@ começa com "Estudos", "Trabalho", "Casa e família" e "Saúde".
 
 **Regras:** [A1 a A8](regras-negocio.md#71-atividades). A unicidade vale só entre as ativas; por
 isso não é uma restrição simples de banco (duas arquivadas, ou uma arquivada e uma ativa, podem ter
-o mesmo nome).
+o mesmo nome). No OrbitAPI ela é um índice único parcial do PostgreSQL,
+`(lower(nome)) WHERE NOT arquivada`, além da checagem no serviço que dá a mensagem do `409`.
 
 ### 2.6 `SessaoEstudo`
 
@@ -550,7 +553,9 @@ requisição. Sugestão de implementação:
    - limite de uma tarefa: `ZonedDateTime.of(data, horarioFim, fuso)` ou
      `data.plusDays(1).atStartOfDay(fuso)`.
 
-Cabeçalho ausente ou inválido: **A DEFINIR NO BACKEND** (sugestão: `America/Sao_Paulo`).
+Cabeçalho ausente ou inválido: `America/Sao_Paulo`, sem erro. No OrbitAPI, o
+`FusoHorarioService` lê o cabeçalho da requisição atual e devolve o `ZoneId`, e o `Clock` é um bean
+(`ClockConfig`, em UTC).
 
 **Semana:** domingo a sábado. Para achar o domingo:
 `data.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))`.
@@ -599,13 +604,22 @@ Onde o prazo é usado como **filtro ou contagem** (`GET /tarefas?prazo=ATRASADA`
 Dashboard e da Revisão, marcadores do calendário, não realizadas no Histórico), ele precisa ser
 calculado na consulta. Em SQL, a regra de "mais recente da série" cabe numa função de janela
 (`ROW_NUMBER() OVER (PARTITION BY serie_id ORDER BY data DESC, horario_inicio DESC)`) ou num
-`NOT EXISTS` com uma ocorrência atrasada posterior da mesma série. Estratégia exata:
-**A DEFINIR NO BACKEND**.
+`NOT EXISTS` com uma ocorrência atrasada posterior da mesma série. No OrbitAPI, a lista usa uma
+consulta nativa (`TarefaConsultaRepositoryImpl`) com três CTEs: o limite no fuso da requisição
+(`AT TIME ZONE`), o prazo isolado e o `MAX(...) OVER (PARTITION BY serie_id)` da data e horário das
+atrasadas, que rebaixa as anteriores a `NAO_REALIZADA`. A leitura de uma tarefa só usa a mesma
+regra em Java (`PrazoService`), consultando as ocorrências em aberto da série até hoje.
 
 ### 8.3 Recorrência
 
 - Gerar as ocorrências de uma vez ao criar a série (janela de 12 meses) e **estender** a janela
-  quando faltarem menos de 3 meses. A extensão pode acontecer numa tarefa agendada ou na primeira
+  quando faltarem menos de 3 meses. No OrbitAPI, as leituras de tarefas chamam
+  `SerieRecorrenciaService.estender` antes de ler. A consulta pega só as séries com `geradaAte` até
+  hoje + 3 meses e ainda antes do término, então quase sempre volta vazia: na prática, a extensão
+  acontece na primeira leitura depois que uma série entra nesse prazo. As ocorrências novas copiam
+  a última ocorrência da série (e não a primeira), vão de `geradaAte + 1` até hoje + 12 meses e
+  recebem `criadoEm` atual; uma série sem nenhuma ocorrência é apagada. A consulta trava as séries
+  com `SELECT ... FOR UPDATE`, para leituras simultâneas não gerarem a mesma ocorrência duas vezes. A extensão pode acontecer numa tarefa agendada ou na primeira
   leitura do dia; o simulador estende a cada requisição. Estratégia: **A DEFINIR NO BACKEND**.
 - Edição e exclusão com escopo: regras R11 a R14 em
   [`regras-negocio.md`](regras-negocio.md#4-recorrência) e passo a passo em
@@ -658,8 +672,8 @@ public record ErroCampoDTO(String campo, String mensagem) {}
 | `timestamp` | Não | Ignora |
 
 É a mesma estrutura do PrismaAPI (`br.com.prismaapi.exceptions.dto.ErrorResponseDTO`, com
-`MethodArgumentNotValidResponseDTO` no lugar de `ErroCampoDTO`). Incluir `errors` e `timestamp` no
-OrbitAPI é **A DEFINIR NO BACKEND**; `errors` é recomendado.
+`MethodArgumentNotValidResponseDTO` no lugar de `ErroCampoDTO`). O OrbitAPI inclui `errors` nas
+respostas de validação e `timestamp` em todas as de erro.
 
 ### 9.1 Exceções e status
 
@@ -675,9 +689,8 @@ OrbitAPI é **A DEFINIR NO BACKEND**; `errors` é recomendado.
 | Excluir atividade com sessões; desarquivar com nome em uso | `409` | exceção de conflito da aplicação | Não |
 | Erro inesperado | `500` | `Exception` | Não |
 
-Valores de `type`, `title` e `detail` por exceção: **A DEFINIR NO BACKEND**. Os tipos genéricos
-que o PrismaAPI usa estão em [`api-contrato.md` › 2.5](api-contrato.md#25-tipos-de-erro-type), e
-os `detail` sugeridos, em cada endpoint do contrato.
+Os tipos genéricos estão definidos em [`api-contrato.md` › 2.5](api-contrato.md#25-tipos-de-erro-type).
+Os de cada regra de negócio são registrados na seção do endpoint, junto com o `detail`.
 
 ### 9.2 Boas práticas que o front assume
 
@@ -799,12 +812,12 @@ derrubar o resto da página.
 
 | # | Assunto | Status |
 |---|---|---|
-| B1 | URL base (porta, *context-path*, versão) | A DEFINIR NO BACKEND |
-| B2 | Banco de dados | A DEFINIR NO BACKEND |
-| B3 | `type`, `title` e `detail` de cada erro; inclusão de `errors` e `timestamp` | A DEFINIR NO BACKEND |
-| B4 | Estratégia de cálculo do prazo em consultas e da linha do tempo do Histórico | A DEFINIR NO BACKEND |
-| B5 | Momento da extensão das séries recorrentes | A DEFINIR NO BACKEND |
+| B1 | URL base (porta, *context-path*, versão) | Resolvida: `/OrbitAPI/v1`, porta 9018 (dev) e 9028 (prod) |
+| B2 | Banco de dados | Resolvida: PostgreSQL + Flyway, schema `orbitapi` |
+| B3 | `type`, `title` e `detail` de cada erro; inclusão de `errors` e `timestamp` | Resolvida para os genéricos, `errors` e `timestamp`; os de cada regra entram com o endpoint |
+| B4 | Estratégia de cálculo do prazo em consultas e da linha do tempo do Histórico | Resolvida: consulta nativa com o prazo no banco (8.2); o Histórico une eventos, sessões e não realizadas com `UNION ALL` na mesma consulta |
+| B5 | Momento da extensão das séries recorrentes | Resolvida: nas leituras de tarefas, antes de ler (8.3) |
 | B6 | Origem das categorias antes da tela de Configurações | Resolvida: cadastro pela tela de Configurações; dados iniciais opcionais |
-| B7 | Fuso padrão sem `X-Fuso-Horario` | A DEFINIR NO BACKEND |
+| B7 | Fuso padrão sem `X-Fuso-Horario` | Resolvida: `America/Sao_Paulo`, também para valor inválido |
 | B8 | Usuários e autenticação | A DEFINIR (fase futura) |
 | B9 | Decisões de produto pendentes (R4 × "Mover para hoje"; recorrentes futuras em "Em aberto por prioridade") | A DEFINIR (dono do produto) — ver [`regras-negocio.md`](regras-negocio.md#12-decisões-pendentes) |

@@ -49,11 +49,15 @@ Todas as rotas deste documento são relativas à **URL base da API**, que o fron
 
 | Item | Valor |
 |---|---|
-| URL base usada hoje no desenvolvimento | `http://localhost:8080/api` (padrão do front) |
-| Porta, *context-path* e prefixo de versão do OrbitAPI | **A DEFINIR NO BACKEND** (o PrismaAPI, do mesmo autor, usa `/PrismaAPI/v1`) |
+| URL base do OrbitAPI em desenvolvimento (perfil `dev`) | `http://localhost:9018/OrbitAPI/v1` |
+| URL base do OrbitAPI em produção (perfil `prod`) | porta `9028`, mesmo caminho `/OrbitAPI/v1` |
+| Padrão do front quando `VITE_URL_API` não é definida | `http://localhost:8080/api` — aponte para a URL do OrbitAPI |
+
+O caminho segue o PrismaAPI, do mesmo autor: *context-path* com o nome da aplicação (`/OrbitAPI`)
+e prefixo de versão `/v1`.
 
 Exemplo: `GET /tarefas` significa `GET {URL base}/tarefas`, ou seja,
-`GET http://localhost:8080/api/tarefas` com a configuração atual.
+`GET http://localhost:9018/OrbitAPI/v1/tarefas` com o OrbitAPI em desenvolvimento.
 
 ### 1.2 Cabeçalhos
 
@@ -75,8 +79,15 @@ permitir, para a origem do front (`http://localhost:5173` no desenvolvimento):
 - métodos `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`;
 - cabeçalhos `Content-Type`, `Accept` e `X-Fuso-Horario`.
 
-Se `X-Fuso-Horario` faltar ou for inválido: **A DEFINIR NO BACKEND**. Sugestão:
-`America/Sao_Paulo`, o mesmo valor que o front usa quando o navegador não informa o fuso.
+O OrbitAPI faz isso em `CorsConfig`. As origens vêm de `orbitapi.cors.origens-permitidas`: no perfil
+`dev`, qualquer porta de `localhost` e `127.0.0.1` (o Vite troca de porta quando a 5173 está
+ocupada); nos demais perfis, `http://localhost:5173`.
+
+Se `X-Fuso-Horario` faltar ou for inválido, o OrbitAPI usa `America/Sao_Paulo`, o mesmo valor
+que o front usa quando o navegador não informa o fuso. Um valor inválido não gera erro: a API
+registra um aviso no log e segue com o padrão. Só identificadores IANA de região são aceitos
+(`America/Sao_Paulo`, `Asia/Tokyo`, `UTC`); deslocamentos fixos como `-03:00` caem no padrão, porque
+o PostgreSQL, onde parte do prazo é calculada, lê o sinal deles ao contrário.
 
 ### 1.3 Formato do corpo
 
@@ -145,8 +156,9 @@ Resposta (`PaginaDTO<T>`):
 | `totalItens` | inteiro | Total de itens que atendem aos filtros |
 | `totalPaginas` | inteiro | `ceil(totalItens / tamanho)`; `0` quando não há itens |
 
-`tamanho` fora de 1..100: o simulador ajusta para o limite mais próximo. No backend, ajustar ou
-responder `400` é **A DEFINIR NO BACKEND**; o front nunca envia fora do intervalo.
+`tamanho` fora de 1..100: o simulador e o OrbitAPI ajustam para o limite mais próximo, e uma
+`pagina` negativa vira `0`. A resposta traz em `pagina` e `tamanho` os valores usados. O front nunca
+envia fora do intervalo.
 
 A ordenação é escolhida pelo parâmetro `ordenacao` (só em `GET /tarefas`), com valores do enum
 `OrdenacaoTarefas`. As demais listas têm ordem fixa, descrita em cada rota.
@@ -187,13 +199,15 @@ Toda resposta com status `4xx` ou `5xx` traz no corpo um `ErrorResponseDTO`:
 {
   "status": 400,
   "title": "Requisição Inválida!",
-  "instance": "/PrismaAPI/tarefas",
-  "type": "/PrismaAPI/problems/unreadable-message",
-  "detail": "O corpo da requisição está malformado ou tem um valor em formato inválido!"
+  "instance": "/OrbitAPI/v1/tarefas",
+  "type": "/OrbitAPI/problems/unreadable-message",
+  "detail": "O corpo da requisição está malformado ou tem um valor em formato inválido!",
+  "timestamp": "24/09/2026 - 19:30:00"
 }
 ```
 
-*(Exemplo de estrutura; os valores são do PrismaAPI.)*
+Campos sem valor (`errors`, quando não há erro de campo) são omitidos do corpo de erro. Nas
+respostas de sucesso, ao contrário, campos sem valor saem como `null` (1.3).
 
 | Campo | Tipo | Obrigatório | Significado | Como o front usa |
 |---|---|---|---|---|
@@ -205,17 +219,18 @@ Toda resposta com status `4xx` ou `5xx` traz no corpo um `ErrorResponseDTO`:
 
 ### 2.2 Campos complementares
 
-O `ErrorResponseDTO` do PrismaAPI, que serve de modelo, tem mais dois campos:
+O OrbitAPI traz mais dois campos, como o PrismaAPI:
 
 | Campo | Tipo | Como o front usa |
 |---|---|---|
 | `errors` | lista de `{ "campo": texto, "mensagem": texto }` ou ausente | **Opcional.** Se vier, cada mensagem aparece junto do campo do formulário com o mesmo nome. Se não vier, o front mostra `detail` num aviso no topo do formulário |
-| `timestamp` | texto (`dd/MM/yyyy - HH:mm:ss` no PrismaAPI) | Ignorado |
+| `timestamp` | texto (`dd/MM/yyyy - HH:mm:ss`) | Ignorado |
 
-Se o OrbitAPI vai incluir `errors` nas respostas de validação: **A DEFINIR NO BACKEND**
-(recomendado, porque permite marcar o campo certo no formulário).
+**Decidido:** o OrbitAPI inclui `errors` nas respostas de validação (Bean Validation e regras de
+validação do serviço) e `timestamp` em todas as respostas de erro. Quando um campo tem mais de um
+erro, vem só um: o de campo obrigatório, se houver, ou o primeiro.
 
-Se incluir, `campo` deve ser o nome do campo no DTO de entrada (`titulo`, `horarioFim`,
+`campo` é o nome do campo no DTO de entrada (`titulo`, `horarioFim`,
 `categoriaId`…). Campos aninhados podem vir com caminho (`recorrencia.dataFim`): o front também
 procura pelo último trecho (`dataFim`). Os nomes que cada formulário reconhece estão nas seções de
 cada endpoint.
@@ -258,32 +273,36 @@ Consequências para o backend:
 | `409` | Conflito com dados gravados (nome de atividade repetido; atividade com sessões) |
 | `500` | Erro inesperado |
 
-`422` é tratado pelo front como validação, mas nenhuma rota deste contrato exige usá-lo. Usar `422`
-em vez de `400` para regras de negócio é **A DEFINIR NO BACKEND**; o front aceita os dois.
+`422` é tratado pelo front como validação, mas nenhuma rota deste contrato exige usá-lo. O OrbitAPI
+responde `400` também para as regras de negócio (C4) e não usa `422`.
 
 ### 2.5 Tipos de erro (`type`)
 
-Os valores definitivos de `type` e `title` são **A DEFINIR NO BACKEND**. O front não compara `type`
-com nenhum valor hoje; ele decide pelo `status`.
+O front não compara `type` com nenhum valor hoje; ele decide pelo `status`.
 
-Como referência, estes são os tipos genéricos que o PrismaAPI já usa, com o prefixo trocado por
-`{base}` (o *context-path* do OrbitAPI, também a definir):
+Os tipos genéricos do OrbitAPI, tratados em `GlobalExceptionHandler`, são estes:
 
-| `status` | `type` no PrismaAPI | Origem no Spring |
-|---|---|---|
-| 400 | `{base}/problems/validation-error` | `MethodArgumentNotValidException` (Bean Validation) |
-| 400 | `{base}/problems/unreadable-message` | `HttpMessageNotReadableException` (JSON malformado, enum inválido) |
-| 400 | `{base}/problems/invalid-parameters` | `MethodArgumentTypeMismatchException` (query param em formato inválido) |
-| 400 | `{base}/problems/invalid-request` | Exceção de regra de negócio da aplicação |
-| 404 | `{base}/problems/entity-not-found` | Registro não encontrado |
-| 404 | `{base}/problems/resource-not-found` | Rota inexistente (`NoResourceFoundException`) |
-| 405 | `{base}/problems/method-not-allowed` | Método não suportado |
-| 409 | `{base}/problems/data-integrity-violation` | `DataIntegrityViolationException` |
-| 500 | `{base}/problems/internal-server-error` | Qualquer exceção não tratada |
+| `status` | `type` | `title` | Origem no Spring |
+|---|---|---|---|
+| 400 | `/OrbitAPI/problems/validation-error` | `Erro de Validação!` | `MethodArgumentNotValidException` (Bean Validation); traz `errors` |
+| 400 | `/OrbitAPI/problems/unreadable-message` | `Requisição Inválida!` | `HttpMessageNotReadableException` (JSON malformado, enum inválido) |
+| 400 | `/OrbitAPI/problems/invalid-parameters` | `Parâmetros Inválidos!` | `MethodArgumentTypeMismatchException` (query param em formato inválido) |
+| 400 | `/OrbitAPI/problems/missing-parameter` | `Parâmetro Ausente!` | `MissingServletRequestParameterException` (query param obrigatório ausente); `detail` "Informe o parâmetro 'nome'!" |
+| 400 | `/OrbitAPI/problems/illegal-argument` | `Requisição Inválida!` | `IllegalArgumentException` |
+| 404 | `/OrbitAPI/problems/entity-not-found` | `Registro não encontrado!` | `EntityNotFoundException` |
+| 404 | `/OrbitAPI/problems/resource-not-found` | `Recurso não encontrado!` | Rota inexistente (`NoResourceFoundException`) |
+| 405 | `/OrbitAPI/problems/method-not-allowed` | `Método Não Permitido!` | Método não suportado |
+| 409 | `/OrbitAPI/problems/data-integrity-violation` | `Conflito de Dados!` | `DataIntegrityViolationException` |
+| 500 | `/OrbitAPI/problems/internal-server-error` | `Erro Interno no Servidor!` | Qualquer exceção não tratada |
+
+Cada regra de negócio ganha um `type` próprio (`/OrbitAPI/problems/<regra>`), registrado na seção
+do endpoint que a aplica, à medida que os endpoints são implementados.
+
+Os textos de `title` e `detail` terminam em `!`. Onde este contrato sugere um `detail` terminado em
+ponto ("Esta categoria não existe mais."), o OrbitAPI mantém a redação e troca só o ponto final.
 
 O simulador do front usa valores provisórios parecidos (`/api/problems/validation-error`,
 `/api/problems/entity-not-found`, `/api/problems/data-conflict`…), só para ter um corpo completo.
-Eles **não** são definitivos.
 
 ### 2.6 Exemplos
 
@@ -292,14 +311,15 @@ Validação com erros de campo (`POST /tarefas`):
 ```json
 {
   "status": 400,
-  "title": "A DEFINIR NO BACKEND",
-  "instance": "/api/tarefas",
-  "type": "A DEFINIR NO BACKEND",
-  "detail": "Revise os campos destacados e tente de novo.",
+  "title": "Erro de Validação!",
+  "instance": "/OrbitAPI/v1/tarefas",
+  "type": "/OrbitAPI/problems/validation-error",
+  "detail": "Revise os campos destacados e tente de novo!",
   "errors": [
-    { "campo": "titulo", "mensagem": "Informe um título para a tarefa." },
-    { "campo": "horarioFim", "mensagem": "O fim precisa ser depois do início (19:00)." }
-  ]
+    { "campo": "titulo", "mensagem": "Informe um título para a tarefa!" },
+    { "campo": "horarioFim", "mensagem": "O fim precisa ser depois do início (19:00)!" }
+  ],
+  "timestamp": "24/09/2026 - 21:45:53"
 }
 ```
 
@@ -308,10 +328,11 @@ Registro não encontrado (`PATCH /tarefas/15/situacao`):
 ```json
 {
   "status": 404,
-  "title": "A DEFINIR NO BACKEND",
-  "instance": "/api/tarefas/15/situacao",
-  "type": "A DEFINIR NO BACKEND",
-  "detail": "Esta tarefa não existe mais."
+  "title": "Tarefa não encontrada!",
+  "instance": "/OrbitAPI/v1/tarefas/15/situacao",
+  "type": "/OrbitAPI/problems/tarefa-nao-encontrada",
+  "detail": "Esta tarefa não existe mais!",
+  "timestamp": "24/09/2026 - 21:45:53"
 }
 ```
 
@@ -320,10 +341,11 @@ Conflito (`DELETE /atividades/3`):
 ```json
 {
   "status": 409,
-  "title": "A DEFINIR NO BACKEND",
-  "instance": "/api/atividades/3",
-  "type": "A DEFINIR NO BACKEND",
-  "detail": "Esta atividade tem sessões registradas. Arquive-a para manter o histórico."
+  "title": "Atividade com Sessões!",
+  "instance": "/OrbitAPI/v1/atividades/3",
+  "type": "/OrbitAPI/problems/atividade-com-sessoes",
+  "detail": "Esta atividade tem sessões registradas. Arquive-a para manter o histórico!",
+  "timestamp": "24/09/2026 - 21:45:53"
 }
 ```
 
@@ -639,7 +661,10 @@ Os filtros se combinam com **E**.
 | `400` | Parâmetro em formato inválido (data, enum, número) |
 | `500` | Erro inesperado |
 
-**Erros:** `ErrorResponseDTO`; `type`, `title` e `detail` **A DEFINIR NO BACKEND**.
+**Erros:** `ErrorResponseDTO`. No OrbitAPI, um parâmetro em formato inválido (data, enum desconhecido
+ou número) responde `400` com `type` `/OrbitAPI/problems/invalid-parameters`, `title` "Parâmetros
+Inválidos!" e `detail` "O parâmetro 'situacao' foi informado num formato inválido!", com o nome do
+parâmetro.
 
 **Regras de negócio:**
 
@@ -652,6 +677,19 @@ Os filtros se combinam com **E**.
    recente é `ATRASADA`; as anteriores são `NAO_REALIZADA`
    ([regra](regras-negocio.md#2-prazo-atrasada-e-não-realizada)).
 5. `totalItens` conta todos os itens filtrados, não só os da página.
+
+**No OrbitAPI:**
+
+- O prazo é calculado no PostgreSQL, numa consulta nativa com a mesma regra de `GET /tarefas/{id}`:
+  o limite de cada tarefa é interpretado no fuso de `X-Fuso-Horario` (`AT TIME ZONE`) e uma função
+  de janela por série marca como `NAO_REALIZADA` as atrasadas anteriores à mais recente. Filtro,
+  ordenação, contagem e paginação acontecem na mesma consulta.
+- `busca` compara com `titulo + " " + descricao` em minúsculas, como o simulador; `%` e `_` são
+  texto comum, não curingas. Acentos contam: "reuniao" não acha "Reunião".
+- Empates na ordenação terminam pelo `id` crescente (`DATA` e `PRIORIDADE`) ou decrescente
+  (`ATUALIZACAO`), para a paginação ser estável.
+- Uma página além da última responde `200` com `itens` vazio e os totais preenchidos.
+- Antes de ler, a API estende as séries recorrentes que precisam (`backend.md`, 8.3).
 
 **Consultas que o front monta:**
 
@@ -687,6 +725,12 @@ Os filtros se combinam com **E**.
 
 **Comportamento no front em `404`:** fecha os detalhes, avisa "Esta tarefa não existe mais." e
 recarrega as listas.
+
+**No OrbitAPI:** o `404` usa o `type` `/OrbitAPI/problems/tarefa-nao-encontrada` e o `detail` "Esta
+tarefa não existe mais!"; um id que não é número responde `400`
+(`/OrbitAPI/problems/invalid-parameters`). Numa série, a ocorrência atrasada que tenha outra
+atrasada mais recente sai como `NAO_REALIZADA`. Antes de ler, a API estende as séries
+recorrentes que precisam (ver `backend.md`, 8.3).
 
 ### 5.3 `POST /tarefas`
 
@@ -777,6 +821,30 @@ não como `404`: o recurso principal da requisição existe, o problema é o val
    `dataConclusao = null` e o mesmo `serieId`. As ocorrências geradas **não** registram
    `TAREFA_CRIADA`.
 
+**No OrbitAPI:**
+
+| Caso | Status | `type` | `errors` |
+|---|---|---|---|
+| Título vazio ou longo, descrição longa, `prioridade` ou `situacao` ausentes, horário de fim sem início ou antes do início, lembrete fora da lista, `frequencia` ausente, `diasSemana` vazio em `DIAS_DA_SEMANA`, `dataFim` antes de `data` | `400` | `/OrbitAPI/problems/validation-error` | Sim, com os campos da tabela acima e as mensagens terminadas em `!` |
+| `categoriaId` inexistente | `400` | `/OrbitAPI/problems/validation-error` | Sim: só `categoriaId`, "Esta categoria não existe mais. Escolha outra!" |
+| `atividadeId` inexistente ou arquivada | `400` | `/OrbitAPI/problems/validation-error` | Sim: só `atividadeId`, "Esta atividade não está mais disponível. Escolha outra!" |
+| Data ou horário em formato inválido (`"2026-02-30"`, `"25:00"`, `"09:00:00"`) e enums fora da lista | `400` | `/OrbitAPI/problems/unreadable-message` | Não; `detail` genérico de corpo inválido |
+
+- A normalização acontece antes da validação, então três regras da tabela nunca disparam na API:
+  horário de início sem data, lembrete sem horário de início e recorrência sem data. O valor
+  sobrando é descartado em silêncio, como no front.
+- As regras de campo são checadas antes de consultar o banco. Por isso a categoria e a atividade
+  só são verificadas quando o resto do corpo é válido, e um erro nelas vem sozinho em `errors`, nunca
+  junto dos outros campos. A categoria é verificada antes da atividade.
+- `data` e `recorrencia.dataFim` vazios (`""`) viram `null`. Horários só são aceitos em `HH:mm`.
+- A contagem de caracteres da descrição sai sem separador de milhar: "Agora são 2001!".
+- `criadoEm`, `atualizadoEm` e `dataConclusao` saem em UTC, com milissegundos e `Z`
+  (`"2026-09-25T22:51:41.064Z"`). Os três recebem o mesmo instante na criação.
+- `diasSemana` sai sem repetições, de domingo a sábado, em qualquer ordem de envio.
+- O prazo da resposta já considera a série: criar uma série diária começando no passado devolve a
+  primeira ocorrência como `NAO_REALIZADA`, porque há ocorrências atrasadas mais recentes.
+- Uma primeira ocorrência depois de hoje + 12 meses cria a série sem gerar ocorrências.
+
 ### 5.4 `PUT /tarefas/{id}`
 
 **Objetivo:** editar uma tarefa. Em tarefas recorrentes, o escopo diz se a alteração vale só para
@@ -828,6 +896,23 @@ validações do `POST`.
    geram evento.
 6. `atualizadoEm` passa a ser o instante atual em todas as tarefas alteradas.
 
+**No OrbitAPI:**
+
+- Os `400` de campo, categoria e atividade são os mesmos do `POST` (5.3); a atividade precisa estar
+  ativa também na edição, então uma tarefa ligada a uma atividade que foi arquivada só é salva
+  trocando ou tirando a atividade, como no simulador. O `404` usa `tarefa-nao-encontrada` e um
+  `escopo` fora do enum responde `400` `invalid-parameters`.
+- A mudança de regra com `SOMENTE_ESTA` responde `400` `validation-error` com `errors` só em
+  `frequencia`: "Para mudar a repetição, aplique a alteração a esta e às próximas!". A regra é
+  comparada com a da série (frequência, dias sem repetição e término), já normalizada. Tirar a data
+  de uma ocorrência conta como mudar a regra, porque a normalização descarta a recorrência.
+- O corpo é validado antes de a tarefa ser buscada: corpo inválido com id inexistente responde `400`.
+- Os eventos da tarefa editada saem nesta ordem: os de situação, `PRIORIDADE_ALTERADA` e
+  `DATA_ALTERADA`. Um `PUT` que não muda nada não grava evento, mas atualiza `atualizadoEm`.
+- Ao encerrar a série antiga valem as mesmas regras do `DELETE` com `ESTA_E_PROXIMAS` (5.6): as
+  seguintes preservadas passam a mostrar o término novo e, se não sobra ocorrência anterior, a
+  série é apagada e as preservadas viram avulsas.
+
 ### 5.5 `PATCH /tarefas/{id}/situacao`
 
 **Objetivo:** mudar só a situação: concluir, reabrir, iniciar, cancelar e desfazer uma conclusão.
@@ -868,6 +953,18 @@ validações do `POST`.
    `EM_ANDAMENTO`).
 5. Qualquer transição entre as quatro situações é permitida.
 
+**No OrbitAPI:**
+
+| Caso | Status | `type` | `errors` |
+|---|---|---|---|
+| `situacao` ausente ou `null` | `400` | `/OrbitAPI/problems/validation-error` | Sim: `situacao`, "Informe uma situação válida!" |
+| `situacao` fora do enum (`"FEITA"`) | `400` | `/OrbitAPI/problems/unreadable-message` | Não; `detail` genérico de corpo inválido |
+| Id inexistente | `404` | `/OrbitAPI/problems/tarefa-nao-encontrada` | Não; `detail` "Esta tarefa não existe mais!" |
+
+O corpo é validado antes de a tarefa ser buscada, como no simulador: corpo inválido com id
+inexistente responde `400`. De `CONCLUIDA` para `CANCELADA` e o contrário, só o evento da situação
+nova é gravado; entre `PENDENTE` e `EM_ANDAMENTO` não há evento.
+
 ### 5.6 `DELETE /tarefas/{id}`
 
 **Objetivo:** excluir uma tarefa (e, se pedido, as próximas ocorrências da série).
@@ -893,6 +990,19 @@ validações do `POST`.
    seguintes **pendentes ou em andamento** e encerra a série na véspera desta. As seguintes
    concluídas ou canceladas continuam existindo.
 3. Sessões de estudo ligadas à tarefa continuam existindo; `tarefa` passa a vir `null` nelas.
+
+**No OrbitAPI:**
+
+- O `404` usa o `type` `/OrbitAPI/problems/tarefa-nao-encontrada` e o `detail` "Esta tarefa não
+  existe mais!". Um `escopo` fora do enum responde `400` (`/OrbitAPI/problems/invalid-parameters`),
+  e não cai em `SOMENTE_ESTA` como no simulador.
+- `ESTA_E_PROXIMAS` numa tarefa sem série ou sem data exclui só a tarefa.
+- Ao encerrar a série na véspera, `recorrencia.dataFim` passa a ser a véspera em **todas** as
+  ocorrências que ficaram, inclusive nas seguintes concluídas ou canceladas, porque a regra é lida
+  da série. No simulador, essas seguintes guardam a regra antiga.
+- Se não sobra ocorrência anterior à excluída, a série é apagada e as seguintes concluídas ou
+  canceladas viram tarefas avulsas (`serieId` e `recorrencia` `null`). No simulador, elas
+  continuam apontando para a série apagada.
 
 ### 5.7 `POST /tarefas/reagendamentos`
 
@@ -937,6 +1047,19 @@ recalculado.
 5. O front envia só atrasadas **de dias anteriores** (`data < hoje`), e o "Desfazer" reenvia as
    datas originais pela mesma rota.
 
+**No OrbitAPI:**
+
+| Caso | Status | `type` | `errors` |
+|---|---|---|---|
+| `itens` ausente, vazio ou com item `null` | `400` | `/OrbitAPI/problems/validation-error` | Sim: `itens` ou `itens[N]`, "Informe ao menos uma tarefa para reagendar!" |
+| Item sem `id` ou sem `data` | `400` | `/OrbitAPI/problems/validation-error` | Sim: `itens[N].id` ("Informe a tarefa a reagendar!") ou `itens[N].data` ("Informe a nova data da tarefa!") |
+| Data em formato inválido | `400` | `/OrbitAPI/problems/unreadable-message` | Não |
+| Algum id inexistente | `404` | `/OrbitAPI/problems/tarefa-nao-encontrada` | Não; `detail` "Uma das tarefas não existe mais!" |
+
+A resposta traz as tarefas na ordem em que foram enviadas, sem repetição. Um id repetido na lista
+é aplicado em sequência: vale a última data, e cada mudança efetiva grava seu `DATA_ALTERADA`.
+Uma tarefa sem data que recebe data continua com `diaInteiro = false`, porque só a data muda.
+
 ### 5.8 `GET /tarefas/resumo-calendario`
 
 **Objetivo:** marcadores de carga por dia na grade do Calendário (42 dias visíveis) e no gráfico
@@ -972,6 +1095,17 @@ cancelada**, em ordem de data.
 2. `maiorPrioridade` considera todas as tarefas contadas, inclusive as concluídas.
 3. O front deriva "a fazer" (`quantidade − concluidas − atrasadas`) e, em dias passados, mostra
    esse restante como "não realizada".
+
+**No OrbitAPI:**
+
+- Falta de `dataInicial` ou `dataFinal` responde `400` com `type`
+  `/OrbitAPI/problems/missing-parameter` e `detail` "Informe o parâmetro 'dataFinal'!", com o nome
+  do que faltou. Data em formato inválido responde `400` `invalid-parameters`.
+- `dataInicial` depois de `dataFinal` responde `200` com lista vazia.
+- A contagem sai da mesma consulta de prazo de `GET /tarefas` (5.1), agrupada por dia: `atrasadas`
+  conta só `ATRASADA`, então as ocorrências `NAO_REALIZADA` de uma série entram em `quantidade` e
+  aparecem para o front como "a fazer" do dia.
+- Antes de ler, a API estende as séries recorrentes que precisam.
 
 ---
 
@@ -1021,6 +1155,17 @@ filtro da página Tarefas.
 O formulário reconhece em `errors`: `nome`, `cor`. Num `409` sem `errors`, o front mostra o `detail`
 junto do campo `nome`.
 
+**No OrbitAPI:**
+
+| Caso | Status | `type` | `errors` |
+|---|---|---|---|
+| Nome vazio, nome com mais de 40 caracteres, cor ausente | `400` | `/OrbitAPI/problems/validation-error` | Sim: `nome` e/ou `cor`, com as mensagens da tabela acima terminadas em `!` ("Use no máximo 40 caracteres no nome. Agora são 45!") |
+| Cor fora do enum `Cor` | `400` | `/OrbitAPI/problems/unreadable-message` | Não; `detail` genérico de corpo inválido. O front só envia cores da lista |
+| Nome já usado (`"saúde"` × `"Saúde"`) | `409` | `/OrbitAPI/problems/categoria-duplicada` | Não; `detail` cita o nome gravado: "Já existe uma categoria chamada “Saúde”. Escolha outro nome!" |
+
+A normalização acontece antes da validação, então `"   "` é tratado como nome vazio e o tamanho é
+contado depois de reduzir os espaços.
+
 **Status HTTP:** `201`, `400`, `409`.
 
 ### 6.3 `PUT /categorias/{id}`
@@ -1032,6 +1177,12 @@ junto do campo `nome`.
 Mesmas validações do `POST`; a unicidade ignora a própria categoria.
 
 **Status HTTP:** `200`, `400`, `404` ("Esta categoria não existe mais."), `409`.
+
+**No OrbitAPI:** os `400` e o `409` são os mesmos do `POST`. O `404` usa o `type`
+`/OrbitAPI/problems/categoria-nao-encontrada` e o `detail` "Esta categoria não existe mais!". O
+corpo é validado antes de procurar a categoria, então um id inexistente com corpo inválido responde
+`400`. Um id que não é número responde `400` (`/OrbitAPI/problems/invalid-parameters`). Mudar só as
+maiúsculas do próprio nome ("Estudos" → "ESTUDOS") é permitido.
 
 **Regras:** nome e cor novos aparecem em todas as tarefas da categoria (o resumo embutido é sempre o
 estado atual). Mudar a categoria não gera evento no Histórico (H1).
@@ -1052,6 +1203,11 @@ estado atual). Mudar a categoria não gera evento no Histórico (H1).
 **Regras:** a exclusão é sempre permitida. As tarefas ligadas à categoria ficam com
 `categoria = null` e continuam existindo. Não há arquivamento nem desfazer: a tela pede confirmação
 e diz quantas tarefas ficam sem categoria.
+
+**No OrbitAPI:** o `404` usa o `type` `/OrbitAPI/problems/categoria-nao-encontrada` e o `detail`
+"Esta categoria não existe mais!"; um id que não é número responde `400`
+(`/OrbitAPI/problems/invalid-parameters`). As tarefas ficam sem categoria pela chave estrangeira
+da tabela de tarefas, declarada com `ON DELETE SET NULL`.
 
 ---
 
@@ -1101,6 +1257,17 @@ alfabética do nome.
 O formulário reconhece em `errors`: `nome`, `cor`, `metaSemanalMinutos`. Num `409` sem `errors`, o
 front mostra o `detail` junto do campo `nome`.
 
+**No OrbitAPI:**
+
+| Caso | Status | `type` | `errors` |
+|---|---|---|---|
+| Nome vazio ou com mais de 40 caracteres, cor ausente, meta `<= 0` ou `> 6000` | `400` | `/OrbitAPI/problems/validation-error` | Sim: `nome`, `cor` e/ou `metaSemanalMinutos`, com as mensagens da tabela acima terminadas em `!` |
+| Cor fora do enum `Cor` | `400` | `/OrbitAPI/problems/unreadable-message` | Não; `detail` genérico de corpo inválido |
+| Nome de uma atividade **não arquivada** (`"INGLÊS"` × `"Inglês"`) | `409` | `/OrbitAPI/problems/atividade-duplicada` | Não; `detail` cita o nome gravado: "Já existe uma atividade chamada “Inglês”. Escolha outro nome!" |
+
+Uma atividade arquivada não bloqueia o nome: criar "Inglês" com uma "Inglês" arquivada responde
+`201`.
+
 **Status HTTP:** `201`, `400`, `409`.
 
 ### 7.3 `PUT /atividades/{id}`
@@ -1116,6 +1283,12 @@ Mesmas validações do `POST`; a unicidade ignora a própria atividade.
 
 **Regras:** nome e cor novos aparecem em todas as tarefas e sessões ligadas à atividade (os
 resumos são sempre o estado atual).
+
+**No OrbitAPI:** os `400` e o `409` são os mesmos do `POST`. O `404` usa o `type`
+`/OrbitAPI/problems/atividade-nao-encontrada` e o `detail` "Esta atividade não existe mais!". O
+`PUT` não mexe em `arquivada`. O nome é comparado com as **outras atividades não arquivadas**
+mesmo quando a atividade editada está arquivada, como no simulador: renomear uma arquivada para o
+nome de uma ativa responde `409`.
 
 ### 7.4 `PATCH /atividades/{id}/arquivamento`
 
@@ -1145,6 +1318,19 @@ resumos são sempre o estado atual).
 **Regras:** atividade arquivada some do cronômetro e das metas, não aceita sessões novas nem
 tarefas novas, mas mantém as sessões antigas e o histórico.
 
+**No OrbitAPI:**
+
+| Caso | Status | `type` | `errors` |
+|---|---|---|---|
+| `arquivada` ausente ou `null` | `400` | `/OrbitAPI/problems/validation-error` | Sim: `arquivada`, "Informe se a atividade fica arquivada!" |
+| `arquivada` com valor não booleano (`"sim"`) | `400` | `/OrbitAPI/problems/unreadable-message` | Não; `detail` genérico de corpo inválido |
+| Id inexistente | `404` | `/OrbitAPI/problems/atividade-nao-encontrada` | Não; `detail` "Esta atividade não existe mais!" |
+| Desarquivar com o nome de outra atividade ativa, sem diferenciar maiúsculas | `409` | `/OrbitAPI/problems/atividade-duplicada` | Não; `detail` cita o nome da atividade desarquivada: "Já existe uma atividade ativa chamada “Nome”. Renomeie uma delas antes de desarquivar!" |
+
+Repetir o estado atual (arquivar uma arquivada, desarquivar uma ativa) responde `200` sem mudar
+nada. O corpo é validado antes de a atividade ser buscada, então um corpo inválido para um id
+inexistente responde `400`, e não `404` como no simulador.
+
 ### 7.5 `DELETE /atividades/{id}`
 
 **Objetivo:** excluir uma atividade que nunca teve sessão.
@@ -1160,6 +1346,12 @@ tarefas novas, mas mantém as sessões antigas e o histórico.
 | `409` | A atividade tem sessões | "Esta atividade tem sessões registradas. Arquive-a para manter o histórico." |
 
 **Regras:** tarefas ligadas à atividade ficam com `atividade = null`.
+
+**No OrbitAPI:** o `404` usa o `type` `/OrbitAPI/problems/atividade-nao-encontrada` e o `detail`
+"Esta atividade não existe mais!", e um id que não é número responde `400`
+(`/OrbitAPI/problems/invalid-parameters`). O `409` usa o `type`
+`/OrbitAPI/problems/atividade-com-sessoes` e o `detail` "Esta atividade tem sessões registradas.
+Arquive-a para manter o histórico!". Arquivada ou não, a atividade sem sessões é excluída.
 
 ---
 
@@ -1193,6 +1385,20 @@ decrescente).
 
 **Consultas do front:** Estudos usa `dataInicial={hoje−6}&dataFinal={hoje}&tamanho=100`; o
 Calendário, `dataInicial={dia}&dataFinal={dia}&tamanho=100`.
+
+**No OrbitAPI:**
+
+| Caso | Status | `type` | `detail` |
+|---|---|---|---|
+| Data fora do formato | `400` | `/OrbitAPI/problems/invalid-parameters` | "O parâmetro 'dataInicial' foi informado num formato inválido!" |
+| `dataInicial > dataFinal` | `400` | `/OrbitAPI/problems/periodo-invalido` | "A data inicial precisa ser antes da final!" |
+
+- O período vira um intervalo de instantes no fuso de `X-Fuso-Horario`: do início de
+  `dataInicial` até antes do início do dia seguinte a `dataFinal`. Uma sessão das 23:30 às 00:20
+  conta no dia em que começou, e o mesmo instante pode cair em outro dia para outro fuso.
+- `tamanho` e `pagina` são ajustados como em 1.5; `atividadeId` que não é positivo é ignorado,
+  como no simulador, e um valor que não é número responde `400` `invalid-parameters`.
+- Empates de `inicio` são desfeitos pelo `id` decrescente.
 
 ### 8.2 `POST /sessoes`
 
@@ -1256,6 +1462,21 @@ Os formulários reconhecem em `errors`: `atividadeId`, `inicio`, `duracaoSegundo
 3. Se salvar falhar, o front mantém a sessão no navegador e deixa tentar de novo; o backend não
    precisa de rascunho.
 
+**No OrbitAPI:**
+
+- Todos os `400` de campo usam `type` `/OrbitAPI/problems/validation-error` e vêm juntos em
+  `errors`, com as mensagens da tabela terminadas em `!`. As regras de "agora" (início e fim no
+  máximo 1 minuto no futuro) ficam numa validação de classe que recebe o `Clock` e o fuso da
+  requisição: o horário de "a sessão terminaria às HH:mm" sai no fuso de `X-Fuso-Horario`.
+- Atividade inexistente ou arquivada é checada depois, no serviço, e vem sozinha em `errors`
+  (`atividadeId`), como a categoria e a atividade das tarefas.
+- `modo` e `origem` fora do enum (`"TURBO"`) respondem `400` `unreadable-message`; só `null` ou
+  ausente viram `LIVRE` e `MANUAL`. `duracaoSegundos` é inteiro: um valor com casas decimais é
+  truncado pelo Jackson, e não arredondado.
+- `ciclosConcluidos` negativo responde `400` em `ciclosConcluidos`, "Informe um número de ciclos
+  válido!".
+- `inicio` e `fim` aceitam `Z` ou deslocamento (`-03:00`) e voltam sempre em UTC com `Z`.
+
 ### 8.3 `PUT /sessoes/{id}`
 
 **Objetivo:** corrigir uma sessão salva (atividade, início, duração, observação).
@@ -1270,11 +1491,21 @@ gravados e ignora os do corpo.
 
 **Status HTTP:** `200`, `400`, `404` ("Esta sessão não existe mais.").
 
+**No OrbitAPI:** os `400` são os mesmos do `POST` (8.2). O `404` usa o `type`
+`/OrbitAPI/problems/sessao-nao-encontrada` e o `detail` "Esta sessão não existe mais!"; o corpo é
+validado antes, então corpo inválido com id inexistente responde `400`. `ciclosConcluidos` só fica
+numa sessão gravada como `POMODORO`, mas a normalização do corpo acontece antes: se o corpo mandar
+outro `modo`, os ciclos chegam `null` e a sessão os perde. O front sempre reenvia o `modo` original.
+
 ### 8.4 `DELETE /sessoes/{id}`
 
 **Response `204`.** **Status HTTP:** `204`, `404` ("Esta sessão não existe mais.").
 
 **Regras:** a sessão some do Histórico, das metas, dos gráficos, do mapa de calor e da sequência.
+
+**No OrbitAPI:** o `404` usa o `type` `/OrbitAPI/problems/sessao-nao-encontrada` e o `detail` "Esta
+sessão não existe mais!"; um id que não é número responde `400` (`invalid-parameters`). Excluir a
+última sessão de uma atividade libera a exclusão dela (7.5).
 
 ---
 
@@ -1327,6 +1558,17 @@ item por dia (inclusive zerados); `porAtividade` em ordem decrescente de `segund
 **Consultas do front:** semana atual (`dataInicial={domingo}&dataFinal={sábado}`) e total geral
 (sem parâmetros).
 
+**No OrbitAPI:**
+
+- As somas são feitas no PostgreSQL, agrupadas por atividade e, quando há as duas datas, por dia
+  do `inicio` no fuso de `X-Fuso-Horario`; os dias sem sessão são completados com zero na API.
+- `totalSegundos` e `totalSessoes` saem da soma de `porAtividade`. Empates em `segundos` são
+  desfeitos pelo `id` da atividade.
+- `ultimaSessaoEm` sai com precisão de milissegundos.
+- Os `400` são os de `GET /sessoes` (8.1): `invalid-parameters` para data fora do formato e
+  `periodo-invalido` para `dataInicial > dataFinal`. `atividadeId` que não é positivo é ignorado.
+- Só `dataInicial` ou só `dataFinal` filtra o total e `porAtividade`, mas `porDia` vem vazio.
+
 ### 9.2 `GET /estudos/progresso-semanal`
 
 **Objetivo:** metas da semana (Dashboard e página Estudos).
@@ -1345,6 +1587,16 @@ item por dia (inclusive zerados); `porAtividade` em ordem decrescente de `segund
 `inicioSemana + 6`. Atividade com meta e sem estudo aparece com `0`.
 
 **Status HTTP:** `200`; `400` sem `inicioSemana` ("Informe inicioSemana.").
+
+**No OrbitAPI:**
+
+- A semana é o intervalo de 7 dias a partir do início de `inicioSemana` no fuso de
+  `X-Fuso-Horario`. Outro dia que não domingo é aceito, sem erro: a semana começa nele.
+- `minutosRealizados` arredonda cada sessão para o minuto mais próximo antes de somar (SE8): 90 s
+  contam 2 minutos e 89 s, 1.
+- A lista sai em ordem alfabética do nome (pt-BR); o simulador usa a ordem de criação.
+- Sem `inicioSemana`, responde `400` `missing-parameter` com "Informe o parâmetro 'inicioSemana'!";
+  data fora do formato, `400` `invalid-parameters`.
 
 ### 9.3 `GET /estudos/mapa-calor`
 
@@ -1367,6 +1619,12 @@ futuros).
 houver estudo. Os níveis de cor são calculados no front (quartis).
 
 **Status HTTP:** `200`; `400` sem as datas ("Informe dataInicial e dataFinal.").
+
+**No OrbitAPI:** os minutos de cada dia e da atividade mais estudada arredondam cada sessão para o
+minuto mais próximo antes de somar (SE8), e cada sessão conta no dia do `inicio` no fuso de
+`X-Fuso-Horario`. Empate em `atividadeMaisEstudada` fica com o menor `id`. Sem uma das datas, a
+resposta é `400` `missing-parameter` ("Informe o parâmetro 'dataInicial'!"); datas fora do
+formato, `400` `invalid-parameters`; `dataInicial > dataFinal`, `400` `periodo-invalido`.
 
 ---
 
@@ -1457,8 +1715,22 @@ houver estudo. Os níveis de cor são calculados no front (quartis).
 | `400` | Datas ausentes ou fora do formato | "Informe dataInicial e dataFinal no formato AAAA-MM-DD." |
 | `400` | `dataInicial > dataFinal` | "A data inicial precisa ser antes da final." |
 
-`area` com valor desconhecido é ignorada pelo simulador; no backend, `400` ou ignorar é
-**A DEFINIR NO BACKEND**.
+`area` com valor desconhecido é ignorada pelo simulador; o OrbitAPI responde `400`
+`invalid-parameters`, como nos outros filtros com enum.
+
+**No OrbitAPI:**
+
+- A linha do tempo é uma consulta nativa só: `UNION ALL` dos eventos (`ocorrido_em <= agora`),
+  das sessões e das tarefas `NAO_REALIZADA`, estas tiradas da mesma consulta de prazo de
+  `GET /tarefas` (5.1). Período, área, busca, ordenação, contagem e paginação acontecem no banco.
+- A não realizada ocorre em `data` + `horarioInicio` no fuso de `X-Fuso-Horario`; em dia inteiro ou
+  sem horário, às 23:59 desse dia, com `comHorario = false`.
+- O desempate compara o `id` como o simulador: primeiro o prefixo (`sessao-` > `nao-realizada-` >
+  `evento-`), depois o número, ambos decrescentes.
+- `busca` perde os espaços das pontas e procura em `titulo + categoria + atividade`, em minúsculas.
+- Os `400`: datas ausentes, `missing-parameter` ("Informe o parâmetro 'dataInicial'!"); fora do
+  formato, `invalid-parameters`; `dataInicial > dataFinal`, `periodo-invalido`. `tamanho` e `pagina`
+  são ajustados como em 1.5.
 
 ### 10.2 `GET /historico/{id}`
 
@@ -1489,6 +1761,12 @@ vem preenchida só em `SESSAO_ESTUDO` (e em sessões ligadas a tarefa, as duas v
 
 **Comportamento no front em `404`:** o modal mostra "Este registro não existe mais." e explica que
 a tarefa ou a sessão pode ter sido excluída.
+
+**No OrbitAPI:** o `404` usa o `type` `/OrbitAPI/problems/registro-historico-nao-encontrado` e o
+`detail` "Este registro não existe mais. A tarefa ou a sessão pode ter sido excluída!". Ele também
+responde a um `id` fora do formato (`abc`, `evento-x`, `tarefa-1`) e a uma `nao-realizada-{n}` cuja
+tarefa deixou de ser não realizada (concluída, cancelada ou reagendada). O `registro` é montado pela
+mesma consulta de `GET /historico`, então vem igual ao item da lista.
 
 ---
 
@@ -1559,7 +1837,7 @@ O front só pede semanas até a atual.
 | `naoRealizadas` | `prazo = NAO_REALIZADA` |
 | `canceladas` | `situacao = CANCELADA` |
 | `pendentes` | `TarefaDTO[]` pendentes ou em andamento, exceto as não realizadas, na ordenação `DATA` |
-| `importantesPendentes` | Das `pendentes`, as de prioridade `ALTA` ou `URGENTE` |
+| `importantesPendentes` | Quantidade das `pendentes` de prioridade `ALTA` ou `URGENTE` (número, não lista) |
 
 `ProximaSemanaDTO`:
 
@@ -1583,6 +1861,28 @@ O front só pede semanas até a atual.
 **Regras:** destaques, pontos de atenção e textos de comparação são montados no front
 (`src/regras/revisaoSemanal.ts`) a partir destes números.
 
+**No OrbitAPI:**
+
+- `inicioSemana` ausente responde `400` `missing-parameter`; fora do formato, `invalid-parameters`.
+  Um dia que não é domingo responde `400` com `type` `/OrbitAPI/problems/semana-invalida` e `detail`
+  "Informe inicioSemana como um domingo no formato AAAA-MM-DD!". Semanas futuras são aceitas:
+  `emAndamento` falso, `diasDecorridos` `0`, `resumo.planejadas` `0` e `taxaConclusao` `null`.
+- Hoje, os dias de cada instante e os prazos seguem o `X-Fuso-Horario`: conclusão, criação e início
+  da sessão contam no dia local em que aconteceram.
+- `resumo.concluidas` e `porDia[].tarefasConcluidas` contam qualquer tarefa com `dataConclusao` na
+  semana, inclusive as sem data e as de outras semanas. `resumo.criadas` conta os eventos
+  `TAREFA_CRIADA` que ainda existem: os de uma tarefa excluída somem com ela.
+- Os minutos arredondam cada sessão para o minuto mais próximo antes de somar, como em 9.2 e 9.3.
+  `diasComAtividade` conta os dias com sessão ou conclusão.
+- `estudos.porAtividade[]` é `{ atividade: { id, nome, cor }, minutos, sessoes }`, com empate de
+  minutos desfeito pelo nome em ordem alfabética do português. `estudos.metas` é a mesma lista de
+  `GET /estudos/progresso-semanal`.
+- `tarefas.pendentes` e `proximaSemana.tarefas` vêm completos (`TarefaDTO`, com `prazo`), na
+  ordenação `DATA` de 5.1. `proximaSemana.agendadas` inclui as tarefas em aberto da semana seguinte
+  que já estejam atrasadas ou não realizadas, quando a semana pedida é passada.
+- Como a próxima semana olha para a frente, a leitura estende as séries recorrentes antes de contar
+  (`backend.md`, 8.3).
+
 ### 11.2 `PUT /revisao-semanal/{inicioSemana}/nota`
 
 **Objetivo:** salvar, alterar ou apagar a nota livre de uma semana.
@@ -1599,9 +1899,8 @@ O front só pede semanas até a atual.
 |---|---|---|---|
 | `texto` | texto | Sim | Até 1000 caracteres depois de remover os espaços das pontas; vazio apaga a nota |
 
-**Response `200`:** `NotaSemanaDTO` salva, ou corpo `null` quando a nota foi apagada. O front
-também aceita `204` sem corpo para a nota apagada; escolher entre os dois é
-**A DEFINIR NO BACKEND**.
+**Response `200`:** `NotaSemanaDTO` salva. Quando a nota é apagada, a resposta é `204` sem corpo
+(C7), que o front lê como `null`.
 
 ```json
 { "texto": "Semana puxada no trabalho, mas mantive o inglês.", "atualizadoEm": "2026-09-24T23:10:00.000Z" }
@@ -1617,6 +1916,19 @@ também aceita `204` sem corpo para a nota apagada; escolher entre os dois é
 | `400` | Mais de 1000 caracteres | `errors: [{ "campo": "texto", "mensagem": "A nota pode ter até 1000 caracteres." }]` |
 
 **Regras:** uma nota por semana; qualquer semana (passada ou atual) pode ter nota.
+
+**No OrbitAPI:**
+
+- Texto vazio, ou só com espaços, responde `204` mesmo quando a semana não tinha nota.
+- A semana que não começa num domingo responde `400` com `type` `/OrbitAPI/problems/semana-invalida`
+  e `detail` "A semana precisa começar num domingo!". Data fora do formato responde `400`
+  `invalid-parameters`.
+- `texto` ausente ou `null` responde `400` `validation-error` com
+  `errors: [{ "campo": "texto", "mensagem": "Envie o texto da nota!" }]`, e não só o `detail`. Um
+  objeto ou uma lista no lugar do texto, ou um corpo ausente, respondem `400` `unreadable-message`.
+  Um número é lido como texto (`5` vira `"5"`), como nos demais campos de texto da API.
+- O corpo é validado antes da semana: uma segunda-feira com texto longo demais responde o erro do texto.
+- Tabela `notas_semana`, com `inicio_semana` como chave.
 
 ---
 
@@ -1682,6 +1994,20 @@ O front pede os últimos 7 ou 30 dias, conforme o período escolhido no painel P
 **Status HTTP:** `200`; `400` sem datas ou com `dataInicial > dataFinal` ("Informe um período
 válido.").
 
+**No OrbitAPI:**
+
+- Data ausente responde `400` `missing-parameter` ("Informe o parâmetro 'dataFinal'!"); fora do
+  formato, `invalid-parameters`; `dataInicial > dataFinal`, `periodo-invalido` com "Informe um
+  período válido!". O período não tem limite de tamanho.
+- A semana atual, os dias de cada instante e os prazos seguem o `X-Fuso-Horario`. Os minutos
+  arredondam cada sessão para o minuto mais próximo antes de somar, e `minutosEstudoPorDia` é igual
+  ao `dias` de `GET /estudos/mapa-calor` no mesmo período.
+- `distribuicaoPrioridade` e `urgentes` contam também as ocorrências futuras das séries recorrentes
+  já geradas (até 12 meses à frente), porque são tarefas pendentes. Por isso a leitura estende as
+  séries antes de contar (`backend.md`, 8.3).
+- `eventosRecentes` segue a ordem do Histórico (mais recente primeiro; empate pelo `id` do registro).
+  `descricao` é o título gravado no evento, como no Histórico, e não o título atual da tarefa.
+
 ### 12.2 `GET /dashboard/sequencia`
 
 **Objetivo:** sequência de dias com atividade (streak).
@@ -1704,6 +2030,11 @@ Um dia tem atividade quando tem pelo menos uma sessão (pelo início) **ou** uma
 (pela data de conclusão).
 
 **Status HTTP:** `200`; `400` com `data` fora do formato.
+
+**No OrbitAPI:** sem `data`, vale hoje no `X-Fuso-Horario`, que também define o dia de cada sessão e
+conclusão. Dias depois de `data` não contam nem para o recorde. Uma data sem nenhuma atividade até
+ela responde `{ "atual": 0, "recorde": 0, "contaHoje": false }`. `data` fora do formato responde
+`400` `invalid-parameters`.
 
 ---
 
@@ -1756,12 +2087,12 @@ POST /tarefas/reagendamentos { itens: [{ id, data: hoje }] }
 
 | # | Assunto | Situação |
 |---|---|---|
-| C1 | Porta, *context-path* e versão da URL base | A DEFINIR NO BACKEND |
-| C2 | Valores de `type` e `title` do `ErrorResponseDTO` | A DEFINIR NO BACKEND |
-| C3 | Incluir `errors` nas respostas de validação | A DEFINIR NO BACKEND (recomendado) |
-| C4 | `400` ou `422` para regras de negócio | A DEFINIR NO BACKEND (o front aceita os dois) |
-| C5 | `tamanho` fora de 1..100 e enums desconhecidos em filtros: ajustar/ignorar ou `400` | A DEFINIR NO BACKEND |
-| C6 | Fuso quando `X-Fuso-Horario` falta ou é inválido | A DEFINIR NO BACKEND (sugestão: `America/Sao_Paulo`) |
-| C7 | Nota apagada: `200` com `null` ou `204` | A DEFINIR NO BACKEND |
+| C1 | Porta, *context-path* e versão da URL base | Resolvida: `http://localhost:9018/OrbitAPI/v1` em dev, porta `9028` em prod (1.1) |
+| C2 | Valores de `type` e `title` do `ErrorResponseDTO` | Resolvida para os tipos genéricos (2.5); os de cada regra de negócio são registrados com o endpoint |
+| C3 | Incluir `errors` nas respostas de validação | Resolvida: incluído, com `timestamp` (2.2) |
+| C4 | `400` ou `422` para regras de negócio | Resolvida: `400` em todas as regras; `422` não é usado (2.4) |
+| C5 | `tamanho` fora de 1..100 e enums desconhecidos em filtros: ajustar/ignorar ou `400` | Resolvida: `tamanho` e `pagina` são ajustados; enum desconhecido, data ou número inválidos respondem `400` (1.5 e 5.1) |
+| C6 | Fuso quando `X-Fuso-Horario` falta ou é inválido | Resolvida: `America/Sao_Paulo`, sem erro (1.2) |
+| C7 | Nota apagada: `200` com `null` ou `204` | Resolvida: `204` sem corpo (11.2) |
 | C8 | Como as categorias são criadas antes da tela de Configurações | Resolvida: cadastro pela tela de Configurações (`POST`, `PUT` e `DELETE /categorias`). Dados iniciais continuam opcionais |
 | C9 | Regra R4 × "Mover para hoje" e contagem de recorrentes futuras em "Em aberto por prioridade" | A DEFINIR (decisão do produto; ver [`regras-negocio.md`](regras-negocio.md#12-decisões-pendentes)) |
