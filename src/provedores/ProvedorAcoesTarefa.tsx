@@ -81,7 +81,7 @@ export function ProvedorAcoesTarefa({ children }: { children: ReactNode }) {
         ? tarefas
         : tarefas.map((tarefa) => {
             const confirmada = confirmadas.get(tarefa.id);
-            return confirmada && confirmada.atualizadoEm >= tarefa.atualizadoEm ? confirmada : tarefa;
+            return confirmada && confirmada.atualizadoEm > tarefa.atualizadoEm ? confirmada : tarefa;
           }),
     [confirmadas],
   );

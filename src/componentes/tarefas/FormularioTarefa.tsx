@@ -194,6 +194,7 @@ export function FormularioTarefa({ aberto, tarefa, dataPadrao, aoFechar, aoEnvia
   const [enviando, setEnviando] = useState(false);
   const [pedindoEscopo, setPedindoEscopo] = useState(false);
   const [confirmandoDescarte, setConfirmandoDescarte] = useState(false);
+  const [diasEscolhidos, setDiasEscolhidos] = useState(() => tarefa?.recorrencia?.diasSemana != null);
 
   const categorias = useDadosAssincronos((signal) => servicoCategorias.buscarCategorias(signal), [versoes.categorias]);
   const atividades = useDadosAssincronos((signal) => servicoAtividades.buscarAtividades(signal), [versoes.atividades]);
@@ -236,10 +237,9 @@ export function FormularioTarefa({ aberto, tarefa, dataPadrao, aoFechar, aoEnvia
 
   const mudarData = (data: string | null) => {
     setEstado((atual) => {
+      const acompanhaData = !diasEscolhidos || atual.recorrencia.diasSemana.length === 0;
       const proximaRecorrencia =
-        data && atual.recorrencia.diasSemana.length === 0
-          ? { ...atual.recorrencia, diasSemana: [diaSemanaDe(data)] }
-          : atual.recorrencia;
+        data && acompanhaData ? { ...atual.recorrencia, diasSemana: [diaSemanaDe(data)] } : atual.recorrencia;
       return { ...atual, data, recorrencia: proximaRecorrencia };
     });
     setErrosServidor({});
@@ -496,7 +496,10 @@ export function FormularioTarefa({ aberto, tarefa, dataPadrao, aoFechar, aoEnvia
                 dataInicial={estado.data}
                 erros={{ frequencia: erro('frequencia'), diasSemana: erro('diasSemana'), dataFim: erro('dataFim') }}
                 idsCampos={{ frequencia: idCampo('frequencia'), diasSemana: idCampo('diasSemana'), dataFim: idCampo('dataFim') }}
-                aoMudar={(parcial) => mudar('recorrencia', { ...estado.recorrencia, ...parcial })}
+                aoMudar={(parcial) => {
+                  if (parcial.diasSemana) setDiasEscolhidos(true);
+                  mudar('recorrencia', { ...estado.recorrencia, ...parcial });
+                }}
               />
             ) : null}
           </fieldset>

@@ -20,8 +20,11 @@ export interface ItemTarefaProps {
 }
 
 function Quando({ tarefa, className }: { tarefa: TarefaDTO; className?: string }) {
+  if (!tarefa.data) {
+    return <span className={juntarClasses(className, estilos.semHorario)}>Sem data</span>;
+  }
   if (tarefa.diaInteiro || !tarefa.horarioInicio) {
-    return <span className={juntarClasses(className, estilos.diaTodo)}>Dia todo</span>;
+    return <span className={juntarClasses(className, estilos.semHorario)}>Dia todo</span>;
   }
   return (
     <span className={className}>

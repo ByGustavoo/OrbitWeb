@@ -46,10 +46,13 @@ function horarioDe(instante: string): string {
   return `${String(data.getHours()).padStart(2, '0')}:${String(data.getMinutes()).padStart(2, '0')}`;
 }
 
-function horarioSugerido(): string {
-  const agora = new Date(Date.now() - 60 * 60000);
-  const minutos = Math.floor(agora.getMinutes() / 5) * 5;
-  return `${String(agora.getHours()).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`;
+function inicioSugerido(): { data: string; horario: string } {
+  const inicio = new Date(Date.now() - 60 * 60000);
+  const minutos = Math.floor(inicio.getMinutes() / 5) * 5;
+  return {
+    data: dataIsoLocal(inicio),
+    horario: `${String(inicio.getHours()).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`,
+  };
 }
 
 function instanteLocal(data: string, horario: string): Date {
@@ -60,7 +63,7 @@ function instanteLocal(data: string, horario: string): Date {
 
 function estadoInicial(sessao: SessaoEstudoDTO | null, atividadePadraoId: number | null): EstadoFormulario {
   if (!sessao) {
-    return { atividadeId: atividadePadraoId, data: hojeIso(), horario: horarioSugerido(), duracaoMinutos: 30, observacao: '' };
+    return { atividadeId: atividadePadraoId, ...inicioSugerido(), duracaoMinutos: 30, observacao: '' };
   }
   return {
     atividadeId: sessao.atividade.id,

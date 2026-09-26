@@ -95,7 +95,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.diaTodo {
+.semHorario {
   color: var(--texto-terciario);
   font-size: var(--tamanho-xs);
   font-weight: var(--peso-medio);
@@ -261,7 +261,7 @@
     font-size: var(--tamanho-xs);
   }
 
-  .quandoCompacto.diaTodo {
+  .quandoCompacto.semHorario {
     padding-top: 0;
   }
 }
