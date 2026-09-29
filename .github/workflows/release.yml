@@ -1,0 +1,148 @@
+name: Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      incremento:
+        description: Parte da versão a incrementar
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  IMAGEM: ${{ secrets.DOCKER_IMAGE }}
+
+jobs:
+  versao:
+    name: Calcular versão
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      versao: ${{ steps.calcular.outputs.versao }}
+      tag: ${{ steps.calcular.outputs.tag }}
+      commit: ${{ steps.calcular.outputs.commit }}
+      data: ${{ steps.calcular.outputs.data }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - id: calcular
+        env:
+          ROTULOS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          INCREMENTO_MANUAL: ${{ inputs.incremento }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${INCREMENTO_MANUAL:-}" ]; then
+            incremento="$INCREMENTO_MANUAL"
+          elif echo "$ROTULOS" | grep -q '"release:major"'; then
+            incremento="major"
+          elif echo "$ROTULOS" | grep -q '"release:minor"'; then
+            incremento="minor"
+          else
+            incremento="patch"
+          fi
+
+          ultima=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)
+
+          if [ -z "$ultima" ]; then
+            versao=$(node -p "require('./package.json').version")
+          else
+            IFS=. read -r maior menor correcao <<< "${ultima#v}"
+            case "$incremento" in
+              major) versao="$((maior + 1)).0.0" ;;
+              minor) versao="${maior}.$((menor + 1)).0" ;;
+              *)     versao="${maior}.${menor}.$((correcao + 1))" ;;
+            esac
+          fi
+
+          if git rev-parse -q --verify "refs/tags/v${versao}" >/dev/null; then
+            echo "::error::A tag v${versao} já existe."
+            exit 1
+          fi
+
+          echo "Última versão: ${ultima:-nenhuma} · incremento: ${incremento} · nova versão: ${versao}"
+          {
+            echo "versao=${versao}"
+            echo "tag=v${versao}"
+            echo "commit=$(git rev-parse HEAD)"
+            echo "data=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_OUTPUT"
+
+  publicar:
+    name: Publicar no Docker Hub
+    needs: versao
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.versao.outputs.commit }}
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGEM }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ needs.versao.outputs.versao }}
+            type=raw,value=latest
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ needs.versao.outputs.versao }}
+            REVISION=${{ needs.versao.outputs.commit }}
+            BUILD_DATE=${{ needs.versao.outputs.data }}
+          cache-from: type=gha,scope=ci
+
+  registrar:
+    name: Criar tag e release
+    needs: [versao, publicar]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.versao.outputs.tag }}
+          COMMIT: ${{ needs.versao.outputs.commit }}
+          VERSAO: ${{ needs.versao.outputs.versao }}
+        run: |
+          set -euo pipefail
+          {
+            echo "Imagem publicada no Docker Hub:"
+            echo
+            echo '```bash'
+            echo "docker pull ${IMAGEM}:${VERSAO}"
+            echo '```'
+          } > notas.md
+          gh release create "$TAG" \
+            --target "$COMMIT" \
+            --title "$TAG" \
+            --generate-notes \
+            --notes-file notas.md
