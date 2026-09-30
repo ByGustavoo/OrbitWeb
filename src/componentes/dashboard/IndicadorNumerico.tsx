@@ -5,7 +5,7 @@ import { formatarNumero } from '@/utilitarios/formatacao';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './IndicadorNumerico.module.css';
 
-export type TomIndicador = 'neutro' | 'destaque' | 'sucesso' | 'erro' | 'urgente' | 'sequencia';
+export type TomIndicador = 'neutro' | 'destaque' | 'sucesso' | 'erro' | 'urgente' | 'pendente' | 'atraso' | 'sequencia';
 
 export type DisposicaoIndicador = 'bloco' | 'linha';
 
