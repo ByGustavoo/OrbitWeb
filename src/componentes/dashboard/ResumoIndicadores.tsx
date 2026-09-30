@@ -58,7 +58,7 @@ function IndicadorSequencia({ sequencia }: { sequencia: ResultadoAssincrono<Sequ
       valor={atual}
       unidade={(valor) => (valor === 1 ? 'dia' : 'dias')}
       contexto={contexto}
-      tom={atual > 0 ? 'sequencia' : 'neutro'}
+      tom="sequencia"
     />
   );
 }
@@ -94,7 +94,7 @@ export function ResumoIndicadores({ resumo, sequencia }: ResumoIndicadoresProps)
                 rotulo="Concluídas"
                 valor={resumo.dados.contagens.concluidas}
                 contexto="nesta semana"
-                tom={resumo.dados.contagens.concluidas > 0 ? 'sucesso' : 'neutro'}
+                tom="sucesso"
               />
               <IndicadorNumerico
                 icone={CircleDashed}
@@ -105,20 +105,21 @@ export function ResumoIndicadores({ resumo, sequencia }: ResumoIndicadoresProps)
                     ? `nesta semana · ${formatarEmAndamento(resumo.dados.contagens.emAndamento)}`
                     : 'nesta semana'
                 }
+                tom="pendente"
               />
               <IndicadorNumerico
                 icone={Clock}
                 rotulo="Atrasadas"
                 valor={resumo.dados.contagens.atrasadas}
                 contexto={resumo.dados.contagens.atrasadas > 0 ? 'já passaram do prazo' : 'nada ficou para trás'}
-                tom={resumo.dados.contagens.atrasadas > 0 ? 'erro' : 'neutro'}
+                tom="atraso"
               />
               <IndicadorNumerico
                 icone={AlertTriangle}
                 rotulo="Urgentes"
                 valor={resumo.dados.contagens.urgentes}
                 contexto={resumo.dados.contagens.urgentes > 0 ? 'em aberto, com qualquer data' : 'nenhuma em aberto'}
-                tom={resumo.dados.contagens.urgentes > 0 ? 'urgente' : 'neutro'}
+                tom="urgente"
               />
             </>
           )}

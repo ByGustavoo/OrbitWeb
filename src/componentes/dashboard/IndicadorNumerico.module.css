@@ -61,6 +61,16 @@
   --tom-fundo: var(--prioridade-urgente-suave);
 }
 
+.pendente {
+  --tom-texto: var(--cor-azul);
+  --tom-fundo: var(--cor-azul-suave);
+}
+
+.atraso {
+  --tom-texto: var(--cor-laranja);
+  --tom-fundo: var(--cor-laranja-suave);
+}
+
 .sequencia {
   --tom-texto: var(--cor-amarelo);
   --tom-fundo: var(--cor-amarelo-suave);

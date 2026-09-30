@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { CalendarClock, CalendarDays, Check, Repeat } from 'lucide-react';
+import { CalendarClock, CalendarDays, Repeat } from 'lucide-react';
 import { IndicadorGiratorio } from '@/componentes/ui';
 import { coresDaPrioridade } from '@/modelos/cores';
 import type { TarefaDTO } from '@/modelos/tarefas';
@@ -80,7 +80,9 @@ export function ItemTarefa({
         {enviando ? (
           <IndicadorGiratorio tamanho={14} className={estilos.giratorio} />
         ) : (
-          <Check className={estilos.marca} size={13} strokeWidth={3} aria-hidden="true" />
+          <svg className={estilos.marca} viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+            <path d="M5.75 9.6 8.75 12.6 14.25 6.85" />
+          </svg>
         )}
       </span>
 
