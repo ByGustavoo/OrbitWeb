@@ -74,7 +74,7 @@ function ValorAlterado({ registro, valor, texto }: { registro: RegistroHistorico
 
 function ConteudoSessao({ sessao }: { sessao: SessaoEstudoDTO }) {
   return (
-    <dl className={estilos.dados}>
+    <dl className={`${estilos.dados} revelar`}>
       <Dado rotulo="Atividade">
         <span className={estilos.comPonto}>
           <span
@@ -131,7 +131,7 @@ function ConteudoTarefa({ registro, tarefa }: { registro: RegistroHistoricoDTO; 
         </div>
       ) : null}
 
-      <dl className={estilos.dados}>
+      <dl className={`${estilos.dados} revelar`}>
         <Dado rotulo="Tarefa" largo>
           {tarefa.titulo}
           {renomeada ? <span className={estilos.nota}>Na época, se chamava “{registro.titulo}”.</span> : null}

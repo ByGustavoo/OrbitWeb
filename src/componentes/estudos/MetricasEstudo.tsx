@@ -16,9 +16,11 @@ const paraMinutos = (segundos: number) => Math.round(segundos / 60);
 function EsqueletoMetrica() {
   return (
     <div className={estilos.esqueleto} aria-hidden="true">
-      <Esqueleto largura="55%" altura={16} />
-      <Esqueleto largura={72} altura={28} raio="var(--raio-sm)" />
-      <Esqueleto largura="70%" altura={11} />
+      <div className={estilos.esqueletoTextos}>
+        <Esqueleto largura="45%" altura={16} />
+        <Esqueleto largura="65%" altura={11} />
+      </div>
+      <Esqueleto largura={64} altura={24} raio="var(--raio-sm)" />
     </div>
   );
 }
@@ -59,6 +61,7 @@ export function MetricasEstudo({ semana, hojeIso }: MetricasEstudoProps) {
         ) : (
           <>
             <IndicadorNumerico
+              disposicao="linha"
               icone={Clock}
               rotulo="Hoje"
               valor={paraMinutos(hoje?.segundos ?? 0)}
@@ -67,6 +70,7 @@ export function MetricasEstudo({ semana, hojeIso }: MetricasEstudoProps) {
               contexto={hoje && hoje.sessoes > 0 ? `em ${pluralizar(hoje.sessoes, 'sessão', 'sessões')}` : 'Nenhuma sessão ainda'}
             />
             <IndicadorNumerico
+              disposicao="linha"
               icone={CalendarRange}
               rotulo="Esta semana"
               valor={paraMinutos(dados.totalSegundos)}
@@ -74,12 +78,14 @@ export function MetricasEstudo({ semana, hojeIso }: MetricasEstudoProps) {
               contexto={diasComEstudo > 0 ? `${pluralizar(diasComEstudo, 'dia', 'dias')} com estudo` : 'De domingo a sábado'}
             />
             <IndicadorNumerico
+              disposicao="linha"
               icone={Layers}
               rotulo="Sessões na semana"
               valor={dados.totalSessoes}
               contexto={maisEstudada ? `Mais estudada: ${maisEstudada.atividade.nome}` : 'Nenhuma sessão nesta semana'}
             />
             <IndicadorNumerico
+              disposicao="linha"
               icone={Gauge}
               rotulo="Média por sessão"
               valor={paraMinutos(dados.mediaSegundosPorSessao)}

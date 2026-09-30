@@ -207,52 +207,49 @@ export default function PaginaEstudos() {
 
       <div className={estilos.painel}>
         <div className={estilos.grade}>
-          <div className={estilos.colunaPrincipal}>
+          <div className={estilos.cronometro}>
             <Cronometro
               atividades={atividades}
               idAtividadeNova={idAtividadeNova}
               aoCriarAtividade={abrirNovaAtividade}
               aoPedirDescarte={pedirDescarte}
             />
-            <ListaAtividades
-              className={estilos.atividades}
-              atividades={atividades.dados}
-              semana={semanaPorAtividade}
-              total={totalPorAtividade}
-              erro={atividades.erro ?? semana.erro ?? total.erro}
-              tentando={atividades.carregando || semana.carregando || total.carregando}
-              idEmAndamento={sessao?.atividade.id ?? null}
-              sessaoPausada={sessao?.estado === 'PAUSADA'}
-              idsDesarquivando={idsDesarquivando}
-              aoTentarNovamente={() => {
-                atividades.recarregar();
-                semana.recarregar();
-                total.recarregar();
-              }}
-              aoCriar={abrirNovaAtividade}
-              aoEditar={abrirEdicaoAtividade}
-              aoDesarquivar={(atividade) => void desarquivar(atividade)}
-            />
           </div>
-
-          <div className={estilos.colunaLateral}>
-            <div className={estilos.metricas}>
-              <MetricasEstudo semana={semana} hojeIso={hojeIso} />
-            </div>
-            <ListaSessoes
-              className={estilos.historico}
-              sessoes={recentes.dados?.itens ?? null}
-              hojeIso={hojeIso}
-              dias={DIAS_HISTORICO}
-              erro={recentes.erro}
-              tentando={recentes.carregando}
-              idDestacada={idSessaoDestacada}
-              aoTentarNovamente={recentes.recarregar}
-              aoVerHistorico={() => navegar(caminhos.historico, { state: estadoComParametros({ area: 'estudos' }) })}
-              aoLancar={abrirLancamento}
-              aoAbrir={abrirSessao}
-            />
+          <div className={estilos.metricas}>
+            <MetricasEstudo semana={semana} hojeIso={hojeIso} />
           </div>
+          <ListaAtividades
+            className={estilos.atividades}
+            atividades={atividades.dados}
+            semana={semanaPorAtividade}
+            total={totalPorAtividade}
+            erro={atividades.erro ?? semana.erro ?? total.erro}
+            tentando={atividades.carregando || semana.carregando || total.carregando}
+            idEmAndamento={sessao?.atividade.id ?? null}
+            sessaoPausada={sessao?.estado === 'PAUSADA'}
+            idsDesarquivando={idsDesarquivando}
+            aoTentarNovamente={() => {
+              atividades.recarregar();
+              semana.recarregar();
+              total.recarregar();
+            }}
+            aoCriar={abrirNovaAtividade}
+            aoEditar={abrirEdicaoAtividade}
+            aoDesarquivar={(atividade) => void desarquivar(atividade)}
+          />
+          <ListaSessoes
+            className={estilos.historico}
+            sessoes={recentes.dados?.itens ?? null}
+            hojeIso={hojeIso}
+            dias={DIAS_HISTORICO}
+            erro={recentes.erro}
+            tentando={recentes.carregando}
+            idDestacada={idSessaoDestacada}
+            aoTentarNovamente={recentes.recarregar}
+            aoVerHistorico={() => navegar(caminhos.historico, { state: estadoComParametros({ area: 'estudos' }) })}
+            aoLancar={abrirLancamento}
+            aoAbrir={abrirSessao}
+          />
         </div>
       </div>
 

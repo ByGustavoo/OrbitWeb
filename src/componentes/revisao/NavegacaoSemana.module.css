@@ -57,7 +57,7 @@
 }
 
 .textoRevelado {
-  animation: orbit-surgir var(--duracao-lenta) var(--curva-saida) backwards;
+  animation: var(--animacao-surgir) var(--duracao-lenta) var(--curva-saida) backwards;
 }
 
 .seta {

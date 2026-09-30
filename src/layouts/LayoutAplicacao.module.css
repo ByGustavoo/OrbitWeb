@@ -19,7 +19,7 @@
 
 .conteudo {
   flex: 1;
-  padding: var(--espaco-8) var(--respiro-conteudo) var(--espaco-16);
+  padding: var(--respiro-topo-conteudo) var(--respiro-conteudo) var(--espaco-16);
   padding-bottom: calc(var(--espaco-16) + env(safe-area-inset-bottom, 0px));
 }
 
@@ -31,7 +31,18 @@
   width: 100%;
   max-width: var(--largura-conteudo);
   margin-inline: auto;
-  animation: entrarPagina var(--duracao-lenta) var(--curva-saida);
+}
+
+.limite > * {
+  animation: entrarPagina var(--duracao-lenta) var(--curva-saida) backwards;
+}
+
+.limite > :nth-child(2) {
+  animation-delay: var(--passo-cascata-pagina);
+}
+
+.limite > :nth-child(n + 3) {
+  animation-delay: calc(var(--passo-cascata-pagina) * 2);
 }
 
 @keyframes entrarPagina {

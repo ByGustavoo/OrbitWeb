@@ -14,8 +14,8 @@ function DescricaoVersao({ versao, detalhe }: { versao: string; detalhe: string 
   const rotulo = formatarVersao(versao);
   return (
     <>
-      <span className={juntarClasses(estilosVersoes.numero, rotulo !== versao && 'numeros')}>{rotulo}</span>
-      {detalhe ? <span className={estilosVersoes.detalhe}>{detalhe}</span> : null}
+      <span className={juntarClasses(estilosVersoes.numero, rotulo !== versao && 'numeros', 'revelar')}>{rotulo}</span>
+      {detalhe ? <span className={juntarClasses(estilosVersoes.detalhe, 'revelar')}>{detalhe}</span> : null}
     </>
   );
 }

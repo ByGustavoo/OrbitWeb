@@ -129,7 +129,7 @@ export default function PaginaRevisaoSemanal() {
     const nota = (
       <NotaDaSemana
         key={semana}
-        className={`${estilos.menor} ${estilos.topo} ${estilos.fixa}`}
+        className={estilos.menor}
         nota={revisao.nota}
         aoSalvar={(texto) => servicoRevisaoSemanal.salvarNotaSemana(semana, texto)}
       />
