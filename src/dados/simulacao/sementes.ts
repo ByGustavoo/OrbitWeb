@@ -38,6 +38,11 @@ const categorias: CategoriaArmazenada[] = [
   { id: 2, nome: 'Trabalho', cor: 'AZUL' },
   { id: 3, nome: 'Casa e família', cor: 'VERDE' },
   { id: 4, nome: 'Saúde', cor: 'ROSA' },
+  { id: 5, nome: 'Finanças', cor: 'AMARELO' },
+  { id: 6, nome: 'Compras', cor: 'LARANJA' },
+  { id: 7, nome: 'Lazer', cor: 'CIANO' },
+  { id: 8, nome: 'Amigos', cor: 'VERMELHO' },
+  { id: 9, nome: 'Pessoal', cor: 'CINZA' },
 ];
 
 const atividades: AtividadeArmazenada[] = [
@@ -66,38 +71,43 @@ const modelosFixos: ModeloTarefa[] = [
   { titulo: 'Estudar inglês: lição 12', dias: 0, inicio: '08:00', duracao: 90, prioridade: 'ALTA', situacao: 'CONCLUIDA', categoriaId: 1, atividadeId: 1, concluidaHaMinutos: 25 },
   { titulo: 'Reunião com a equipe', dias: 0, inicio: '10:30', duracao: 60, prioridade: 'MEDIA', situacao: 'EM_ANDAMENTO', categoriaId: 2, descricao: 'Alinhar as entregas da semana e dividir o que ficou pendente.' },
   { titulo: 'Responder os e-mails dos clientes', dias: 0, inicio: '14:00', duracao: 60, prioridade: 'BAIXA', categoriaId: 2, criadaHaDias: 0 },
-  { titulo: 'Entregar a declaração do imposto de renda', dias: 0, inicio: '16:30', duracao: 30, prioridade: 'URGENTE', categoriaId: 3, lembrete: 30, descricao: 'Separar os informes de rendimento, os recibos médicos e os comprovantes de despesas com educação.' },
-  { titulo: 'Pagar a conta de luz', dias: 0, prioridade: 'ALTA', categoriaId: 3 },
+  { titulo: 'Entregar a declaração do imposto de renda', dias: 0, inicio: '16:30', duracao: 30, prioridade: 'URGENTE', categoriaId: 5, lembrete: 30, descricao: 'Separar os informes de rendimento, os recibos médicos e os comprovantes de despesas com educação.' },
+  { titulo: 'Pagar a conta de luz', dias: 0, prioridade: 'ALTA', categoriaId: 5 },
   { titulo: 'Enviar o relatório do mês', dias: -2, inicio: '17:00', duracao: 60, prioridade: 'ALTA', categoriaId: 2 },
   { titulo: 'Marcar consulta no dentista', dias: -3, prioridade: 'BAIXA', categoriaId: 4 },
   { titulo: 'Exame de sangue em jejum', dias: 1, inicio: '07:30', duracao: 60, prioridade: 'URGENTE', categoriaId: 4, lembrete: 60, descricao: 'Jejum de 8 horas. Levar o pedido médico, um documento com foto e a carteirinha do plano.' },
-  { titulo: 'Levar o carro para a revisão', dias: 1, inicio: '15:00', duracao: 45, prioridade: 'MEDIA', categoriaId: 3, criadaHaDias: 0 },
-  { titulo: 'Planejar as compras da semana', dias: 3, prioridade: 'MEDIA', categoriaId: 3 },
-  { titulo: 'Jantar de aniversário da Ana', dias: 5, inicio: '19:30', duracao: 120, prioridade: 'ALTA', categoriaId: 3, descricao: 'Reserva no restaurante às 19h30. Não esquecer o presente.' },
-  { titulo: 'Renovar o seguro do carro', dias: 9, prioridade: 'MEDIA', categoriaId: 3 },
+  { titulo: 'Levar o carro para a revisão', dias: 1, inicio: '15:00', duracao: 45, prioridade: 'MEDIA', categoriaId: 9, criadaHaDias: 0 },
+  { titulo: 'Planejar as compras da semana', dias: 3, prioridade: 'MEDIA', categoriaId: 6 },
+  { titulo: 'Jantar de aniversário da Ana', dias: 5, inicio: '19:30', duracao: 120, prioridade: 'ALTA', categoriaId: 8, descricao: 'Reserva no restaurante às 19h30. Não esquecer o presente.' },
+  { titulo: 'Renovar o seguro do carro', dias: 9, prioridade: 'MEDIA', categoriaId: 5 },
 ];
 
-const titulosHistorico = [
-  'Fazer compras no mercado',
-  'Lavar a roupa',
-  'Pagar o boleto da internet',
-  'Ler 20 páginas do livro',
-  'Limpar a geladeira',
-  'Responder as mensagens do trabalho',
-  'Levar o lixo reciclável',
-  'Estudar para a prova',
-  'Regar as plantas',
-  'Passear com o cachorro',
-  'Atualizar a planilha de gastos',
-  'Ligar para a família',
+const modelosHistorico: { titulo: string; categoriaId: number }[] = [
+  { titulo: 'Fazer compras no mercado', categoriaId: 6 },
+  { titulo: 'Lavar a roupa', categoriaId: 3 },
+  { titulo: 'Pagar o boleto da internet', categoriaId: 5 },
+  { titulo: 'Ler 20 páginas do livro', categoriaId: 1 },
+  { titulo: 'Limpar a geladeira', categoriaId: 3 },
+  { titulo: 'Responder as mensagens do trabalho', categoriaId: 2 },
+  { titulo: 'Levar o lixo reciclável', categoriaId: 3 },
+  { titulo: 'Estudar para a prova', categoriaId: 1 },
+  { titulo: 'Regar as plantas', categoriaId: 3 },
+  { titulo: 'Passear com o cachorro', categoriaId: 3 },
+  { titulo: 'Atualizar a planilha de gastos', categoriaId: 5 },
+  { titulo: 'Ligar para a família', categoriaId: 3 },
+  { titulo: 'Fazer uma caminhada no parque', categoriaId: 4 },
+  { titulo: 'Comprar um presente de aniversário', categoriaId: 6 },
+  { titulo: 'Ir ao cinema', categoriaId: 7 },
+  { titulo: 'Almoçar com os amigos', categoriaId: 8 },
+  { titulo: 'Cortar o cabelo', categoriaId: 9 },
 ];
 
 const semTitulo: ModeloTarefa[] = [
-  { titulo: 'Ler o livro do clube de leitura', dias: 0, prioridade: 'BAIXA', categoriaId: 1 },
-  { titulo: 'Organizar as fotos do celular', dias: 0, prioridade: 'BAIXA', categoriaId: 3 },
+  { titulo: 'Ler o livro do clube de leitura', dias: 0, prioridade: 'BAIXA', categoriaId: 7 },
+  { titulo: 'Organizar as fotos do celular', dias: 0, prioridade: 'BAIXA', categoriaId: 9 },
 ];
 
-export const VERSAO_BANCO = 7;
+export const VERSAO_BANCO = 8;
 
 const DIAS_REGISTRO_EVENTOS = 60;
 
@@ -206,12 +216,11 @@ export function gerarSementes(agora: Date): BancoSimulado {
     for (let indice = 0; indice < quantidade; indice += 1) {
       const inicio = `${String(8 + Math.floor(aleatorio() * 10)).padStart(2, '0')}:${aleatorio() > 0.5 ? '30' : '00'}`;
       const tarefa = criarTarefa({
-        titulo: escolher(titulosHistorico),
+        ...escolher(modelosHistorico),
         dias,
         inicio,
         duracao: 60,
         prioridade: escolher(prioridades),
-        categoriaId: 1 + Math.floor(aleatorio() * 4),
       });
       const cancelada = aleatorio() < 0.06;
       const atraso = aleatorio() < 0.18 ? 60 * 24 : 0;
