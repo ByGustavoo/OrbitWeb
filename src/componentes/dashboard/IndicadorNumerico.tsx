@@ -7,6 +7,8 @@ import estilos from './IndicadorNumerico.module.css';
 
 export type TomIndicador = 'neutro' | 'destaque' | 'sucesso' | 'erro' | 'urgente' | 'sequencia';
 
+export type DisposicaoIndicador = 'bloco' | 'linha';
+
 export interface IndicadorNumericoProps {
   icone: LucideIcon;
   rotulo: string;
@@ -15,6 +17,7 @@ export interface IndicadorNumericoProps {
   formatar?: (valor: number) => string;
   contexto: ReactNode;
   tom?: TomIndicador;
+  disposicao?: DisposicaoIndicador;
   className?: string;
 }
 
@@ -26,12 +29,13 @@ export function IndicadorNumerico({
   formatar = formatarNumero,
   contexto,
   tom = 'neutro',
+  disposicao = 'bloco',
   className,
 }: IndicadorNumericoProps) {
   const exibido = useContagem(valor);
 
   return (
-    <div className={juntarClasses(estilos.indicador, estilos[tom], className)}>
+    <div className={juntarClasses(estilos.indicador, estilos[tom], disposicao === 'linha' && estilos.linha, className)}>
       <dt className={estilos.rotulo}>
         <span className={estilos.icone} aria-hidden="true">
           <Icone size={15} strokeWidth={2.25} />

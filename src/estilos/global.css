@@ -170,9 +170,20 @@ legend {
   }
 }
 
+@keyframes orbit-revelar {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
 .item-em-cascata {
   animation: orbit-surgir var(--duracao-lenta) var(--curva-saida) backwards;
-  animation-delay: calc(var(--indice, 0) * var(--passo-cascata));
+  animation-delay: calc(min(var(--indice, 0), var(--limite-cascata)) * var(--passo-cascata));
+}
+
+.revelar {
+  animation: orbit-revelar var(--duracao-lenta) var(--curva-saida) backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

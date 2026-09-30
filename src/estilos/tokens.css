@@ -49,6 +49,8 @@
   --altura-cabecalho: 64px;
   --largura-conteudo: 1320px;
   --respiro-conteudo: var(--espaco-8);
+  --respiro-topo-conteudo: var(--espaco-6);
+  --altura-titulo-pagina: calc(var(--tamanho-2xl) * var(--altura-linha-justa));
 
   --altura-controle: 38px;
   --altura-controle-sm: 32px;
@@ -67,6 +69,10 @@
   --duracao-expressiva: 520ms;
   --duracao-tema: 600ms;
   --passo-cascata: 30ms;
+  --limite-cascata: 10;
+  --passo-cascata-pagina: 70ms;
+  --animacao-surgir: orbit-surgir;
+  --animacao-revelar: orbit-revelar;
 
   --camada-cabecalho: 30;
   --camada-menu: 40;

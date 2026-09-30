@@ -1,10 +1,12 @@
 .secao {
   container: metricas / inline-size;
+  display: grid;
 }
 
 .grade {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: 1fr;
   gap: 1px;
   overflow: hidden;
   background-color: var(--borda);
@@ -15,10 +17,18 @@
 
 .esqueleto {
   display: flex;
-  flex-direction: column;
-  gap: var(--espaco-3);
-  padding: var(--espaco-5);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-4);
+  padding: var(--espaco-4) var(--espaco-5);
   background-color: var(--superficie);
+}
+
+.esqueletoTextos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--espaco-2);
 }
 
 .erro {
@@ -27,7 +37,7 @@
   border-radius: var(--raio-lg);
 }
 
-@container metricas (max-width: 640px) {
+@container metricas (min-width: 641px) {
   .grade {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

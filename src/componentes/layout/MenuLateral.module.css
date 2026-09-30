@@ -213,6 +213,10 @@
   .menu {
     border-right: none;
   }
+
+  .navegacao {
+    padding-top: calc(var(--respiro-topo-conteudo) + var(--borda-fina) + (var(--altura-titulo-pagina) - var(--altura-item-menu)) / 2);
+  }
 }
 
 @media (hover: hover) {

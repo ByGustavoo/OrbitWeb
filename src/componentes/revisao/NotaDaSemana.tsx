@@ -56,6 +56,7 @@ export function NotaDaSemana({ nota, aoSalvar, className }: NotaDaSemanaProps) {
       />
       <form className={estilos.formulario} onSubmit={(evento) => void enviar(evento)} noValidate>
         <AreaTexto
+          className={estilos.campoNota}
           rotulo="Sua nota"
           rows={5}
           value={texto}

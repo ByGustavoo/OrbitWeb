@@ -98,11 +98,16 @@ function MetaRegistro({ registro }: { registro: RegistroHistoricoDTO }) {
 export function LinhaDoTempoHistorico({ registros, hojeIso, aoAbrir }: LinhaDoTempoHistoricoProps) {
   return (
     <div className={estilos.dias}>
-      {agruparPorDia(registros).map((grupo) => {
+      {agruparPorDia(registros).map((grupo, indice) => {
         const titulo = tituloDoDia(grupo.dia, hojeIso);
         const idTitulo = `historico-dia-${grupo.dia}`;
         return (
-          <section key={grupo.dia} className={estilos.dia} aria-labelledby={idTitulo}>
+          <section
+            key={grupo.dia}
+            className={juntarClasses(estilos.dia, 'item-em-cascata')}
+            style={{ '--indice': indice * 2 } as CSSProperties}
+            aria-labelledby={idTitulo}
+          >
             <h2 className={estilos.tituloDia} id={idTitulo}>
               <span>{titulo.principal}</span>
               {titulo.complemento ? <span className={estilos.complementoDia}>{titulo.complemento}</span> : null}

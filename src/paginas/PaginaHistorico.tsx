@@ -271,7 +271,7 @@ export default function PaginaHistorico() {
 
         <div className={estilos.resultado} aria-busy={resultado.carregando || undefined}>
           {resultado.erro && !resultado.carregando ? null : primeiraPagina && !desatualizada ? (
-            <p className={estilos.total} aria-live="polite">
+            <p className={`${estilos.total} revelar`} aria-live="polite">
               {totalItens === 0 ? 'Nenhum registro' : pluralizar(totalItens, 'registro', 'registros')} {descreverIntervalo(filtros.intervalo)}
             </p>
           ) : (

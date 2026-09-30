@@ -1,4 +1,6 @@
 .indicador {
+  --passo-cascata-indicador: 70ms;
+  --atraso-indicador: calc(var(--indice, 0) * var(--passo-cascata-indicador));
   --tom-texto: var(--texto-secundario);
   --tom-fundo: var(--neutro-suave);
 
@@ -8,6 +10,35 @@
   min-width: 0;
   padding: var(--espaco-5);
   background-color: var(--superficie);
+}
+
+.indicador:nth-child(2) {
+  --indice: 1;
+}
+
+.indicador:nth-child(3) {
+  --indice: 2;
+}
+
+.indicador:nth-child(4) {
+  --indice: 3;
+}
+
+.indicador:nth-child(5) {
+  --indice: 4;
+}
+
+.indicador > * {
+  animation: var(--animacao-surgir) var(--duracao-lenta) var(--curva-saida) backwards;
+  animation-delay: var(--atraso-indicador);
+}
+
+.indicador > .valor {
+  animation-delay: calc(var(--atraso-indicador) + var(--passo-cascata));
+}
+
+.indicador > .contexto {
+  animation-delay: calc(var(--atraso-indicador) + var(--passo-cascata) * 2);
 }
 
 .destaque {
@@ -81,6 +112,43 @@
   color: var(--texto-terciario);
   font-size: var(--tamanho-xs);
   line-height: var(--altura-linha-compacta);
+}
+
+.linha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'rotulo valor'
+    'contexto valor';
+  align-content: center;
+  gap: var(--espaco-1) var(--espaco-4);
+  padding-block: var(--espaco-4);
+}
+
+.linha .rotulo {
+  grid-area: rotulo;
+}
+
+.linha .valor {
+  grid-area: valor;
+  align-self: center;
+  margin-top: 0;
+  font-size: var(--tamanho-xl);
+  animation-name: surgirLateral;
+  animation-delay: calc(var(--atraso-indicador) + var(--duracao-rapida));
+}
+
+.linha .contexto {
+  grid-area: contexto;
+  padding-left: calc(26px + var(--espaco-2));
+  animation-delay: calc(var(--atraso-indicador) + var(--passo-cascata));
+}
+
+@keyframes surgirLateral {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
 }
 
 @media (max-width: 767px) {

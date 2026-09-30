@@ -97,5 +97,5 @@
   color: var(--sucesso);
   font-size: var(--tamanho-sm);
   font-weight: var(--peso-medio);
-  animation: orbit-surgir var(--duracao-lenta) var(--curva-saida);
+  animation: var(--animacao-surgir) var(--duracao-lenta) var(--curva-saida);
 }
