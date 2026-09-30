@@ -293,8 +293,20 @@ esqueleto.
   `index.html` e pode ser reescrito no *deploy*:
 
   ```js
-  window.__ORBIT_CONFIG__ = { urlApi: 'https://api.exemplo.com/orbit', versao: '1.0.0' };
+  window.__ORBIT_CONFIG__ = {
+    urlApi: 'https://api.exemplo.com/orbit',
+    versao: '1.0.0',
+    dataLancamento: '2026-09-29T14:32:05Z',
+  };
   ```
+
+  Na imagem Docker, o `config.js` é gerado ao subir o container a partir de `ORBIT_API_URL`,
+  `ORBIT_VERSION` e `ORBIT_RELEASE_DATE` (as duas últimas vêm do *build* da release). `versao` e
+  `dataLancamento` aparecem em Configurações › Versões; sem `versao`, a tela mostra "Versão de
+  desenvolvimento".
+- **Versão:** a numeração começa no `version` do `package.json` (`1.0.0`). O workflow de release
+  incrementa a partir da última tag `vX.Y.Z`, a menos que o `package.json` declare uma versão
+  maior que ela; nesse caso, usa a do `package.json`.
 
 - **Ordem de prioridade da URL:** `window.__ORBIT_CONFIG__.urlApi` → `VITE_URL_API` →
   `http://localhost:8080/api`.

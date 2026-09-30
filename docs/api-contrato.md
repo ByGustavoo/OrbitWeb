@@ -34,8 +34,9 @@ Onde algo depende de uma decisão do backend que ainda não foi tomada, o texto 
 10. [Histórico](#10-histórico)
 11. [Revisão semanal](#11-revisão-semanal)
 12. [Dashboard](#12-dashboard)
-13. [Fluxos entre telas sustentados pelo contrato](#13-fluxos-entre-telas-sustentados-pelo-contrato)
-14. [Pendências do contrato](#14-pendências-do-contrato)
+13. [Sistema](#13-sistema)
+14. [Fluxos entre telas sustentados pelo contrato](#14-fluxos-entre-telas-sustentados-pelo-contrato)
+15. [Pendências do contrato](#15-pendências-do-contrato)
 
 ---
 
@@ -388,6 +389,7 @@ sugestão de redação para a pessoa, não um valor definitivo.
 | 28 | PUT | `/revisao-semanal/{inicioSemana}/nota` | `servicoRevisaoSemanal` | `salvarNotaSemana` |
 | 29 | GET | `/dashboard/resumo` | `servicoDashboard` | `buscarResumoDashboard` |
 | 30 | GET | `/dashboard/sequencia` | `servicoDashboard` | `buscarSequencia` |
+| 31 | GET | `/sistema/versao` | `servicoSistema` | `buscarVersao` |
 
 As URLs existem num só lugar do front: `src/api/rotasApi.ts`.
 
@@ -2038,13 +2040,42 @@ ela responde `{ "atual": 0, "recorde": 0, "contaHoje": false }`. `data` fora do 
 
 ---
 
-## 13. Fluxos entre telas sustentados pelo contrato
+## 13. Sistema
+
+### 13.1 `GET /sistema/versao`
+
+**Objetivo:** versão publicada da API, exibida em Configurações › Versões ao lado da versão do
+front. É a mesma rota do PrismaAPI (`GET /v1/sistema/versao`).
+
+**Parâmetros:** nenhum.
+
+**Response `200`:** `VersaoSistemaDTO`.
+
+```json
+{ "versao": "1.0.0", "dataLancamento": "2026-09-29T14:32:05Z" }
+```
+
+| Campo | Tipo | Regra |
+|---|---|---|
+| `versao` | string | Versão declarada no build, sem o prefixo `v` |
+| `dataLancamento` | instante \| `null` | Instante em UTC em que o artefato foi gerado |
+
+**Status HTTP:** `200`; `500` em erro interno.
+
+**No OrbitAPI:** não acessa o banco, então também serve para saber se a API está no ar. No
+PrismaAPI a resposta vem de `BuildProperties` (`version` e `time`), gerado pelo `springBoot {
+buildInfo() }` do Gradle. Quando a chamada falha, a tela mostra "Não foi possível consultar" e
+oferece "Tentar de novo"; as outras telas não dependem dela.
+
+---
+
+## 14. Fluxos entre telas sustentados pelo contrato
 
 O front não guarda listas do domínio em estado global. Depois de cada escrita, ele avisa as telas
 montadas (`notificarAlteracao`), e elas pedem os dados de novo. Por isso **toda leitura precisa
 refletir a escrita imediatamente**: sem cache no backend entre uma chamada e outra.
 
-### 13.1 Criar tarefa
+### 14.1 Criar tarefa
 
 ```text
 Formulário           POST /tarefas                                 → 201 TarefaDTO
@@ -2058,7 +2089,7 @@ Revisão semanal      GET /revisao-semanal (criadas, planejadas, próxima semana
 
 Concluir (`PATCH /situacao`) segue o mesmo caminho e ainda muda a sequência de dias.
 
-### 13.2 Estudar
+### 14.2 Estudar
 
 ```text
 Detalhes da tarefa   "Iniciar estudo" → PATCH /tarefas/{id}/situacao { EM_ANDAMENTO } (se pendente)
@@ -2072,7 +2103,7 @@ Revisão semanal      /revisao-semanal (minutos, sessões, metas, dias com ativi
 Calendário           /sessoes?dataInicial=dia&dataFinal=dia
 ```
 
-### 13.3 Mover atrasadas para hoje
+### 14.3 Mover atrasadas para hoje
 
 ```text
 GET /tarefas?prazo=ATRASADA&dataFinal={ontem}   (ou a lista já carregada no Dashboard/Revisão)
@@ -2083,7 +2114,7 @@ POST /tarefas/reagendamentos { itens: [{ id, data: hoje }] }
 
 ---
 
-## 14. Pendências do contrato
+## 15. Pendências do contrato
 
 | # | Assunto | Situação |
 |---|---|---|

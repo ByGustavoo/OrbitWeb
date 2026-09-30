@@ -12,6 +12,7 @@ interface ImportMeta {
 interface ConfiguracaoExecucaoOrbit {
   readonly urlApi?: string;
   readonly versao?: string;
+  readonly dataLancamento?: string;
 }
 
 interface Window {

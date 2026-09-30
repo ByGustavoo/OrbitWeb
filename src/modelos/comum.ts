@@ -33,3 +33,8 @@ export interface CategoriaEnvioDTO {
   nome: string;
   cor: Cor;
 }
+
+export interface VersaoSistemaDTO {
+  versao: string;
+  dataLancamento: string | null;
+}

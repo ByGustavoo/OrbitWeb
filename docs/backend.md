@@ -493,6 +493,7 @@ sugerido:
 | Histórico | `GET /historico`, `GET /historico/{id}` |
 | Revisão semanal | `GET /revisao-semanal`, `PUT /revisao-semanal/{inicioSemana}/nota` |
 | Dashboard | `GET /dashboard/resumo`, `GET /dashboard/sequencia` |
+| Sistema | `GET /sistema/versao` |
 
 Não crie rotas além destas sem combinar com o front: rotas não usadas não fazem parte do contrato.
 

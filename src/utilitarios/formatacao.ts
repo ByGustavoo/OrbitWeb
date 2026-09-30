@@ -100,6 +100,15 @@ export function formatarInstante(instante: string): string {
   return formatadorInstante.format(new Date(instante)).replace(',', ' às');
 }
 
+export function formatarInstanteOpcional(instante: string | null): string | null {
+  if (!instante || Number.isNaN(new Date(instante).getTime())) return null;
+  return formatarInstante(instante);
+}
+
+export function formatarVersao(versao: string): string {
+  return /^\d/.test(versao) ? `v${versao}` : versao;
+}
+
 export function formatarIntervaloHorario(inicio: string | null, fim: string | null, diaInteiro: boolean): string {
   if (diaInteiro || !inicio) return 'Dia inteiro';
   return fim ? `${inicio} – ${fim}` : `A partir das ${inicio}`;

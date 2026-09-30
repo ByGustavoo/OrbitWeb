@@ -37,7 +37,7 @@ import {
   resumirCalendario,
 } from './manipuladores/tarefas';
 import { estenderSeries } from './series';
-import { rotaInexistente, servicoIndisponivel } from './resposta';
+import { ok, rotaInexistente, servicoIndisponivel } from './resposta';
 
 type Manipulador = (
   banco: BancoSimulado,
@@ -93,6 +93,7 @@ const rotas: Rota[] = [
   { metodo: 'GET', padrao: exato(rotasApi.dashboard.sequencia), manipulador: buscarSequencia },
   { metodo: 'GET', padrao: exato(rotasApi.estudos.mapaCalor), manipulador: buscarMapaCalor },
   { metodo: 'GET', padrao: exato(rotasApi.estudos.progressoSemanal), manipulador: buscarProgressoSemanal },
+  { metodo: 'GET', padrao: exato(rotasApi.sistema.versao), manipulador: () => ok({ versao: 'Simulada', dataLancamento: null }) },
 ];
 
 function deveFalhar(caminho: string): boolean {

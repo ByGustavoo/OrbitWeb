@@ -4,4 +4,5 @@ export { servicoDashboard } from './servicoDashboard';
 export { servicoHistorico } from './servicoHistorico';
 export { servicoRevisaoSemanal } from './servicoRevisaoSemanal';
 export { servicoSessoes } from './servicoSessoes';
+export { servicoSistema } from './servicoSistema';
 export { servicoTarefas } from './servicoTarefas';
