@@ -56,9 +56,12 @@ jobs:
           fi
 
           ultima=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)
+          versao_pacote=$(node -p "require('./package.json').version")
 
           if [ -z "$ultima" ]; then
-            versao=$(node -p "require('./package.json').version")
+            versao="$versao_pacote"
+          elif [ "$versao_pacote" != "${ultima#v}" ] && [ "$(printf '%s\n%s\n' "$versao_pacote" "${ultima#v}" | sort -V | tail -n 1)" = "$versao_pacote" ]; then
+            versao="$versao_pacote"
           else
             IFS=. read -r maior menor correcao <<< "${ultima#v}"
             case "$incremento" in

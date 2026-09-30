@@ -26,6 +26,10 @@
   --ordem: 2;
 }
 
+.listaIndice > li:nth-child(4) {
+  --ordem: 3;
+}
+
 .listaIndice {
   display: flex;
   flex-direction: column;
@@ -85,6 +89,10 @@
 
 .secoes > :nth-child(3) {
   --ordem: 2;
+}
+
+.secoes > :nth-child(4) {
+  --ordem: 3;
 }
 
 @keyframes entrarIndice {

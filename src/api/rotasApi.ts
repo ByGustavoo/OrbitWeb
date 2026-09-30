@@ -36,4 +36,7 @@ export const rotasApi = {
     resumo: '/dashboard/resumo',
     sequencia: '/dashboard/sequencia',
   },
+  sistema: {
+    versao: '/sistema/versao',
+  },
 } as const;

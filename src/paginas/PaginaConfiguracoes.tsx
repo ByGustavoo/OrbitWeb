@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { Palette, Tags, Timer } from 'lucide-react';
+import { Info, Palette, Tags, Timer } from 'lucide-react';
 import { SecaoAparencia } from '@/componentes/configuracoes/SecaoAparencia';
 import { SecaoCategorias } from '@/componentes/configuracoes/SecaoCategorias';
 import { SecaoPomodoro } from '@/componentes/configuracoes/SecaoPomodoro';
+import { SecaoVersoes } from '@/componentes/configuracoes/SecaoVersoes';
 import { CabecalhoPagina } from '@/componentes/layout/CabecalhoPagina';
 import { useParametrosPagina } from '@/ganchos/useParametrosPagina';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import estilos from './PaginaConfiguracoes.module.css';
 
-type ChaveSecao = 'aparencia' | 'pomodoro' | 'categorias';
+type ChaveSecao = 'aparencia' | 'pomodoro' | 'categorias' | 'versoes';
 
 interface ItemIndice {
   chave: ChaveSecao;
@@ -19,7 +20,7 @@ interface ItemIndice {
   icone: LucideIcon;
 }
 
-const ULTIMA_SECAO: ChaveSecao = 'categorias';
+const ULTIMA_SECAO: ChaveSecao = 'versoes';
 const ALTURA_CABECALHO_PX = 64;
 const DURACAO_MAXIMA_ROLAGEM_MS = 1000;
 const PROPORCAO_LINHA_DE_LEITURA = 0.35;
@@ -28,6 +29,7 @@ const itensIndice: ItemIndice[] = [
   { chave: 'aparencia', rotulo: 'Aparência', icone: Palette },
   { chave: 'pomodoro', rotulo: 'Pomodoro', icone: Timer },
   { chave: 'categorias', rotulo: 'Categorias', icone: Tags },
+  { chave: 'versoes', rotulo: 'Versões', icone: Info },
 ];
 
 const idSecao = (chave: ChaveSecao) => `secao-${chave}`;
@@ -145,6 +147,7 @@ export default function PaginaConfiguracoes() {
           <SecaoAparencia id={idSecao('aparencia')} idTitulo={idTituloSecao('aparencia')} />
           <SecaoPomodoro id={idSecao('pomodoro')} idTitulo={idTituloSecao('pomodoro')} />
           <SecaoCategorias id={idSecao('categorias')} idTitulo={idTituloSecao('categorias')} />
+          <SecaoVersoes id={idSecao('versoes')} idTitulo={idTituloSecao('versoes')} />
         </div>
       </div>
     </>

@@ -22,7 +22,8 @@ LABEL org.opencontainers.image.title="Orbit Web" \
       org.opencontainers.image.created="${BUILD_DATE}"
 
 ENV ORBIT_API_URL=http://localhost:9018/OrbitAPI/v1 \
-    ORBIT_VERSION=${VERSION}
+    ORBIT_VERSION=${VERSION} \
+    ORBIT_RELEASE_DATE=${BUILD_DATE}
 
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --chmod=755 docker/40-orbit-config.sh /docker-entrypoint.d/40-orbit-config.sh
