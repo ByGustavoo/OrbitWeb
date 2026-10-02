@@ -6,7 +6,7 @@ services:
     restart: always
 
     ports:
-      - "9031:8080"
+      - "5174:8080"
 
     environment:
       ORBIT_API_URL: ${ORBIT_API_URL}

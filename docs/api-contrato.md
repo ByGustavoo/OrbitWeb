@@ -75,14 +75,14 @@ Não há autenticação na primeira versão (uso individual, sem login). Quando 
 `Authorization` será acrescentado num único ponto (`clienteHttp.ts`).
 
 **CORS:** `X-Fuso-Horario` é um cabeçalho próprio e dispara *preflight*. O backend precisa
-permitir, para a origem do front (`http://localhost:5173` no desenvolvimento):
+permitir, para a origem do front (`http://localhost:5174` no desenvolvimento):
 
 - métodos `GET`, `POST`, `PUT`, `PATCH`, `DELETE` e `OPTIONS`;
 - cabeçalhos `Content-Type`, `Accept` e `X-Fuso-Horario`.
 
 O OrbitAPI faz isso em `CorsConfig`. As origens vêm de `orbitapi.cors.origens-permitidas`: no perfil
-`dev`, qualquer porta de `localhost` e `127.0.0.1` (o Vite troca de porta quando a 5173 está
-ocupada); nos demais perfis, `http://localhost:5173`.
+`dev`, qualquer porta de `localhost` e `127.0.0.1` (o Vite troca de porta quando a 5174 está
+ocupada); nos demais perfis, `http://localhost:5174`.
 
 Se `X-Fuso-Horario` faltar ou for inválido, o OrbitAPI usa `America/Sao_Paulo`, o mesmo valor
 que o front usa quando o navegador não informa o fuso. Um valor inválido não gera erro: a API

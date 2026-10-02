@@ -117,7 +117,7 @@ $ cp .env.example .env
 
 🔹 Execução
 ```bash
-# Sobe o servidor de desenvolvimento em http://localhost:5173
+# Sobe o servidor de desenvolvimento em http://localhost:5174
 $ npm run dev
 ```
 
@@ -314,7 +314,7 @@ VITE_URL_API=http://localhost:8080/api
 * 🕒 Datas como `"2026-09-24"`, horários como `"19:00"` e instantes em ISO 8601 com fuso.
 * 🌎 O frontend envia `X-Fuso-Horario` com o fuso do navegador, para o backend decidir o que é "hoje"
   e "atrasada". O backend precisa liberar esse cabeçalho no **CORS**, para a origem do dev server
-  (`http://localhost:5173`).
+  (`http://localhost:5174`).
 * 📑 Paginação em `{ itens, pagina, tamanho, totalItens, totalPaginas }`, com `pagina` começando em 0.
 * ⚠️ Erros no `ErrorResponseDTO` (`status`, `title`, `instance`, `type`, `detail` e, opcionalmente,
   `errors` com os campos inválidos).

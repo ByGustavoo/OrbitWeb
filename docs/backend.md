@@ -783,7 +783,7 @@ DELETE /tarefas/{id}?escopo=…
 
 | Item | Valor |
 |---|---|
-| CORS | Origem do front (`http://localhost:5173` no desenvolvimento); métodos `GET, POST, PUT, PATCH, DELETE, OPTIONS`; cabeçalhos `Content-Type, Accept, X-Fuso-Horario` |
+| CORS | Origem do front (`http://localhost:5174` no desenvolvimento); métodos `GET, POST, PUT, PATCH, DELETE, OPTIONS`; cabeçalhos `Content-Type, Accept, X-Fuso-Horario` |
 | Jackson | `WRITE_DATES_AS_TIMESTAMPS = false`; `LocalTime` em `HH:mm`; enums pelo nome |
 | Tempo de resposta | O front desiste depois de **15 segundos** e mostra "O servidor demorou demais para responder." |
 | Autenticação | Nenhuma na primeira versão |
