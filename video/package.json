@@ -1,0 +1,29 @@
+{
+  "name": "orbit-video",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "estudio": "remotion studio src/index.ts",
+    "audio": "node scripts/gerarAudio.ts",
+    "render": "npm run audio && remotion render src/index.ts ApresentacaoOrbit out/orbit-apresentacao.mp4 --codec=h264 --scale=2 --image-format=png --crf=12 --x264-preset=slow --color-space=bt709 --audio-bitrate=320k",
+    "gif": "node scripts/gerarGif.ts",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.532",
+    "@remotion/fonts": "4.0.532",
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.532"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.12",
+    "typescript": "^5.6.3"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  }
+}
