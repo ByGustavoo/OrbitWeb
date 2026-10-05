@@ -137,7 +137,7 @@ porque o React exige. Importações usam o apelido `@/` para `src/`.
 | `/revisao` | `PaginaRevisaoSemanal` | Revisão da semana e nota | `servicoRevisaoSemanal` |
 | `/configuracoes` | `PaginaConfiguracoes` | Aparência (tema), Pomodoro (durações, início automático da pausa, som) e cadastro de categorias; índice lateral; `secao=aparencia\|pomodoro\|categorias` leva direto à seção | `servicoCategorias`; tema e Pomodoro no `localStorage` |
 | `/componentes` | `PaginaComponentes` | Catálogo do design system, **só em desenvolvimento** | — |
-| outras | `PaginaNaoEncontrada` | Página não encontrada | — |
+| outras | `PaginaNaoEncontrada` | Página não encontrada, **fora do `LayoutAplicacao`**: marca no topo, a cena de órbitas com o `404` no centro, o endereço pedido, "Ir para o Dashboard", "Voltar" (só quando há histórico dentro do app) e atalhos tirados de `navegacaoPrincipal` | — |
 
 As páginas são carregadas sob demanda (`React.lazy`). Filtros, mês, dia, semana e período ficam no
 **estado do histórico do navegador** (`useParametrosPagina`), não na query string: a barra de
