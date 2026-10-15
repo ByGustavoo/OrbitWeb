@@ -8,7 +8,10 @@ same routes and formats.
 
 ## Type
 web/frontend - release: branch + PR to `main` (`ci.yml` runs on the PR; `release.yml` publishes the
-Docker image and the `vX.Y.Z` tag only when a PR is merged, so a direct push to `main` publishes nothing)
+Docker image and the `vX.Y.Z` tag only when a PR is merged, so a direct push to `main` publishes nothing).
+The release notes are the PR description, followed by the `docker pull` of the version and the list
+`--generate-notes` builds from the PR titles; the description reaches the script through the
+`DESCRICAO_PR` variable, never interpolated, and a manual run goes out without it
 
 ## Stack
 React 18, TypeScript 5 (`strict`, `noUncheckedIndexedAccess`), Vite 5, React Router 6 (v7 future
