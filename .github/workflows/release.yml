@@ -135,9 +135,15 @@ jobs:
           TAG: ${{ needs.versao.outputs.tag }}
           COMMIT: ${{ needs.versao.outputs.commit }}
           VERSAO: ${{ needs.versao.outputs.versao }}
+          DESCRICAO_PR: ${{ github.event.pull_request.body }}
         run: |
           set -euo pipefail
           {
+            if [ -n "${DESCRICAO_PR//[[:space:]]/}" ]; then
+              printf '%s\n\n' "${DESCRICAO_PR//$'\r'/}"
+            fi
+            echo "## Imagem Docker"
+            echo
             echo "Imagem publicada no Docker Hub:"
             echo
             echo '```bash'
