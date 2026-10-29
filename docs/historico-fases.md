@@ -1150,7 +1150,10 @@ O contraste de todos os pares texto × fundo foi conferido nos dois temas (WCAG 
 `BotaoIcone`, `CampoTexto` (texto), `CampoNumero` (botões próprios de diminuir e aumentar, segurar para repetir, setas do teclado, limites, casas decimais e sufixo), `CampoBusca`, `AreaTexto`, `CampoSelecao` (lista própria,
 com ícone, descrição, opção vazia e busca por digitação), `SeletorData` (calendário próprio com
 visões de dias, meses e anos), `SeletorHorario` (colunas de hora e minuto), `Flutuante` (base dos
-painéis que abrem junto de um campo), `CaixaSelecao`, `GrupoRadio`, `Interruptor`, `GrupoOpcoes`, `Selo`, `Painel` +
+painéis que abrem junto de um campo; abre sempre abaixo dele: quando falta espaço, rola o
+contêiner do campo (ou a página, descontando o cabeçalho fixo), cria uma folga no fim dele
+enquanto o painel está aberto quando o campo é o último, e limita a altura do painel ao que sobra
+na tela), `CaixaSelecao`, `GrupoRadio`, `Interruptor`, `GrupoOpcoes`, `Selo`, `Painel` +
 `CabecalhoPainel`, `Modal` (folha inferior no celular), `DialogoConfirmacao`, `Notificacao`
 (com ação opcional, como "Desfazer"), `Esqueleto`, `EsqueletoLista`, `EsqueletoCartao`,
 `IndicadorGiratorio`, `EstadoVazio`, `EstadoErro`. Selos de domínio em

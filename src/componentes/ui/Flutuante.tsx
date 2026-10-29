@@ -24,7 +24,26 @@ interface Posicao {
   top: number;
   left: number;
   minWidth: number;
-  origem: 'topo' | 'base';
+  alturaDisponivel: number;
+}
+
+interface AreaRolavel {
+  conteiner: HTMLElement;
+  topoVisivel: number;
+}
+
+function areaRolavel(elemento: HTMLElement): AreaRolavel | null {
+  for (let atual = elemento.parentElement; atual && atual !== document.body; atual = atual.parentElement) {
+    const { overflowY, position } = getComputedStyle(atual);
+    if ((overflowY === 'auto' || overflowY === 'scroll') && atual.scrollHeight > atual.clientHeight) {
+      return { conteiner: atual, topoVisivel: atual.getBoundingClientRect().top };
+    }
+    if (position === 'fixed' || atual instanceof HTMLDialogElement) return null;
+  }
+  const pagina = document.scrollingElement as HTMLElement | null;
+  if (!pagina) return null;
+  const alturaCabecalho = parseFloat(getComputedStyle(pagina).getPropertyValue('--altura-cabecalho')) || 0;
+  return { conteiner: pagina, topoVisivel: alturaCabecalho };
 }
 
 export function Flutuante({
@@ -40,7 +59,7 @@ export function Flutuante({
 }: FlutuanteProps) {
   const painelRef = useRef<HTMLDivElement>(null);
   const [posicao, setPosicao] = useState<Posicao | null>(null);
-  const ladoEscolhido = useRef<'abaixo' | 'acima' | null>(null);
+  const folgaCriada = useRef<{ conteiner: HTMLElement; paddingOriginal: string } | null>(null);
 
   const posicionar = useCallback(() => {
     const elementoAncora = ancora.current;
@@ -48,36 +67,57 @@ export function Flutuante({
     if (!elementoAncora || !painel) return;
 
     const retangulo = elementoAncora.getBoundingClientRect();
-    const altura = painel.offsetHeight;
     const largura = Math.max(painel.offsetWidth, larguraMinimaDaAncora ? retangulo.width : 0);
-    const cabeAbaixo = retangulo.bottom + DISTANCIA_ANCORA + altura <= window.innerHeight - MARGEM_TELA;
-    const cabeAcima = retangulo.top - DISTANCIA_ANCORA - altura >= MARGEM_TELA;
-    const ladoAnterior = ladoEscolhido.current;
-    const manterAnterior =
-      (ladoAnterior === 'abaixo' && cabeAbaixo) || (ladoAnterior === 'acima' && cabeAcima);
-    const abrirAcima = manterAnterior ? ladoAnterior === 'acima' : !cabeAbaixo && cabeAcima;
-    ladoEscolhido.current = abrirAcima ? 'acima' : 'abaixo';
-    const topo = abrirAcima
-      ? retangulo.top - DISTANCIA_ANCORA - altura
-      : Math.min(retangulo.bottom + DISTANCIA_ANCORA, window.innerHeight - MARGEM_TELA - altura);
+    const topo = retangulo.bottom + DISTANCIA_ANCORA;
     const esquerda = Math.min(Math.max(retangulo.left, MARGEM_TELA), window.innerWidth - MARGEM_TELA - largura);
 
     setPosicao({
       top: Math.max(topo, MARGEM_TELA),
       left: Math.max(esquerda, MARGEM_TELA),
       minWidth: larguraMinimaDaAncora ? retangulo.width : 0,
-      origem: abrirAcima ? 'base' : 'topo',
+      alturaDisponivel: Math.max(window.innerHeight - MARGEM_TELA - topo, 0),
     });
   }, [ancora, larguraMinimaDaAncora]);
+
+  const abrirEspacoAbaixo = useCallback(() => {
+    const elementoAncora = ancora.current;
+    const painel = painelRef.current;
+    if (!elementoAncora || !painel) return;
+    const falta =
+      elementoAncora.getBoundingClientRect().bottom + DISTANCIA_ANCORA + painel.offsetHeight - (window.innerHeight - MARGEM_TELA);
+    if (falta <= 0) return;
+    const area = areaRolavel(elementoAncora);
+    if (!area) return;
+    const { conteiner, topoVisivel } = area;
+    const rolagemRestante = conteiner.scrollHeight - conteiner.clientHeight - conteiner.scrollTop;
+    const alcanceAteOTopo = Math.max(elementoAncora.getBoundingClientRect().top - topoVisivel - MARGEM_TELA, 0);
+    const deslocamento = Math.min(falta, alcanceAteOTopo);
+    const folga = deslocamento - rolagemRestante;
+    if (folga > 0) {
+      folgaCriada.current = { conteiner, paddingOriginal: conteiner.style.paddingBottom };
+      conteiner.style.paddingBottom = `calc(${getComputedStyle(conteiner).paddingBottom} + ${Math.ceil(folga)}px)`;
+    }
+    conteiner.scrollTop += deslocamento;
+  }, [ancora]);
+
+  const desfazerFolga = useCallback(() => {
+    const folga = folgaCriada.current;
+    if (!folga) return;
+    folga.conteiner.style.paddingBottom = folga.paddingOriginal;
+    folgaCriada.current = null;
+  }, []);
 
   useLayoutEffect(() => {
     if (!aberto) {
       setPosicao(null);
-      ladoEscolhido.current = null;
+      desfazerFolga();
       return;
     }
+    abrirEspacoAbaixo();
     posicionar();
-  }, [aberto, posicionar]);
+  }, [aberto, abrirEspacoAbaixo, desfazerFolga, posicionar]);
+
+  useEffect(() => desfazerFolga, [desfazerFolga]);
 
   useEffect(() => {
     if (!aberto) return;
@@ -125,7 +165,12 @@ export function Flutuante({
   if (!aberto) return null;
 
   const estilo: CSSProperties = posicao
-    ? { top: posicao.top, left: posicao.left, minWidth: posicao.minWidth || undefined }
+    ? ({
+        top: posicao.top,
+        left: posicao.left,
+        minWidth: posicao.minWidth || undefined,
+        '--altura-disponivel': `${posicao.alturaDisponivel}px`,
+      } as CSSProperties)
     : { top: 0, left: 0, visibility: 'hidden' };
 
   return createPortal(
@@ -134,11 +179,7 @@ export function Flutuante({
       id={id}
       role={papel === 'dialog' ? 'dialog' : undefined}
       aria-label={papel === 'dialog' ? rotulo : undefined}
-      className={juntarClasses(
-        estilos.flutuante,
-        posicao?.origem === 'base' ? estilos.deBaixo : estilos.deCima,
-        className,
-      )}
+      className={juntarClasses(estilos.flutuante, className)}
       style={estilo}
       onKeyDown={aoPressionarTecla}
     >
