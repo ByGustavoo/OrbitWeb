@@ -2,19 +2,15 @@
   position: fixed;
   z-index: var(--camada-flutuante);
   max-width: calc(100vw - var(--espaco-4));
+  max-height: var(--altura-disponivel, none);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background-color: var(--superficie-elevada);
   border: 1px solid var(--borda);
   border-radius: var(--raio-lg);
   box-shadow: var(--sombra-flutuante);
-  animation: abrir var(--duracao-base) var(--curva-saida);
-}
-
-.deCima {
   transform-origin: top left;
-}
-
-.deBaixo {
-  transform-origin: bottom left;
+  animation: abrir var(--duracao-base) var(--curva-saida);
 }
 
 @keyframes abrir {
