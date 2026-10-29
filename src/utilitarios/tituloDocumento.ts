@@ -5,10 +5,10 @@ let tituloDestaque: string | null = null;
 
 function aplicarTitulo(): void {
   const proximo = tituloDestaque
-    ? `${tituloDestaque} · ${NOME_APLICACAO}`
+    ? `${tituloDestaque} | ${NOME_APLICACAO}`
     : tituloBase
-      ? `${NOME_APLICACAO} · ${tituloBase}`
-      : `${NOME_APLICACAO} · ${SLOGAN_APLICACAO}`;
+      ? `${NOME_APLICACAO} | ${tituloBase}`
+      : `${NOME_APLICACAO} | ${SLOGAN_APLICACAO}`;
   if (document.title !== proximo) document.title = proximo;
 }
 
