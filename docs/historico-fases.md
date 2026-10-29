@@ -1477,6 +1477,8 @@ calculada, não guardada.
   leitura.
 - **Título da aba**: `utilitarios/tituloDocumento.ts` compõe o título da página com o destaque do
   cronômetro (`00:24:18 · Inglês`, `Foco 18:32 · Inglês`, `Pausado · …`, `Foco concluído · …`).
+  O nome e o resto do título são separados por `|`, como no PrismaWeb: `Orbit | Tarefas`,
+  `Orbit | Organize o que move o seu dia.` e, com o cronômetro, `Foco 18:32 · Inglês | Orbit`.
 
 ### Contrato usado pelo frontend
 
