@@ -45,12 +45,14 @@
 .textosMarca {
   display: flex;
   flex-direction: column;
+  gap: var(--espaco-1);
   min-width: 0;
   white-space: nowrap;
   transition: opacity var(--duracao-rapida) var(--curva-saida);
 }
 
 .nome {
+  align-self: flex-start;
   font-size: var(--tamanho-lg);
   font-weight: var(--peso-forte);
   letter-spacing: var(--letras-titulo);
@@ -58,6 +60,43 @@
   line-height: 1.2;
 }
 
+.descricao {
+  color: var(--texto-terciario);
+  font-size: var(--tamanho-xs);
+  line-height: var(--altura-linha-compacta);
+}
+
+:global(.chegando-das-boas-vindas) .textosMarca {
+  clip-path: inset(-8px -8px -8px calc(-1 * var(--espaco-3)));
+}
+
+:global(.chegando-das-boas-vindas) .nome {
+  animation: nomeEmergir 420ms var(--curva-saida) 780ms backwards;
+  animation-play-state: paused;
+}
+
+:global(.chegando-das-boas-vindas) .descricao {
+  animation: descricaoEntrar 360ms var(--curva-saida) 1080ms backwards;
+  animation-play-state: paused;
+}
+
+:global(.chegando-das-boas-vindas.marca-em-voo) .nome,
+:global(.chegando-das-boas-vindas.marca-em-voo) .descricao {
+  animation-play-state: running;
+}
+
+@keyframes nomeEmergir {
+  from {
+    transform: translateX(calc(-100% - var(--espaco-3) - var(--espaco-1)));
+  }
+}
+
+@keyframes descricaoEntrar {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
 
 .recolhido .textosMarca,
 .recolhido .rotuloItem {

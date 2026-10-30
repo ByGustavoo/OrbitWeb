@@ -223,26 +223,15 @@ legend {
   view-transition-name: marca-orbit;
 }
 
-.nome-em-transicao {
-  view-transition-name: nome-orbit;
-}
-
 ::view-transition-group(marca-orbit),
-::view-transition-group(nome-orbit) {
-  animation-duration: 760ms;
-  animation-timing-function: cubic-bezier(0.65, 0, 0.2, 1);
-}
-
 ::view-transition-old(marca-orbit),
-::view-transition-new(marca-orbit),
-::view-transition-old(nome-orbit),
-::view-transition-new(nome-orbit) {
+::view-transition-new(marca-orbit) {
   animation-duration: 760ms;
   animation-timing-function: cubic-bezier(0.65, 0, 0.2, 1);
 }
 
 .saindo-das-boas-vindas::view-transition-old(root) {
-  animation: orbit-transicao-sair var(--duracao-lenta) var(--curva-entrada) both;
+  animation: orbit-transicao-sair 420ms var(--curva-entrada) both;
 }
 
 .saindo-das-boas-vindas::view-transition-new(root) {

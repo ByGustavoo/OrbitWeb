@@ -1,6 +1,9 @@
 import { flushSync } from 'react-dom';
 
 const CLASSE_TRANSICAO = 'saindo-das-boas-vindas';
+const CLASSE_CHEGADA = 'chegando-das-boas-vindas';
+const CLASSE_MARCA_EM_VOO = 'marca-em-voo';
+const DURACAO_CHEGADA_MS = 1500;
 const ESPERA_MAXIMA_PAGINA_MS = 600;
 const INTERVALO_VERIFICACAO_MS = 16;
 
@@ -35,12 +38,22 @@ export function transicionarParaAplicacao(aoComecar: () => void): void {
 
   const raiz = document.documentElement;
   const limpar = () => raiz.classList.remove(CLASSE_TRANSICAO);
-  raiz.classList.add(CLASSE_TRANSICAO);
+  const encerrarChegada = () => raiz.classList.remove(CLASSE_CHEGADA, CLASSE_MARCA_EM_VOO);
+  raiz.classList.add(CLASSE_TRANSICAO, CLASSE_CHEGADA);
 
   const transicao = documento.startViewTransition(async () => {
     flushSync(aoComecar);
     await esperarPaginaPronta();
   });
-  transicao.ready.catch(limpar);
+  transicao.ready.then(
+    () => {
+      raiz.classList.add(CLASSE_MARCA_EM_VOO);
+      window.setTimeout(encerrarChegada, DURACAO_CHEGADA_MS);
+    },
+    () => {
+      limpar();
+      encerrarChegada();
+    },
+  );
   transicao.finished.then(limpar, limpar);
 }

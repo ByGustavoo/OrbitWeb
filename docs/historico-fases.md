@@ -261,6 +261,7 @@ Cada tela tem o próprio caminho, inclusive o Dashboard; a raiz `/` só redireci
 
 ```text
 Orbit
+Produtividade pessoal
 ────────────────
 Dashboard
 Planejamento
@@ -1109,7 +1110,7 @@ parcimônia), Todoist e Things (lista de tarefas legível, selos curtos) e Sunsa
 | Frase de efeito | "Organize o que move o seu dia." como título da tela de boas-vindas, no título da aba da página inicial e na descrição do site | — |
 | Tipografia | Geist (interface) + Geist Mono (números e cronômetro), servidas pelo próprio app | Prisma usa Instrument Sans + Archivo pelo Google Fonts |
 | Corpo de texto | 15px | Prisma usa 14px; aqui se lê título de tarefa o dia inteiro |
-| Marca | Quadrado azul-marinho com um núcleo e um satélite em órbita | — |
+| Marca | Quadrado azul-marinho com um núcleo e um satélite em órbita; no hover do link e na entrada das boas-vindas, o satélite anda sobre o anel (`offset-path`) | — |
 | Botão principal | Azul-marinho sólido | Prisma usa preto que vira azul no hover |
 
 ### Tokens

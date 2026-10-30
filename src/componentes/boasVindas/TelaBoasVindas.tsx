@@ -4,7 +4,7 @@ import { ArrowRight, ClipboardCheck, ListChecks, Timer } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { MarcaOrbit } from '@/componentes/comum/MarcaOrbit';
 import { Botao } from '@/componentes/ui';
-import { NOME_APLICACAO, NOME_VIAJA_COM_LOGO_NA_ENTRADA, SLOGAN_APLICACAO } from '@/configuracoes/aplicacao';
+import { NOME_APLICACAO, SLOGAN_APLICACAO } from '@/configuracoes/aplicacao';
 import { useTituloDocumento } from '@/ganchos/useTituloDocumento';
 import { juntarClasses } from '@/utilitarios/juntarClasses';
 import { transicionarParaAplicacao } from './transicaoBoasVindas';
@@ -54,6 +54,10 @@ function bloco(atrasoEntradaMs: number, ordemSaida: number): CSSProperties {
 
 function comIndice(indice: number): CSSProperties {
   return { '--i': indice } as CSSProperties;
+}
+
+function ordemDaLetra(indice: number): CSSProperties {
+  return { '--i': indice, '--ordem-entrada': LETRAS_DO_NOME.length - 1 - indice } as CSSProperties;
 }
 
 interface Orbita {
@@ -164,13 +168,7 @@ export function TelaBoasVindas({ aoComecar }: { aoComecar: () => void }) {
           <span ref={simboloRef} className={juntarClasses(estilos.simbolo, 'marca-em-transicao')}>
             <MarcaOrbit tamanho={48} animarEntrada={movimentoPermitido} />
           </span>
-          <span
-            ref={nomeRef}
-            className={juntarClasses(
-              estilos.nome,
-              NOME_VIAJA_COM_LOGO_NA_ENTRADA ? 'nome-em-transicao' : estilos.nomeAbsorvido,
-            )}
-          >
+          <span ref={nomeRef} className={estilos.nome}>
             <span className="visualmente-oculto">{NOME_APLICACAO}</span>
             {LETRAS_DO_NOME.map((letra, indice) => (
               <span
@@ -179,7 +177,7 @@ export function TelaBoasVindas({ aoComecar }: { aoComecar: () => void }) {
                   letrasRef.current[indice] = elemento;
                 }}
                 className={estilos.letra}
-                style={comIndice(indice)}
+                style={ordemDaLetra(indice)}
                 aria-hidden="true"
               >
                 {letra}
