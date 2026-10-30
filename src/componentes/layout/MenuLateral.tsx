@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import { MarcaOrbit } from '@/componentes/comum/MarcaOrbit';
-import { NOME_APLICACAO, NOME_VIAJA_COM_LOGO_NA_ENTRADA } from '@/configuracoes/aplicacao';
+import { DESCRICAO_APLICACAO, NOME_APLICACAO } from '@/configuracoes/aplicacao';
 import { navegacaoPrincipal, navegacaoRodape } from '@/configuracoes/navegacao';
 import type { ItemNavegacao } from '@/configuracoes/navegacao';
 import { caminhos } from '@/rotas/caminhos';
@@ -73,7 +73,8 @@ export function MenuLateral({ recolhido, emGaveta, abertoEmGaveta, aoAlternarRec
               <MarcaOrbit tamanho={32} />
             </span>
             <span className={estilos.textosMarca}>
-              <span className={juntarClasses(estilos.nome, NOME_VIAJA_COM_LOGO_NA_ENTRADA && !emGaveta && 'nome-em-transicao')}>{NOME_APLICACAO}</span>
+              <span className={estilos.nome}>{NOME_APLICACAO}</span>
+              <span className={estilos.descricao}>{DESCRICAO_APLICACAO}</span>
             </span>
           </Link>
           <button

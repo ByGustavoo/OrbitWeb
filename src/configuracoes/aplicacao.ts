@@ -1,5 +1,6 @@
 export const NOME_APLICACAO = 'Orbit';
 export const SLOGAN_APLICACAO = 'Organize o que move o seu dia.';
+export const DESCRICAO_APLICACAO = 'Produtividade pessoal';
 
 export const PREFIXO_ARMAZENAMENTO = 'orbit:';
 export const CHAVE_TEMA = `${PREFIXO_ARMAZENAMENTO}tema`;
@@ -14,8 +15,6 @@ export const PONTOS_QUEBRA = {
 } as const;
 
 export const ID_CONTEUDO_PRINCIPAL = 'conteudo';
-
-export const NOME_VIAJA_COM_LOGO_NA_ENTRADA = false;
 
 export const CHAVE_SESSAO_ESTUDO = `${PREFIXO_ARMAZENAMENTO}cronometro:sessao`;
 export const CHAVE_PREFERENCIAS_CRONOMETRO = `${PREFIXO_ARMAZENAMENTO}cronometro:preferencias`;

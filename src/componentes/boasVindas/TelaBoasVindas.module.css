@@ -45,7 +45,6 @@
 }
 
 .satelite {
-  transition: opacity var(--duracao-base) var(--curva-saida);
   animation: surgirSatelite var(--duracao-expressiva) var(--curva-saida) 1.5s backwards;
 }
 
@@ -69,6 +68,8 @@
 }
 
 .marca {
+  --inicio-marca: 400ms;
+
   position: relative;
   isolation: isolate;
   display: flex;
@@ -87,9 +88,13 @@
 
 .simbolo {
   position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
-  animation: logoSurgir 900ms var(--curva-mola) 80ms backwards;
+  border-radius: 28%;
+  animation:
+    logoSurgir 900ms var(--curva-mola) calc(var(--inicio-marca) + 80ms) backwards,
+    logoPulsar 560ms var(--curva-saida) calc(var(--inicio-marca) + 1100ms);
 }
 
 .simbolo::after {
@@ -97,10 +102,10 @@
   position: absolute;
   inset: 0;
   border: 1.5px solid var(--destaque);
-  border-radius: 28%;
+  border-radius: inherit;
   opacity: 0;
   pointer-events: none;
-  animation: onda 1.3s var(--curva-saida) 420ms;
+  animation: onda 1.3s var(--curva-saida) calc(var(--inicio-marca) + 1200ms);
 }
 
 .nome {
@@ -117,8 +122,8 @@
   display: inline-block;
   white-space: pre;
   text-box: trim-both cap alphabetic;
-  animation: letraEmergir 760ms var(--curva-saida) backwards;
-  animation-delay: calc(480ms + var(--i, 0) * 65ms);
+  animation: letraEmergir 480ms var(--curva-saida) backwards;
+  animation-delay: calc(var(--inicio-marca) + 1300ms + var(--ordem-entrada, 0) * 120ms);
 }
 
 .titulo {
@@ -170,6 +175,11 @@
   border: 1px solid var(--borda);
   border-radius: var(--raio-lg);
   backdrop-filter: blur(6px);
+  transition:
+    translate var(--duracao-base) var(--curva-mola),
+    border-color var(--duracao-rapida) var(--curva-saida),
+    background-color var(--duracao-rapida) var(--curva-saida),
+    box-shadow var(--duracao-base) var(--curva-saida);
 }
 
 .iconeRecurso {
@@ -181,6 +191,25 @@
   border-radius: var(--raio-md);
   background-color: var(--destaque-suave);
   color: var(--destaque);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida),
+    scale var(--duracao-base) var(--curva-mola);
+}
+
+@media (hover: hover) {
+  .recurso:hover {
+    translate: 0 -4px;
+    border-color: var(--destaque);
+    background-color: color-mix(in srgb, var(--destaque-suave) 45%, var(--superficie));
+    box-shadow: 0 14px 30px -18px color-mix(in srgb, var(--destaque) 70%, transparent);
+  }
+
+  .recurso:hover .iconeRecurso {
+    background-color: var(--destaque);
+    color: var(--destaque-contraste);
+    scale: 1.06;
+  }
 }
 
 .textosRecurso {
@@ -208,6 +237,12 @@
   min-width: 11rem;
   height: 44px;
   font-size: var(--tamanho-base);
+  transition:
+    background-color var(--duracao-rapida) var(--curva-saida),
+    border-color var(--duracao-rapida) var(--curva-saida),
+    color var(--duracao-rapida) var(--curva-saida),
+    translate var(--duracao-base) var(--curva-mola),
+    box-shadow var(--duracao-base) var(--curva-saida);
 }
 
 .comecar svg {
@@ -215,8 +250,28 @@
 }
 
 @media (hover: hover) {
+  .acoes .comecar:hover:not(:disabled) {
+    translate: 0 -3px;
+    box-shadow: 0 12px 24px -12px color-mix(in srgb, var(--destaque) 75%, transparent);
+  }
+
   .comecar:hover svg {
     transform: translateX(3px);
+  }
+
+  .acoes .comecar:active:not(:disabled) {
+    translate: 0 -1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recurso:hover,
+  .acoes .comecar:hover:not(:disabled) {
+    translate: none;
+  }
+
+  .recurso:hover .iconeRecurso {
+    scale: none;
   }
 }
 
@@ -234,25 +289,21 @@
   animation-delay: calc(90ms + var(--i, 0) * 40ms);
 }
 
-.saindo .nomeAbsorvido .letra {
-  animation: letraAbsorver 440ms var(--curva-entrada) forwards;
-  animation-delay: calc(140ms + var(--i, 0) * 45ms);
+.saindo .letra {
+  animation: letraRecolher 180ms var(--curva-entrada) forwards;
+  animation-delay: calc(40ms + var(--i, 0) * 100ms);
 }
 
 .saindo .simbolo {
-  animation: antecipar var(--duracao-expressiva) var(--curva-mola) 220ms forwards;
+  animation: antecipar 340ms var(--curva-mola) 400ms forwards;
 }
 
 .saindo .simbolo::after {
-  animation: ondaSaida 700ms var(--curva-saida) 380ms;
+  animation: onda 700ms var(--curva-saida) 380ms;
 }
 
-.saindo .orbitas svg {
-  animation: expandirOrbitas 760ms var(--curva-saida) forwards;
-}
-
-.saindo .satelite {
-  opacity: 0;
+.saindo .orbitas {
+  animation: recolherOrbitas 600ms var(--curva-saida) forwards;
 }
 
 .saindo .comecar svg {
@@ -278,10 +329,17 @@
 @keyframes logoSurgir {
   from {
     opacity: 0;
-    transform: scale(0.35) rotate(-45deg);
+    transform: scale(0.35) rotate(-20deg);
   }
   60% {
     opacity: 1;
+  }
+}
+
+@keyframes logoPulsar {
+  35% {
+    transform: scale(1.1);
+    box-shadow: 0 0 28px color-mix(in srgb, var(--destaque) 45%, transparent);
   }
 }
 
@@ -292,43 +350,27 @@
   }
   100% {
     opacity: 0;
-    transform: scale(2.4);
-  }
-}
-
-@keyframes ondaSaida {
-  0% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(2);
+    transform: scale(2.2);
   }
 }
 
 @keyframes letraEmergir {
   from {
     opacity: 0;
-    transform: translate(var(--dx), 0) scale(0.2);
+    transform: translateX(var(--dx));
   }
-  55% {
+  20% {
     opacity: 1;
-    transform: translate(calc(var(--dx) * 0.3), -10px) scale(0.92);
-  }
-  to {
-    transform: none;
   }
 }
 
-@keyframes letraAbsorver {
-  45% {
+@keyframes letraRecolher {
+  75% {
     opacity: 1;
-    transform: translate(calc(var(--dx) * 0.35), -12px) scale(0.85);
   }
   to {
     opacity: 0;
-    transform: translate(var(--dx), 0) scale(0.1);
+    transform: translateX(var(--dx));
   }
 }
 
@@ -360,16 +402,15 @@
   }
 }
 
-@keyframes expandirOrbitas {
+@keyframes recolherOrbitas {
   to {
     opacity: 0;
-    transform: scale(1.3) rotate(6deg);
   }
 }
 
 @keyframes antecipar {
   40% {
-    transform: scale(1.14);
+    transform: scale(1.12);
   }
   100% {
     transform: scale(1);

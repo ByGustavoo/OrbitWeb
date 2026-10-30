@@ -17,19 +17,12 @@ export function MarcaOrbit({ tamanho = 32, animarEntrada = false }: MarcaOrbitPr
       focusable="false"
     >
       <rect width="32" height="32" rx="9" className={estilos.fundo} />
-      <ellipse
-        cx="16"
-        cy="16"
-        rx="10.5"
-        ry="5.5"
-        transform="rotate(-28 16 16)"
-        className={estilos.orbita}
-        fill="none"
-        strokeWidth="2"
-      />
-      <circle cx="16" cy="16" r="4.2" className={estilos.nucleo} />
-      <g className={estilos.satelite}>
-        <circle cx="24.6" cy="11.4" r="2.2" className={estilos.nucleo} />
+      <g transform="rotate(-28 16 16)">
+        <ellipse cx="16" cy="16" rx="10.5" ry="5.5" className={estilos.orbita} fill="none" strokeWidth="2" />
+        <circle cx="16" cy="16" r="4.2" className={juntarClasses(estilos.nucleo, estilos.centro)} />
+        <g className={estilos.satelite}>
+          <circle r="2.2" className={estilos.nucleo} />
+        </g>
       </g>
     </svg>
   );

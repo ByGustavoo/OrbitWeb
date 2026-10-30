@@ -469,6 +469,11 @@ inteira (junto com a escolha de transporte no `clienteHttp`).
   claro e escuro; a preferência fica em `localStorage` (`orbit:tema`).
 - Um script no `index.html` aplica o tema salvo antes do React montar, sem "piscar" o tema errado.
 - A troca de tema é um esmaecimento de 600 ms (View Transitions API), com alternativa em CSS.
+- A saída das boas-vindas segue o PrismaWeb: as letras do nome recolhem para trás da logo uma a uma,
+  e a logo voa até o menu lateral (ou até o cabeçalho, abaixo de 1100px) por View Transition. Depois
+  do pouso, o nome sai de trás dela e a descrição entra por último. Toda animação de saída termina
+  antes de `DURACAO_DESPEDIDA_MS` (760 ms), quando a página é fotografada, e `DURACAO_CHEGADA_MS`
+  (1500 ms) tem de cobrir os atrasos do nome e da descrição no `MenuLateral.module.css`.
 - Os gráficos do Recharts são pintados por CSS com os tokens e trocam de tema junto com a página.
 - Contraste mínimo: 4,5:1 para texto e 3:1 para bordas de controle, nos dois temas.
 
